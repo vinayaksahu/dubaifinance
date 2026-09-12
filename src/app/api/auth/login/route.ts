@@ -1,9 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { comparePassword, createSessionToken } from "@/lib/auth";
+import { ensureInitialSeed } from "@/lib/seedHelper";
 
 export async function POST(req: NextRequest) {
   try {
+    // Ensure initial users exist if database is fresh
+    await ensureInitialSeed(db);
+
     const body = await req.json();
     const identifier = body.identifier || body.customId || body.email;
     const password = body.password;

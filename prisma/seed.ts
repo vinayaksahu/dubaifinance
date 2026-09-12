@@ -46,17 +46,17 @@ async function main() {
   });
   console.log("Super Admin seeded:", admin.customId);
 
-  // Seed Member DF836419 (with qwer1234)
+  // Seed Member DF478752 (with qwer1234)
   const memberPass = await hashPassword("qwer1234");
   const memberPin = await hashPin("123456");
 
   const member = await db.user.upsert({
-    where: { customId: "DF836419" },
+    where: { customId: "DF478752" },
     update: {},
     create: {
-      customId: "DF836419",
-      fullName: "Vinayak Sahu",
-      email: "vinayak@dubaifinance.online",
+      customId: "DF478752",
+      fullName: "Bishal Roy",
+      email: "bishal@dubaifinance.online",
       phone: "+919876543210",
       passwordHash: memberPass,
       transactionPin: memberPin,

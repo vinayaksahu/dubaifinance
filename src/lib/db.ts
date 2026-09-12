@@ -26,7 +26,8 @@ function createPrismaClient(): PrismaClient {
     console.error("[PG Pool Error]", err);
   });
 
-  const adapter = new PrismaPg(pool, { schema: "dubaifinance" });
+  const schema = process.env.DB_SCHEMA || "public";
+  const adapter = new PrismaPg(pool, { schema });
   return new PrismaClient({ adapter });
 }
 
