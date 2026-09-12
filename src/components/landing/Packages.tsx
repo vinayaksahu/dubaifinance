@@ -135,18 +135,18 @@ export function Packages() {
                       {pkg.tier}
                     </div>
                     <div className="text-2xl font-black text-amber-300 mt-1">
-                      ${pkg.amountUsdt || (pkg.amountInr / 110).toFixed(0)} USDT
+                      ${pkg.amountUsdt} USDT
                     </div>
 
                     <div className="my-6 p-4 rounded-xl bg-black/40 border border-slate-800 space-y-2">
                       <div className="flex justify-between text-xs">
                         <span className="text-slate-400">Daily Return:</span>
-                        <span className="font-bold text-white">${selectedPlan.dailyUsdt || (selectedPlan.dailyInr / 110).toFixed(1)}/day</span>
+                        <span className="font-bold text-white">${selectedPlan.dailyUsdt}/day</span>
                       </div>
                       <div className="flex justify-between text-xs">
                         <span className="text-slate-400">Total Profit:</span>
                         <span className="font-bold text-emerald-400">
-                          ${selectedPlan.profitUsdt || (selectedPlan.profitInr / 110).toFixed(0)} USDT
+                          ${selectedPlan.profitUsdt} USDT
                         </span>
                       </div>
                       <div className="flex justify-between text-xs">
