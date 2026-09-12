@@ -20,7 +20,7 @@ export function MemberTopNavbar({ user, onToggleSidebar }: MemberTopNavbarProps)
     } catch {
       // ignore
     } finally {
-      router.push("/login");
+      window.location.href = "/login";
     }
   };
 

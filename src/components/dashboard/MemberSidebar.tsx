@@ -59,7 +59,7 @@ export function MemberSidebar({
     } catch {
       // ignore
     } finally {
-      router.push("/login");
+      window.location.href = "/login";
     }
   };
 

@@ -36,9 +36,14 @@ export default function AdminSidebar({ activeTab, setActiveTab, isOpen, setIsOpe
     { id: 'config', label: 'System Config', icon: Settings },
   ];
 
-  const handleLogout = () => {
-    // Basic logout handling
-    router.push('/login');
+  const handleLogout = async () => {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' });
+    } catch {
+      // ignore
+    } finally {
+      window.location.href = '/login';
+    }
   };
 
   return (
