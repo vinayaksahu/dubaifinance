@@ -1,0 +1,243 @@
+"use client";
+
+import React, { useState } from "react";
+import { Package, X, Check } from "lucide-react";
+import { APP_CONFIG } from "@/lib/constants";
+
+interface FdPackageViewProps {
+  user: any;
+  onRefresh: () => void;
+}
+
+export function FdPackageView({ user, onRefresh }: FdPackageViewProps) {
+  const [selectedTier, setSelectedTier] = useState<any>(null);
+  const [selectedTenure, setSelectedTenure] = useState<number>(180);
+  const [pin, setPin] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [message, setMessage] = useState<{ text: string; error?: boolean } | null>(null);
+
+  const fundBal = Number(user.fundBalance || 0);
+
+  const handlePurchase = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!pin || pin.length !== 6) {
+      setMessage({ text: "Please enter your 6-digit Transaction PIN.", error: true });
+      return;
+    }
+
+    setSubmitting(true);
+    setMessage(null);
+
+    try {
+      const res = await fetch("/api/packages/activate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          packageType: "FIX_DEPOSIT",
+          amountInInr: selectedTier.amountInr,
+          fdTenureDays: selectedTenure,
+          transactionPin: pin,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || "FD Activation failed");
+      }
+
+      setMessage({ text: data.message || `FD Package of $${(selectedTier as any).amountUsdt || selectedTier.amountInr} USDT activated successfully!` });
+      setPin("");
+      onRefresh();
+      setTimeout(() => {
+        setSelectedTier(null);
+        setMessage(null);
+      }, 2000);
+    } catch (err: any) {
+      setMessage({ text: err.message, error: true });
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Header & Breadcrumb */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-bold text-slate-100 tracking-tight">
+            Fix Deposit (FD) Package
+          </h1>
+          <p className="text-sm font-semibold text-slate-300 mt-1">
+            Available Fund Balance :{" "}
+            <span className="text-emerald-400 font-bold">
+              ${fundBal.toFixed(4)} USDT
+            </span>
+          </p>
+        </div>
+        <div className="text-xs text-slate-400 font-medium flex items-center gap-1.5">
+          <span>🏠 Package</span>
+          <span>/</span>
+          <span className="text-slate-200 font-semibold">FD Package</span>
+        </div>
+      </div>
+
+      {/* Grid of 5 FD Tiers */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {APP_CONFIG.fdPlans.map((pkg) => (
+          <div
+            key={pkg.id}
+            className={`bg-[#091124] border rounded-3xl p-6 shadow-xl flex flex-col justify-between transition-all relative overflow-hidden ${
+              pkg.featured ? "border-amber-500/50 shadow-amber-500/10" : "border-[#17274a] hover:border-blue-500/40"
+            }`}
+          >
+            {pkg.featured && (
+              <span className="absolute top-4 right-4 px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[10px] font-extrabold uppercase tracking-wider">
+                Popular
+              </span>
+            )}
+
+            <div>
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-11 h-11 rounded-2xl bg-amber-600/20 border border-amber-500/40 flex items-center justify-center text-amber-400 shadow-md">
+                  <Package className="w-6 h-6" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-slate-100">{pkg.tier}</h3>
+                  <p className="text-xl font-extrabold text-amber-400">
+                    ${(pkg as any).amountUsdt?.toLocaleString() || pkg.amountInr.toLocaleString("en-IN")} USDT
+                  </p>
+                </div>
+              </div>
+
+              {/* Plan Options */}
+              <div className="space-y-3 mb-6">
+                {pkg.plans.map((p) => (
+                  <div
+                    key={p.days}
+                    className="p-3.5 rounded-2xl bg-[#070e20] border border-[#162544] text-xs space-y-1.5"
+                  >
+                    <div className="flex justify-between font-bold">
+                      <span className="text-slate-200">{p.days} Days Term</span>
+                      <span className="text-emerald-400">{p.rate}% Daily</span>
+                    </div>
+                    <div className="flex justify-between text-slate-400 text-[11px]">
+                      <span>Daily Profit:</span>
+                      <span className="text-slate-200 font-semibold">${(p as any).dailyUsdt?.toLocaleString() || 0}/day</span>
+                    </div>
+                    <div className="flex justify-between text-slate-400 text-[11px]">
+                      <span>Total Payout:</span>
+                      <span className="text-cyan-400 font-bold">${(p as any).profitUsdt?.toLocaleString() || 0} USDT</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Purchase Action */}
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                onClick={() => {
+                  setSelectedTier(pkg);
+                  setSelectedTenure(180);
+                  setMessage(null);
+                  setPin("");
+                }}
+                className="py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs transition-all shadow-md shadow-blue-600/20 text-center"
+              >
+                180 Days (10%)
+              </button>
+              <button
+                onClick={() => {
+                  setSelectedTier(pkg);
+                  setSelectedTenure(210);
+                  setMessage(null);
+                  setPin("");
+                }}
+                className="py-2.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs transition-all shadow-md shadow-amber-600/20 text-center"
+              >
+                210 Days (15%)
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Confirmation Modal */}
+      {selectedTier && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+          <div className="bg-[#091124] border border-[#1f3563] rounded-3xl p-6 sm:p-8 max-w-sm w-full relative shadow-2xl animate-in fade-in zoom-in-95">
+            <button
+              onClick={() => setSelectedTier(null)}
+              className="absolute top-5 right-5 p-1 rounded-lg text-slate-400 hover:text-white hover:bg-[#132042]"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <h3 className="text-lg font-bold text-slate-100 mb-1">
+              Confirm Fix Deposit
+            </h3>
+            <p className="text-xs text-slate-400 mb-4">
+              Activating {selectedTier.tier} (${(selectedTier as any).amountUsdt || selectedTier.amountInr} USDT) for {selectedTenure} Days
+            </p>
+
+            <div className="bg-[#070e20] border border-[#182a50] rounded-2xl p-4 space-y-2 text-xs mb-5">
+              <div className="flex justify-between">
+                <span className="text-slate-400">Locked Deposit:</span>
+                <span className="font-bold text-slate-200">${(selectedTier as any).amountUsdt || selectedTier.amountInr} USDT</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-400">Tenure:</span>
+                <span className="font-bold text-slate-200">{selectedTenure} Days</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-400">Daily Return:</span>
+                <span className="font-bold text-emerald-400">
+                  {selectedTenure === 180 ? "10%" : "15%"} Daily
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-400">Total Release at Maturity:</span>
+                <span className="font-bold text-cyan-400">
+                  ${selectedTier.plans.find((p: any) => p.days === selectedTenure)?.profitUsdt?.toLocaleString() || 0} USDT
+                </span>
+              </div>
+            </div>
+
+            <form onSubmit={handlePurchase} className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-slate-300 mb-1">
+                  Enter 6-Digit Transaction PIN
+                </label>
+                <input
+                  type="password"
+                  maxLength={6}
+                  value={pin}
+                  onChange={(e) => setPin(e.target.value)}
+                  placeholder="******"
+                  className="w-full bg-[#070e20] border border-[#1a2d52] rounded-xl px-3.5 py-2 text-center tracking-widest text-lg font-mono text-slate-100 placeholder-slate-500 focus:outline-none focus:border-blue-500"
+                  required
+                />
+              </div>
+
+              {message && (
+                <div className={`p-3 rounded-xl text-xs font-semibold ${
+                  message.error ? "bg-rose-950/60 text-rose-300 border border-rose-500/40" : "bg-emerald-950/60 text-emerald-300 border border-emerald-500/40"
+                }`}>
+                  {message.text}
+                </div>
+              )}
+
+              <button
+                type="submit"
+                disabled={submitting}
+                className="w-full py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm shadow-lg shadow-blue-600/30 transition-all disabled:opacity-50"
+              >
+                {submitting ? "Processing..." : "Lock & Activate FD"}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

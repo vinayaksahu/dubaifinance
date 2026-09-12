@@ -1,0 +1,163 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserRole {
+  SUPER_ADMIN
+  ADMIN
+  USER
+}
+
+enum AccountStatus {
+  ACTIVE
+  INACTIVE
+  BLOCKED
+}
+
+enum PackageType {
+  BASIC_SAVING
+  FIX_DEPOSIT
+}
+
+enum ContractStatus {
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
+enum TransactionType {
+  SIGNUP_BONUS
+  DEPOSIT
+  BASIC_ROI
+  FD_ROI
+  DIRECT_REFERRAL
+  BASIC_LEVEL_INCOME
+  FD_LEVEL_INCOME
+  P2P_SENT
+  P2P_RECEIVED
+  SWIPE_INCOME_TO_FUND
+  PACKAGE_PURCHASE
+  WITHDRAWAL
+  WITHDRAWAL_REFUND
+}
+
+model User {
+  id              String         @id @default(cuid())
+  customId        String         @unique // e.g. "DF836419"
+  fullName        String
+  email           String         @unique
+  phone           String?
+  passwordHash    String
+  transactionPin  String?        // 6-digit PIN hash
+  role            UserRole       @default(USER)
+  status          AccountStatus  @default(INACTIVE)
+  
+  sponsorId       String?
+  sponsor         User?          @relation("ReferralTree", fields: [sponsorId], references: [id])
+  directs         User[]         @relation("ReferralTree")
+  
+  usdtAddress     String?        // BEP-20 address
+  
+  fundBalance     Decimal        @default(0.0) @db.Decimal(20, 8)
+  incomeBalance   Decimal        @default(0.0) @db.Decimal(20, 8)
+  fdLockedBalance Decimal        @default(0.0) @db.Decimal(20, 8)
+  totalWithdrawn  Decimal        @default(0.0) @db.Decimal(20, 8)
+  directBusiness  Decimal        @default(0.0) @db.Decimal(20, 8)
+  
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  contracts       InvestmentContract[]
+  ledgers         LedgerEntry[]
+  deposits        DepositRequest[]
+  withdrawals     WithdrawalRequest[]
+  tickets         SupportTicket[]
+}
+
+model InvestmentContract {
+  id             String         @id @default(cuid())
+  userId         String
+  user           User           @relation(fields: [userId], references: [id])
+  packageType    PackageType
+  amountInInr    Decimal        @db.Decimal(20, 2)
+  amountInUsdt   Decimal        @db.Decimal(20, 8)
+  dailyRoiRate   Decimal        @db.Decimal(5, 2) // 5.0 for Basic, 10.0 or 15.0 for FD
+  tenureDays     Int            // 25 for Basic, 180 or 210 for FD
+  daysPaid       Int            @default(0)
+  totalEarned    Decimal        @default(0.0) @db.Decimal(20, 8)
+  status         ContractStatus @default(ACTIVE)
+  startDate      DateTime       @default(now())
+  maturityDate   DateTime
+  lastRoiAt      DateTime?
+  createdAt      DateTime       @default(now())
+}
+
+model LedgerEntry {
+  id             String          @id @default(cuid())
+  userId         String
+  user           User            @relation(fields: [userId], references: [id])
+  type           TransactionType
+  wallet         String          // "FUND", "INCOME", "FD_LOCKED"
+  amount         Decimal         @db.Decimal(20, 8)
+  balanceAfter   Decimal         @db.Decimal(20, 8)
+  referenceKey   String          @unique
+  description    String
+  sourceUserId   String?
+  levelNumber    Int?
+  createdAt      DateTime        @default(now())
+}
+
+model DepositRequest {
+  id             String          @id @default(cuid())
+  userId         String
+  user           User            @relation(fields: [userId], references: [id])
+  amountInUsdt   Decimal         @db.Decimal(20, 8)
+  amountInInr    Decimal         @db.Decimal(20, 2)
+  txHash         String          @unique
+  network        String          @default("USDT_BEP20")
+  screenshotUrl  String?
+  adminNote      String?
+  status         String          @default("PENDING") // PENDING, APPROVED, REJECTED
+  reviewedAt     DateTime?
+  createdAt      DateTime        @default(now())
+}
+
+model WithdrawalRequest {
+  id             String          @id @default(cuid())
+  userId         String
+  user           User            @relation(fields: [userId], references: [id])
+  amountInInr    Decimal         @db.Decimal(20, 2)
+  amountInUsdt   Decimal         @db.Decimal(20, 8)
+  toAddress      String
+  network        String          @default("USDT_BEP20")
+  txHash         String?
+  adminNote      String?
+  status         String          @default("PENDING") // PENDING, PROCESSED, REJECTED
+  processedAt    DateTime?
+  createdAt      DateTime        @default(now())
+}
+
+model SupportTicket {
+  id             String          @id @default(cuid())
+  userId         String
+  user           User            @relation(fields: [userId], references: [id])
+  subject        String
+  category       String
+  message        String
+  status         String          @default("OPEN") // OPEN, ANSWERED, CLOSED
+  adminReply     String?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+}
+
+model SystemConfig {
+  id             String          @id @default(cuid())
+  key            String          @unique
+  value          String
+  description    String?
+  updatedAt      DateTime        @updatedAt
+}

@@ -1,0 +1,68 @@
+import { NextRequest, NextResponse } from "next/server";
+import { getSession } from "@/lib/auth";
+import { db } from "@/lib/db";
+import { executeLedgerTransaction } from "@/lib/ledger";
+import Decimal from "decimal.js";
+
+export async function GET() {
+  const session = await getSession();
+  if (!session || (session.role !== "ADMIN" && session.role !== "SUPER_ADMIN")) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
+  }
+
+  const deposits = await db.depositRequest.findMany({
+    orderBy: { createdAt: "desc" },
+    include: {
+      user: { select: { customId: true, fullName: true, email: true } },
+    },
+  });
+
+  return NextResponse.json({ deposits });
+}
+
+export async function POST(req: NextRequest) {
+  const session = await getSession();
+  if (!session || (session.role !== "ADMIN" && session.role !== "SUPER_ADMIN")) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
+  }
+
+  const { depositId, action, adminNote } = await req.json();
+
+  const deposit = await db.depositRequest.findUnique({
+    where: { id: depositId },
+    include: { user: true },
+  });
+
+  if (!deposit || deposit.status !== "PENDING") {
+    return NextResponse.json({ error: "Invalid deposit or already resolved." }, { status: 400 });
+  }
+
+  if (action === "APPROVE") {
+    const amountUsdtDec = new Decimal(deposit.amountInUsdt.toString());
+
+    await db.depositRequest.update({
+      where: { id: depositId },
+      data: { status: "APPROVED", adminNote, reviewedAt: new Date() },
+    });
+
+    // Credit user's Fund Wallet
+    await executeLedgerTransaction({
+      userId: deposit.userId,
+      type: "DEPOSIT",
+      wallet: "FUND",
+      amount: amountUsdtDec,
+      referenceKey: `DEPOSIT_APPROVED_${deposit.id}`,
+      description: `Approved USDT BEP-20 Deposit (Tx: ${deposit.txHash})`,
+    });
+
+    return NextResponse.json({ success: true, message: "Deposit approved and Fund Wallet credited." });
+  } else if (action === "REJECT") {
+    await db.depositRequest.update({
+      where: { id: depositId },
+      data: { status: "REJECTED", adminNote, reviewedAt: new Date() },
+    });
+    return NextResponse.json({ success: true, message: "Deposit rejected." });
+  }
+
+  return NextResponse.json({ error: "Invalid action." }, { status: 400 });
+}
