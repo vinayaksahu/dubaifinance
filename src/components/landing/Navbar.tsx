@@ -39,7 +39,8 @@ export function Navbar() {
   ];
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 w-full h-20 bg-[var(--bg-main)]/95 backdrop-blur-2xl border-b border-amber-500/20 shadow-lg shadow-black/20 transition-colors duration-200">
+    <>
+      <header className="fixed top-0 left-0 right-0 z-50 w-full h-20 bg-[var(--bg-main)]/95 backdrop-blur-2xl border-b border-amber-500/20 shadow-lg shadow-black/20 transition-colors duration-200">
       <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-full flex items-center justify-between gap-2 sm:gap-4">
         {/* Left: Brand Logo & Title Lockup */}
         <Link href="/" className="flex items-center gap-2 sm:gap-3 shrink-0 group">
@@ -130,73 +131,74 @@ export function Navbar() {
           </button>
         </div>
       </div>
+    </header>
 
-      {/* Mobile / Tablet Drawer */}
-      {mobileMenuOpen && (
-        <div className="xl:hidden fixed inset-x-0 top-20 bottom-0 z-50 bg-[var(--bg-main)]/95 backdrop-blur-2xl border-t border-amber-500/20 overflow-y-auto animate-in fade-in slide-in-from-top-3 duration-200">
-          <div className="max-w-md mx-auto px-5 py-6 space-y-5">
-            {/* Theme switcher card */}
-            <div className="p-4 rounded-2xl bg-[var(--bg-card)] border border-amber-500/20 flex items-center justify-between shadow-sm">
-              <span className="text-xs font-bold text-[var(--text-main)] uppercase tracking-wider">
-                Theme Mode
-              </span>
-              <ThemeToggle variant="segmented" />
-            </div>
+    {/* Mobile / Tablet Drawer - OUTSIDE header so backdrop-filter does not trap fixed positioning */}
+    {mobileMenuOpen && (
+      <div className="xl:hidden fixed inset-x-0 top-20 bottom-0 z-40 bg-[var(--bg-main)] border-t border-amber-500/20 overflow-y-auto animate-in fade-in slide-in-from-top-2 duration-200 shadow-2xl">
+        <div className="max-w-md mx-auto px-5 py-6 space-y-5 pb-20">
+          {/* Theme switcher card */}
+          <div className="p-4 rounded-2xl bg-[var(--bg-card)] border border-amber-500/20 flex items-center justify-between shadow-sm">
+            <span className="text-xs font-bold text-[var(--text-main)] uppercase tracking-wider">
+              Theme Mode
+            </span>
+            <ThemeToggle variant="segmented" />
+          </div>
 
-            {/* Navigation links */}
-            <nav className="flex flex-col space-y-1.5">
-              {navLinks.map((link) => (
-                <a
-                  key={link.name}
-                  href={link.href}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="px-4 py-3 rounded-xl bg-[var(--bg-card)] border border-[var(--border-subtle)] text-sm font-bold text-[var(--text-main)] hover:border-amber-400 hover:text-amber-500 transition flex items-center justify-between group shadow-sm"
-                >
-                  <span>{link.name}</span>
-                  <ChevronRight className="w-4 h-4 text-[var(--text-subtle)] group-hover:text-amber-500 transition-colors" />
-                </a>
-              ))}
-            </nav>
+          {/* Navigation links */}
+          <nav className="flex flex-col space-y-1.5">
+            {navLinks.map((link) => (
+              <a
+                key={link.name}
+                href={link.href}
+                onClick={() => setMobileMenuOpen(false)}
+                className="px-4 py-3 rounded-xl bg-[var(--bg-card)] border border-[var(--border-subtle)] text-sm font-bold text-[var(--text-main)] hover:border-amber-400 hover:text-amber-500 transition flex items-center justify-between group shadow-sm"
+              >
+                <span>{link.name}</span>
+                <ChevronRight className="w-4 h-4 text-[var(--text-subtle)] group-hover:text-amber-500 transition-colors" />
+              </a>
+            ))}
+          </nav>
 
-            {/* Dynamic Theme PDF Download Button in Drawer */}
-            <a
-              href={pdfHref}
-              download
+          {/* Dynamic Theme PDF Download Button in Drawer */}
+          <a
+            href={pdfHref}
+            download
+            onClick={() => setMobileMenuOpen(false)}
+            className="w-full py-3.5 px-4 rounded-xl border border-amber-500/40 text-amber-500 dark:text-amber-300 font-bold flex items-center justify-center gap-2 text-xs sm:text-sm bg-amber-400/5 hover:bg-amber-400/10 transition shadow-sm"
+          >
+            <Download className="w-4 h-4 text-amber-500" />
+            {pdfDrawerLabel}
+          </a>
+
+          {/* Auth Buttons */}
+          <div className="grid grid-cols-2 gap-3 pt-2">
+            <Link
+              href="/login"
               onClick={() => setMobileMenuOpen(false)}
-              className="w-full py-3.5 px-4 rounded-xl border border-amber-500/40 text-amber-500 dark:text-amber-300 font-bold flex items-center justify-center gap-2 text-xs sm:text-sm bg-amber-400/5 hover:bg-amber-400/10 transition shadow-sm"
+              className="py-3 px-4 rounded-xl border border-amber-500/30 text-center font-bold text-xs sm:text-sm text-amber-500 dark:text-amber-300 hover:bg-amber-400/10 transition"
             >
-              <Download className="w-4 h-4 text-amber-500" />
-              {pdfDrawerLabel}
-            </a>
+              Login / Sign In
+            </Link>
+            <Link
+              href="/register"
+              onClick={() => setMobileMenuOpen(false)}
+              className="gold-btn py-3 px-4 rounded-xl text-center font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 shadow-md"
+            >
+              Join Now <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
 
-            {/* Auth Buttons */}
-            <div className="grid grid-cols-2 gap-3 pt-2">
-              <Link
-                href="/login"
-                onClick={() => setMobileMenuOpen(false)}
-                className="py-3 px-4 rounded-xl border border-amber-500/30 text-center font-bold text-xs sm:text-sm text-amber-500 dark:text-amber-300 hover:bg-amber-400/10 transition"
-              >
-                Login / Sign In
-              </Link>
-              <Link
-                href="/register"
-                onClick={() => setMobileMenuOpen(false)}
-                className="gold-btn py-3 px-4 rounded-xl text-center font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 shadow-md"
-              >
-                Join Now <ArrowRight className="w-4 h-4" />
-              </Link>
-            </div>
-
-            {/* Trust footer */}
-            <div className="pt-4 text-center">
-              <span className="text-[11px] text-[var(--text-subtle)] flex items-center justify-center gap-1.5">
-                <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
-                Office 3802, Latifa Tower &bull; Dubai, UAE
-              </span>
-            </div>
+          {/* Trust footer */}
+          <div className="pt-4 text-center">
+            <span className="text-[11px] text-[var(--text-subtle)] flex items-center justify-center gap-1.5">
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
+              Office 3802, Latifa Tower &bull; Dubai, UAE
+            </span>
           </div>
         </div>
-      )}
-    </header>
+      </div>
+    )}
+  </>
   );
 }
