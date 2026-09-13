@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Play, Users, Wallet, Banknote, Zap, Activity, Ticket } from "lucide-react";
+import { Play, Users, Wallet, Banknote, Zap, Activity, Ticket, ArrowUpRight, ShieldCheck, Sparkles, CheckCircle2 } from "lucide-react";
 import { formatUsdt } from "@/lib/utils";
 
 interface AdminDashboardViewProps {
@@ -9,109 +9,233 @@ interface AdminDashboardViewProps {
   onTriggerCron: () => void;
   cronLoading: boolean;
   cronMsg: string | null;
+  setActiveTab?: (tab: string) => void;
 }
 
-export function AdminDashboardView({ stats, onTriggerCron, cronLoading, cronMsg }: AdminDashboardViewProps) {
+export function AdminDashboardView({ 
+  stats, 
+  onTriggerCron, 
+  cronLoading, 
+  cronMsg,
+  setActiveTab 
+}: AdminDashboardViewProps) {
   const safeStats = stats || {};
   
   return (
     <div className="space-y-6">
-      {/* Stats row */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-        <div className="bg-slate-900/50 backdrop-blur border border-slate-800/50 p-5 rounded-2xl">
-          <p className="text-xs font-medium text-slate-400 mb-1">Total Members</p>
-          <h3 className="text-2xl font-bold text-white mb-1">{safeStats.totalUsers || 0}</h3>
-          <p className="text-xs text-slate-500">{safeStats.activeUsers || 0} active</p>
+      {/* Top Welcome & Health Bar */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-2xl bg-[#0c1322] border border-amber-500/20 shadow-md">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center shrink-0">
+            <Sparkles className="w-5 h-5 text-amber-400" />
+          </div>
+          <div>
+            <h2 className="font-display font-black text-lg text-slate-100 uppercase tracking-wide">
+              Executive Overview
+            </h2>
+            <p className="text-xs text-slate-400">
+              Real-time analytics for Dubai Finance Pre-Launching Phase &bull; Binance Smart Chain (BEP-20)
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2 self-start sm:self-auto text-xs font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 px-3 py-1.5 rounded-xl">
+          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+          System Operational &bull; 100% USDT
+        </div>
+      </div>
+
+      {/* Stats row - 5 High-Impact Metric Cards */}
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-3 sm:gap-4">
+        {/* Total Members */}
+        <div 
+          onClick={() => setActiveTab?.("users")}
+          className="bg-[#0c1322]/90 backdrop-blur-xl border border-slate-800/80 hover:border-amber-500/40 p-4 sm:p-5 rounded-2xl transition-all duration-200 group cursor-pointer shadow-lg hover:-translate-y-0.5"
+        >
+          <div className="flex items-center justify-between text-slate-400 mb-2">
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Total Members</span>
+            <Users className="w-4 h-4 text-amber-400 group-hover:scale-110 transition-transform" />
+          </div>
+          <h3 className="text-2xl sm:text-3xl font-display font-black text-slate-100 mb-1">
+            {safeStats.totalUsers || 0}
+          </h3>
+          <div className="flex items-center gap-1.5 text-xs text-slate-400">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+            <span><strong className="text-emerald-400">{safeStats.activeUsers || 0}</strong> active accounts</span>
+          </div>
         </div>
         
-        <div className="bg-slate-900/50 backdrop-blur border border-slate-800/50 p-5 rounded-2xl">
-          <p className="text-xs font-medium text-slate-400 mb-1">Active Contracts</p>
-          <h3 className="text-2xl font-bold text-amber-400 mb-1">{safeStats.activeContracts || 0}</h3>
+        {/* Active Contracts */}
+        <div className="bg-[#0c1322]/90 backdrop-blur-xl border border-slate-800/80 hover:border-amber-500/40 p-4 sm:p-5 rounded-2xl transition-all duration-200 shadow-lg">
+          <div className="flex items-center justify-between text-slate-400 mb-2">
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Active Contracts</span>
+            <ShieldCheck className="w-4 h-4 text-amber-400" />
+          </div>
+          <h3 className="text-2xl sm:text-3xl font-display font-black text-amber-400 mb-1">
+            {safeStats.activeContracts || 0}
+          </h3>
+          <p className="text-xs text-slate-400">28-Day &amp; FD Tenure</p>
         </div>
 
-        <div className="bg-slate-900/50 backdrop-blur border border-slate-800/50 p-5 rounded-2xl">
-          <p className="text-xs font-medium text-slate-400 mb-1">Pending Deposits</p>
-          <h3 className="text-2xl font-bold text-cyan-400 mb-1">{safeStats.pendingDeposits || 0}</h3>
+        {/* Pending Deposits */}
+        <div 
+          onClick={() => setActiveTab?.("deposits")}
+          className="bg-[#0c1322]/90 backdrop-blur-xl border border-cyan-500/30 hover:border-cyan-400 p-4 sm:p-5 rounded-2xl transition-all duration-200 group cursor-pointer shadow-lg shadow-cyan-500/5 hover:-translate-y-0.5"
+        >
+          <div className="flex items-center justify-between text-cyan-400 mb-2">
+            <span className="text-xs font-bold uppercase tracking-wider">Pending Deposits</span>
+            <ArrowUpRight className="w-4 h-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+          </div>
+          <h3 className="text-2xl sm:text-3xl font-display font-black text-cyan-300 mb-1">
+            {safeStats.pendingDeposits || 0}
+          </h3>
+          <p className="text-xs text-cyan-400/80 font-medium">Click to review &rarr;</p>
         </div>
 
-        <div className="bg-slate-900/50 backdrop-blur border border-slate-800/50 p-5 rounded-2xl">
-          <p className="text-xs font-medium text-slate-400 mb-1">Pending Withdrawals</p>
-          <h3 className="text-2xl font-bold text-red-400 mb-1">{safeStats.pendingWithdrawals || 0}</h3>
+        {/* Pending Withdrawals */}
+        <div 
+          onClick={() => setActiveTab?.("withdrawals")}
+          className="bg-[#0c1322]/90 backdrop-blur-xl border border-rose-500/30 hover:border-rose-400 p-4 sm:p-5 rounded-2xl transition-all duration-200 group cursor-pointer shadow-lg shadow-rose-500/5 hover:-translate-y-0.5"
+        >
+          <div className="flex items-center justify-between text-rose-400 mb-2">
+            <span className="text-xs font-bold uppercase tracking-wider">Pending Payouts</span>
+            <ArrowUpRight className="w-4 h-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+          </div>
+          <h3 className="text-2xl sm:text-3xl font-display font-black text-rose-400 mb-1">
+            {safeStats.pendingWithdrawals || 0}
+          </h3>
+          <p className="text-xs text-rose-400/80 font-medium">Click to process &rarr;</p>
         </div>
 
-        <div className="bg-slate-900/50 backdrop-blur border border-slate-800/50 p-5 rounded-2xl">
-          <p className="text-xs font-medium text-slate-400 mb-1">Total Approved</p>
-          <h3 className="text-2xl font-bold text-emerald-400 mb-1">{formatUsdt(safeStats.totalApprovedDepositsUsdt || 0)}</h3>
+        {/* Total Approved USDT */}
+        <div className="bg-[#0c1322]/90 backdrop-blur-xl border border-emerald-500/30 p-4 sm:p-5 rounded-2xl transition-all duration-200 shadow-lg shadow-emerald-500/5">
+          <div className="flex items-center justify-between text-emerald-400 mb-2">
+            <span className="text-xs font-bold uppercase tracking-wider">Total Approved</span>
+            <Wallet className="w-4 h-4" />
+          </div>
+          <h3 className="text-xl sm:text-2xl font-display font-black text-emerald-400 mb-1 truncate" title={formatUsdt(safeStats.totalApprovedDepositsUsdt || 0)}>
+            {formatUsdt(safeStats.totalApprovedDepositsUsdt || 0)}
+          </h3>
+          <p className="text-xs text-emerald-500 font-medium">Liquidity Reserve Pool</p>
         </div>
       </div>
 
       {/* ROI Engine Banner */}
-      <div className="bg-gradient-to-r from-amber-900/20 to-purple-900/20 border border-amber-500/20 p-6 rounded-2xl">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <h2 className="text-xl font-bold text-white mb-2 flex items-center gap-2">
-              <Zap className="h-6 w-6 text-amber-400" />
-              Automated Daily ROI & 12-Level Royalty Distribution
+      <div className="relative overflow-hidden bg-gradient-to-br from-amber-500/15 via-[#0c1322] to-amber-900/10 border border-amber-500/30 p-6 rounded-2xl shadow-xl">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative z-10">
+          <div className="space-y-2">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-400 text-xs font-bold uppercase tracking-wider">
+              <Zap className="h-3.5 w-3.5 text-amber-400" />
+              <span>Smart Contract Automation</span>
+            </div>
+            <h2 className="font-display font-black text-xl sm:text-2xl text-slate-100">
+              Automated Daily ROI &amp; 12-Level Royalty Distribution
             </h2>
-            <p className="text-sm text-slate-300">
-              Runs automatically via cron. Manual trigger available.
+            <p className="text-xs sm:text-sm text-slate-300 max-w-2xl leading-relaxed">
+              Distributes 5% Daily Basic ROI (28-Day Tenure), 10% &amp; 15% Fix Deposit returns, and 12-Level Downline Royalties. Scheduled daily via background cron, with on-demand manual override.
             </p>
           </div>
           
           <button
+            type="button"
             onClick={onTriggerCron}
             disabled={cronLoading}
-            className="flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-amber-400 to-amber-600 hover:from-amber-300 hover:to-amber-500 text-black font-bold rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+            className="gold-btn px-6 py-3.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2.5 shadow-lg shadow-amber-500/20 whitespace-nowrap self-start lg:self-auto disabled:opacity-50 disabled:cursor-not-allowed transition-all"
           >
             {cronLoading ? (
-              <Activity className="h-5 w-5 animate-spin" />
+              <>
+                <Activity className="h-5 w-5 animate-spin text-slate-950" />
+                <span>Executing Cycle...</span>
+              </>
             ) : (
-              <Play className="h-5 w-5" />
+              <>
+                <Play className="h-5 w-5 text-slate-950 fill-slate-950" />
+                <span>Execute Daily ROI Cycle</span>
+              </>
             )}
-            Execute Daily ROI Cycle
           </button>
         </div>
+
         {cronMsg && (
-          <div className="mt-4 p-3 bg-black/30 border border-amber-500/20 rounded-lg text-sm text-amber-200">
-            {cronMsg}
+          <div className="mt-5 p-3.5 bg-slate-950/80 border border-amber-500/30 rounded-xl text-xs sm:text-sm text-amber-300 flex items-center gap-2 animate-in fade-in duration-200">
+            <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+            <span>{cronMsg}</span>
           </div>
         )}
       </div>
 
-      {/* Quick Actions */}
+      {/* Quick Actions (Interactive navigation cards) */}
       <div>
-        <h3 className="text-lg font-semibold text-white mb-4">Quick Actions</h3>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="bg-slate-900/50 backdrop-blur border border-slate-800/50 p-5 rounded-2xl flex flex-col items-center justify-center text-center cursor-pointer hover:bg-slate-800/50 transition-colors">
-            <div className="h-10 w-10 bg-cyan-500/10 text-cyan-400 rounded-full flex items-center justify-center mb-3">
-              <Wallet className="h-5 w-5" />
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="font-display font-bold text-base text-slate-100 uppercase tracking-wider">
+            Quick Management Actions
+          </h3>
+          <span className="text-xs text-slate-400">Click any card to open view</span>
+        </div>
+
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+          {/* Deposits Action */}
+          <div 
+            onClick={() => setActiveTab?.("deposits")}
+            className="bg-[#0c1322] border border-slate-800/80 hover:border-cyan-500/50 p-5 rounded-2xl flex flex-col items-center justify-center text-center cursor-pointer hover:bg-cyan-500/5 transition-all duration-200 group shadow-md"
+          >
+            <div className="h-12 w-12 bg-cyan-500/10 text-cyan-400 group-hover:scale-110 rounded-2xl flex items-center justify-center mb-3 transition-transform border border-cyan-500/20">
+              <Wallet className="h-6 w-6" />
             </div>
-            <h4 className="font-medium text-white mb-1">Deposits</h4>
-            <p className="text-xs text-slate-400">{safeStats.pendingDeposits || 0} pending</p>
+            <h4 className="font-bold text-sm text-slate-100 mb-1 group-hover:text-cyan-300 transition-colors">
+              Deposits
+            </h4>
+            <span className="text-xs text-cyan-400/90 font-semibold px-2 py-0.5 rounded-full bg-cyan-500/10 border border-cyan-500/20">
+              {safeStats.pendingDeposits || 0} pending
+            </span>
           </div>
           
-          <div className="bg-slate-900/50 backdrop-blur border border-slate-800/50 p-5 rounded-2xl flex flex-col items-center justify-center text-center cursor-pointer hover:bg-slate-800/50 transition-colors">
-            <div className="h-10 w-10 bg-red-500/10 text-red-400 rounded-full flex items-center justify-center mb-3">
-              <Banknote className="h-5 w-5" />
+          {/* Withdrawals Action */}
+          <div 
+            onClick={() => setActiveTab?.("withdrawals")}
+            className="bg-[#0c1322] border border-slate-800/80 hover:border-rose-500/50 p-5 rounded-2xl flex flex-col items-center justify-center text-center cursor-pointer hover:bg-rose-500/5 transition-all duration-200 group shadow-md"
+          >
+            <div className="h-12 w-12 bg-rose-500/10 text-rose-400 group-hover:scale-110 rounded-2xl flex items-center justify-center mb-3 transition-transform border border-rose-500/20">
+              <Banknote className="h-6 w-6" />
             </div>
-            <h4 className="font-medium text-white mb-1">Withdrawals</h4>
-            <p className="text-xs text-slate-400">{safeStats.pendingWithdrawals || 0} pending</p>
+            <h4 className="font-bold text-sm text-slate-100 mb-1 group-hover:text-rose-300 transition-colors">
+              Withdrawals
+            </h4>
+            <span className="text-xs text-rose-400/90 font-semibold px-2 py-0.5 rounded-full bg-rose-500/10 border border-rose-500/20">
+              {safeStats.pendingWithdrawals || 0} pending
+            </span>
           </div>
           
-          <div className="bg-slate-900/50 backdrop-blur border border-slate-800/50 p-5 rounded-2xl flex flex-col items-center justify-center text-center cursor-pointer hover:bg-slate-800/50 transition-colors">
-            <div className="h-10 w-10 bg-purple-500/10 text-purple-400 rounded-full flex items-center justify-center mb-3">
-              <Users className="h-5 w-5" />
+          {/* Users Action */}
+          <div 
+            onClick={() => setActiveTab?.("users")}
+            className="bg-[#0c1322] border border-slate-800/80 hover:border-amber-500/50 p-5 rounded-2xl flex flex-col items-center justify-center text-center cursor-pointer hover:bg-amber-500/5 transition-all duration-200 group shadow-md"
+          >
+            <div className="h-12 w-12 bg-amber-500/10 text-amber-400 group-hover:scale-110 rounded-2xl flex items-center justify-center mb-3 transition-transform border border-amber-500/20">
+              <Users className="h-6 w-6" />
             </div>
-            <h4 className="font-medium text-white mb-1">Users</h4>
-            <p className="text-xs text-slate-400">{safeStats.totalUsers || 0} total</p>
+            <h4 className="font-bold text-sm text-slate-100 mb-1 group-hover:text-amber-300 transition-colors">
+              Users
+            </h4>
+            <span className="text-xs text-amber-400/90 font-semibold px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/20">
+              {safeStats.totalUsers || 0} total registered
+            </span>
           </div>
           
-          <div className="bg-slate-900/50 backdrop-blur border border-slate-800/50 p-5 rounded-2xl flex flex-col items-center justify-center text-center cursor-pointer hover:bg-slate-800/50 transition-colors">
-            <div className="h-10 w-10 bg-emerald-500/10 text-emerald-400 rounded-full flex items-center justify-center mb-3">
-              <Ticket className="h-5 w-5" />
+          {/* Tickets Action */}
+          <div 
+            onClick={() => setActiveTab?.("tickets")}
+            className="bg-[#0c1322] border border-slate-800/80 hover:border-emerald-500/50 p-5 rounded-2xl flex flex-col items-center justify-center text-center cursor-pointer hover:bg-emerald-500/5 transition-all duration-200 group shadow-md"
+          >
+            <div className="h-12 w-12 bg-emerald-500/10 text-emerald-400 group-hover:scale-110 rounded-2xl flex items-center justify-center mb-3 transition-transform border border-emerald-500/20">
+              <Ticket className="h-6 w-6" />
             </div>
-            <h4 className="font-medium text-white mb-1">Tickets</h4>
-            <p className="text-xs text-slate-400">Manage support</p>
+            <h4 className="font-bold text-sm text-slate-100 mb-1 group-hover:text-emerald-300 transition-colors">
+              Tickets
+            </h4>
+            <span className="text-xs text-emerald-400/90 font-semibold px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20">
+              Support Desk
+            </span>
           </div>
         </div>
       </div>

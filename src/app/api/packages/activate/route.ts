@@ -14,9 +14,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized. Please log in." }, { status: 401 });
     }
 
-    const { packageType, amountInInr, targetCustomId, transactionPin, fdTenureDays } = await req.json();
+    const { packageType, amountInInr, amountInUsdt, amount, targetCustomId, transactionPin, fdTenureDays } = await req.json();
 
-    if (!packageType || !amountInInr || !transactionPin) {
+    const rawAmount = amountInUsdt ?? amount ?? amountInInr;
+    if (!packageType || !rawAmount || !transactionPin) {
       return NextResponse.json({ error: "Package type, amount and 6-digit PIN are required." }, { status: 400 });
     }
 
@@ -45,10 +46,12 @@ export async function POST(req: NextRequest) {
       beneficiary = found;
     }
 
-    const rate = await getNumericConfig("USDT_TO_INR_RATE", APP_CONFIG.usdtToInrRate);
-    const amountInrDec = new Decimal(amountInInr.toString());
-    const amountUsdt = Number((amountInrDec.toNumber() / rate).toFixed(4));
-    const amountUsdtDec = new Decimal(amountUsdt.toString());
+    let parsedUsdt = Number(rawAmount);
+    if (!amountInUsdt && !amount && Number(amountInInr) > 5000) {
+      parsedUsdt = Number(amountInInr) / 110;
+    }
+    const amountUsdtDec = new Decimal(parsedUsdt.toString());
+    const amountInrDec = amountUsdtDec.mul(APP_CONFIG.usdtToInrRate);
 
     // Validate Package Limits
     let dailyRoiRate: Decimal;
@@ -137,8 +140,8 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // Process instant 15% direct referral commission for beneficiary sponsor
-    await processDirectReferralReward(beneficiary.id, contract.id, amountInrDec.toNumber());
+    // Process instant direct referral commission for beneficiary sponsor (Dark PDF 10%)
+    await processDirectReferralReward(beneficiary.id, contract.id, amountUsdtDec.toNumber());
 
     return NextResponse.json({
       success: true,

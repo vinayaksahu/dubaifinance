@@ -7,7 +7,7 @@ import Decimal from "decimal.js";
 export async function processDirectReferralReward(
   buyerId: string,
   contractId: string,
-  packageAmountInr: number | string
+  packageAmountUsdt: number | string
 ) {
   const buyer = await db.user.findUnique({
     where: { id: buyerId },
@@ -24,11 +24,8 @@ export async function processDirectReferralReward(
   if (!sponsor) return null;
 
   const directPercent = await getNumericConfig("DIRECT_REFERRAL_PERCENT", APP_CONFIG.directReferralPercent);
-  const usdtRate = await getNumericConfig("USDT_TO_INR_RATE", APP_CONFIG.usdtToInrRate);
-
-  const amountInrDec = new Decimal(packageAmountInr.toString());
-  const commissionInr = amountInrDec.times(directPercent / 100);
-  const commissionUsdt = commissionInr.dividedBy(usdtRate);
+  const amountUsdtDec = new Decimal(packageAmountUsdt.toString());
+  const commissionUsdt = amountUsdtDec.times(directPercent / 100);
 
   const referenceKey = `DIR_REF_${contractId}_${sponsor.id}`;
 
@@ -38,17 +35,17 @@ export async function processDirectReferralReward(
     wallet: "INCOME",
     amount: commissionUsdt,
     referenceKey,
-    description: `${directPercent}% Direct Referral Commission from ${buyer.customId} (Deposit: $${amountInrDec.dividedBy(usdtRate).toFixed(2)} USDT)`,
+    description: `${directPercent}% Direct Referral Commission from ${buyer.customId} (Deposit: $${amountUsdtDec.toFixed(2)} USDT)`,
     sourceUserId: buyerId,
     levelNumber: 1,
   });
 
-  // Update sponsor direct business volume
+  // Update sponsor direct business volume in USDT
   const currentDirectBiz = new Decimal(sponsor.directBusiness.toString());
   await db.user.update({
     where: { id: sponsor.id },
     data: {
-      directBusiness: currentDirectBiz.plus(amountInrDec).toFixed(8),
+      directBusiness: currentDirectBiz.plus(amountUsdtDec).toFixed(8),
     },
   });
 

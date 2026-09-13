@@ -18,7 +18,6 @@ export async function POST(req: NextRequest) {
     const endHour = await getNumericConfig("WITHDRAWAL_END_HOUR", APP_CONFIG.withdrawalWindow.endHour);
     const minUsdt = await getNumericConfig("MIN_WITHDRAWAL_USDT", APP_CONFIG.minWithdrawalUsdt);
     const maxUsdt = await getNumericConfig("MAX_WITHDRAWAL_USDT", APP_CONFIG.maxWithdrawalUsdt);
-    const usdtRate = await getNumericConfig("USDT_TO_INR_RATE", APP_CONFIG.usdtToInrRate);
 
     // Current IST Time calculation
     const now = new Date();
@@ -37,9 +36,10 @@ export async function POST(req: NextRequest) {
       }, { status: 403 });
     }
 
-    const { amountInInr, toAddress, transactionPin } = await req.json();
+    const { amountInUsdt, amount, amountInInr, toAddress, transactionPin } = await req.json();
+    const rawAmount = amountInUsdt ?? amount ?? amountInInr;
 
-    if (!amountInInr || !transactionPin) {
+    if (!rawAmount || !transactionPin) {
       return NextResponse.json({ error: "Amount and 6-digit PIN are required." }, { status: 400 });
     }
 
@@ -68,9 +68,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Please bind a valid USDT BEP-20 payout address." }, { status: 400 });
     }
 
-    const amountInrDec = new Decimal(amountInInr.toString());
-    const amountUsdt = Number((amountInrDec.toNumber() / usdtRate).toFixed(4));
-    const amountUsdtDec = new Decimal(amountUsdt.toString());
+    let parsedUsdt = Number(rawAmount);
+    if (!amountInUsdt && !amount && Number(amountInInr) > 5000) {
+      parsedUsdt = Number(amountInInr) / 110;
+    }
+    const amountUsdtDec = new Decimal(parsedUsdt.toString());
 
     // Validate dynamic limits
     if (amountUsdtDec.lessThan(minUsdt)) {
@@ -105,7 +107,7 @@ export async function POST(req: NextRequest) {
     const request = await db.withdrawalRequest.create({
       data: {
         userId: user.id,
-        amountInInr: amountInrDec.toFixed(2),
+        amountInInr: amountUsdtDec.toFixed(2),
         amountInUsdt: amountUsdtDec.toFixed(8),
         toAddress: payoutAddress,
         network: "USDT_BEP20",

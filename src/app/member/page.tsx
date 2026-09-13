@@ -20,6 +20,15 @@ export default function MemberDashboardPage() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<string>("dashboard");
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+
+  const handleToggleSidebar = () => {
+    if (typeof window !== "undefined" && window.innerWidth < 1024) {
+      setSidebarOpen((prev) => !prev);
+    } else {
+      setSidebarCollapsed((prev) => !prev);
+    }
+  };
 
   const fetchUser = async () => {
     try {
@@ -43,10 +52,10 @@ export default function MemberDashboardPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#050b18] flex items-center justify-center">
+      <div className="min-h-screen bg-[#080c14] flex items-center justify-center">
         <div className="flex flex-col items-center gap-3">
-          <div className="w-12 h-12 rounded-full border-4 border-red-500 border-t-transparent animate-spin" />
-          <p className="text-red-500 font-extrabold tracking-widest text-sm uppercase">
+          <div className="w-12 h-12 rounded-full border-4 border-amber-500 border-t-transparent animate-spin" />
+          <p className="text-amber-400 font-extrabold tracking-widest text-sm uppercase">
             Loading Dubai Finance Portal...
           </p>
         </div>
@@ -57,22 +66,27 @@ export default function MemberDashboardPage() {
   if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-[#050b18] text-slate-100 flex flex-col antialiased">
+    <div className="min-h-screen bg-[#080c14] text-slate-100 flex flex-col antialiased">
       {/* Sidebar */}
       <MemberSidebar
         activeTab={activeTab}
         setActiveTab={setActiveTab}
         isOpen={sidebarOpen}
         setIsOpen={setSidebarOpen}
+        isCollapsed={sidebarCollapsed}
+        setIsCollapsed={setSidebarCollapsed}
         userRole={user.role}
       />
 
       {/* Main Content Area */}
-      <div className="lg:pl-64 flex flex-col flex-1 min-h-screen">
+      <div className={`flex flex-col flex-1 min-h-screen transition-all duration-300 ease-in-out ${
+        sidebarCollapsed ? "lg:pl-20" : "lg:pl-64"
+      }`}>
         {/* Top Navbar */}
         <MemberTopNavbar
           user={user}
-          onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
+          onToggleSidebar={handleToggleSidebar}
+          isCollapsed={sidebarCollapsed}
         />
 
         {/* Dynamic View Body */}

@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import {
   Gauge,
@@ -15,6 +16,8 @@ import {
   LogOut,
   ChevronDown,
   ChevronRight,
+  ChevronLeft,
+  X,
   ShieldAlert,
 } from "lucide-react";
 
@@ -23,6 +26,8 @@ interface MemberSidebarProps {
   setActiveTab: (tab: string) => void;
   isOpen: boolean;
   setIsOpen: (open: boolean) => void;
+  isCollapsed?: boolean;
+  setIsCollapsed?: (collapsed: boolean) => void;
   userRole?: string;
 }
 
@@ -31,6 +36,8 @@ export function MemberSidebar({
   setActiveTab,
   isOpen,
   setIsOpen,
+  isCollapsed = false,
+  setIsCollapsed,
   userRole,
 }: MemberSidebarProps) {
   const router = useRouter();
@@ -68,101 +75,148 @@ export function MemberSidebar({
       {/* Mobile Backdrop */}
       {isOpen && (
         <div
-          className="fixed inset-0 bg-black/70 backdrop-blur-sm z-40 lg:hidden"
+          className="fixed inset-0 bg-black/80 backdrop-blur-md z-40 lg:hidden animate-in fade-in duration-200"
           onClick={() => setIsOpen(false)}
         />
       )}
 
       {/* Sidebar Container */}
       <aside
-        className={`fixed top-0 left-0 bottom-0 z-50 w-64 bg-[#050b18] border-r border-[#152238] flex flex-col transition-transform duration-300 ease-in-out ${
-          isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
-        }`}
+        className={`fixed top-0 left-0 bottom-0 z-50 bg-[#080c14] border-r border-amber-500/20 flex flex-col transition-all duration-300 ease-in-out ${
+          isCollapsed ? "lg:w-20" : "lg:w-64"
+        } ${
+          isOpen ? "translate-x-0 w-72" : "-translate-x-full lg:translate-x-0"
+        } shadow-2xl shadow-black/60`}
       >
         {/* Brand Logo Header */}
-        <div className="h-16 flex items-center px-5 border-b border-[#152238] gap-3 bg-[#070e20]">
-          <div className="w-9 h-9 rounded-full border-2 border-red-500 flex items-center justify-center p-1 bg-red-950/40 shadow-lg shadow-red-500/20">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
-              <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-              <polyline points="9 22 9 12 15 12 15 22" />
-            </svg>
+        <div className="h-16 flex items-center justify-between px-4 border-b border-amber-500/20 bg-[#0c1322] shrink-0">
+          <div className="flex items-center gap-3 overflow-hidden">
+            <div className="w-9 h-9 rounded-xl overflow-hidden bg-gradient-to-br from-amber-400 to-amber-600 p-0.5 shadow-md shadow-amber-500/20 shrink-0">
+              <div className="w-full h-full rounded-[10px] bg-slate-950 flex items-center justify-center overflow-hidden">
+                <Image
+                  src="/dubaiLogo.png"
+                  alt="Dubai Finance Logo"
+                  width={32}
+                  height={32}
+                  className="object-contain"
+                  priority
+                />
+              </div>
+            </div>
+            <div className={`flex flex-col ${isCollapsed ? "lg:hidden" : "block"}`}>
+              <span className="text-amber-400 font-display font-black tracking-wider text-sm uppercase leading-tight whitespace-nowrap">
+                DUBAI FINANCE
+              </span>
+              <span className="text-[9px] text-amber-500/70 font-semibold tracking-wide uppercase whitespace-nowrap">
+                MEMBER PORTAL
+              </span>
+            </div>
           </div>
-          <div className="flex flex-col">
-            <span className="text-red-500 font-extrabold tracking-wider text-base leading-tight uppercase">
-              DUBAI FINANCE
-            </span>
-            <span className="text-[10px] text-slate-400 font-medium tracking-wide">
-              OFFICIAL MEMBER PORTAL
-            </span>
-          </div>
+
+          {/* Desktop Collapse Toggle */}
+          {setIsCollapsed && (
+            <button
+              type="button"
+              onClick={() => setIsCollapsed(!isCollapsed)}
+              className="hidden lg:flex p-1.5 rounded-lg border border-amber-500/30 text-amber-400 hover:bg-amber-400/10 transition-colors"
+              title={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
+            >
+              {isCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
+            </button>
+          )}
+
+          {/* Mobile Close Button */}
+          <button
+            type="button"
+            onClick={() => setIsOpen(false)}
+            className="lg:hidden p-1.5 rounded-lg border border-amber-500/30 text-amber-400 hover:bg-amber-400/10"
+          >
+            <X className="w-4 h-4" />
+          </button>
         </div>
 
         {/* Navigation Menu Links */}
-        <div className="flex-1 overflow-y-auto py-4 px-3 space-y-1.5 scrollbar-thin scrollbar-thumb-slate-800">
+        <div className="flex-1 overflow-y-auto py-4 px-2.5 space-y-1.5 scrollbar-thin scrollbar-thumb-amber-500/20">
           {/* Dashboard */}
           <button
+            type="button"
             onClick={() => handleSelectTab("dashboard")}
-            className={`w-full flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all text-left ${
+            title={isCollapsed ? "Dashboard" : undefined}
+            className={`w-full flex items-center ${
+              isCollapsed ? "lg:justify-center lg:px-2" : "gap-3.5 px-3.5"
+            } py-2.5 rounded-xl font-medium text-sm transition-all text-left ${
               activeTab === "dashboard"
-                ? "bg-blue-600/20 text-blue-400 border border-blue-500/50 shadow-lg shadow-blue-500/10 font-semibold"
-                : "text-slate-400 hover:text-slate-200 hover:bg-[#0d1830]"
+                ? "bg-gradient-to-r from-amber-500/20 via-amber-500/10 to-transparent text-amber-300 border border-amber-500/40 shadow-md shadow-amber-500/10 font-bold"
+                : "text-slate-400 hover:text-amber-200 hover:bg-amber-500/5"
             }`}
           >
-            <Gauge className="w-5 h-5 text-blue-400" />
-            <span>Dashboard</span>
+            <Gauge className="w-5 h-5 text-amber-400 shrink-0" />
+            <span className={isCollapsed ? "lg:hidden" : "inline"}>Dashboard</span>
           </button>
 
           {/* Recharge */}
           <button
+            type="button"
             onClick={() => handleSelectTab("recharge")}
-            className={`w-full flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all text-left ${
+            title={isCollapsed ? "Recharge" : undefined}
+            className={`w-full flex items-center ${
+              isCollapsed ? "lg:justify-center lg:px-2" : "gap-3.5 px-3.5"
+            } py-2.5 rounded-xl font-medium text-sm transition-all text-left ${
               activeTab === "recharge"
-                ? "bg-blue-600/20 text-blue-400 border border-blue-500/50 shadow-lg shadow-blue-500/10 font-semibold"
-                : "text-slate-400 hover:text-slate-200 hover:bg-[#0d1830]"
+                ? "bg-gradient-to-r from-amber-500/20 via-amber-500/10 to-transparent text-amber-300 border border-amber-500/40 shadow-md shadow-amber-500/10 font-bold"
+                : "text-slate-400 hover:text-amber-200 hover:bg-amber-500/5"
             }`}
           >
-            <Briefcase className="w-5 h-5 text-emerald-400" />
-            <span>Recharge</span>
+            <Briefcase className="w-5 h-5 text-emerald-400 shrink-0" />
+            <span className={isCollapsed ? "lg:hidden" : "inline"}>Recharge</span>
           </button>
 
           {/* Package Activation Accordion */}
           <div>
             <button
+              type="button"
               onClick={() => toggleMenu("packages")}
-              className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all text-left ${
+              title={isCollapsed ? "Package Activation" : undefined}
+              className={`w-full flex items-center ${
+                isCollapsed ? "lg:justify-center lg:px-2" : "justify-between px-3.5"
+              } py-2.5 rounded-xl font-medium text-sm transition-all text-left ${
                 activeTab.startsWith("package-")
-                  ? "bg-blue-600/20 text-blue-400 border border-blue-500/50 shadow-lg shadow-blue-500/10 font-semibold"
-                  : "text-slate-400 hover:text-slate-200 hover:bg-[#0d1830]"
+                  ? "bg-gradient-to-r from-amber-500/20 via-amber-500/10 to-transparent text-amber-300 border border-amber-500/40 shadow-md shadow-amber-500/10 font-bold"
+                  : "text-slate-400 hover:text-amber-200 hover:bg-amber-500/5"
               }`}
             >
               <div className="flex items-center gap-3.5">
-                <Package className="w-5 h-5 text-amber-400" />
-                <span>Package Activation</span>
+                <Package className="w-5 h-5 text-amber-400 shrink-0" />
+                <span className={isCollapsed ? "lg:hidden" : "inline"}>Package Activation</span>
               </div>
-              {openMenus.packages || activeTab.startsWith("package-") ? (
-                <ChevronDown className="w-4 h-4 text-slate-400" />
-              ) : (
-                <ChevronRight className="w-4 h-4 text-slate-400" />
-              )}
+              <span className={isCollapsed ? "lg:hidden" : "inline"}>
+                {openMenus.packages || activeTab.startsWith("package-") ? (
+                  <ChevronDown className="w-4 h-4 text-slate-400" />
+                ) : (
+                  <ChevronRight className="w-4 h-4 text-slate-400" />
+                )}
+              </span>
             </button>
             {(openMenus.packages || activeTab.startsWith("package-")) && (
-              <div className="pl-11 pr-2 py-1 space-y-1">
+              <div className={`${isCollapsed ? "lg:hidden" : "block"} pl-11 pr-2 py-1 space-y-1`}>
                 <button
+                  type="button"
                   onClick={() => handleSelectTab("package-base")}
                   className={`w-full text-left py-2 px-3 rounded-lg text-xs font-medium transition-all ${
                     activeTab === "package-base"
-                      ? "text-blue-400 bg-blue-950/40 font-semibold"
-                      : "text-slate-400 hover:text-slate-200 hover:bg-[#0d1830]"
+                      ? "text-amber-300 bg-amber-500/15 font-bold border-l-2 border-amber-400"
+                      : "text-slate-400 hover:text-amber-200 hover:bg-amber-500/5"
                   }`}
                 >
                   • Basic Package
                 </button>
                 <button
+                  type="button"
                   onClick={() => handleSelectTab("package-fd")}
                   className={`w-full text-left py-2 px-3 rounded-lg text-xs font-medium transition-all ${
                     activeTab === "package-fd"
-                      ? "text-blue-400 bg-blue-950/40 font-semibold"
-                      : "text-slate-400 hover:text-slate-200 hover:bg-[#0d1830]"
+                      ? "text-amber-300 bg-amber-500/15 font-bold border-l-2 border-amber-400"
+                      : "text-slate-400 hover:text-amber-200 hover:bg-amber-500/5"
                   }`}
                 >
                   • FD Package
@@ -174,41 +228,49 @@ export function MemberSidebar({
           {/* Downline Accordion */}
           <div>
             <button
+              type="button"
               onClick={() => toggleMenu("downline")}
-              className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all text-left ${
+              title={isCollapsed ? "Downline" : undefined}
+              className={`w-full flex items-center ${
+                isCollapsed ? "lg:justify-center lg:px-2" : "justify-between px-3.5"
+              } py-2.5 rounded-xl font-medium text-sm transition-all text-left ${
                 activeTab.startsWith("downline-")
-                  ? "bg-blue-600/20 text-blue-400 border border-blue-500/50 shadow-lg shadow-blue-500/10 font-semibold"
-                  : "text-slate-400 hover:text-slate-200 hover:bg-[#0d1830]"
+                  ? "bg-gradient-to-r from-amber-500/20 via-amber-500/10 to-transparent text-amber-300 border border-amber-500/40 shadow-md shadow-amber-500/10 font-bold"
+                  : "text-slate-400 hover:text-amber-200 hover:bg-amber-500/5"
               }`}
             >
               <div className="flex items-center gap-3.5">
-                <Users className="w-5 h-5 text-cyan-400" />
-                <span>Downline</span>
+                <Users className="w-5 h-5 text-cyan-400 shrink-0" />
+                <span className={isCollapsed ? "lg:hidden" : "inline"}>Downline</span>
               </div>
-              {openMenus.downline || activeTab.startsWith("downline-") ? (
-                <ChevronDown className="w-4 h-4 text-slate-400" />
-              ) : (
-                <ChevronRight className="w-4 h-4 text-slate-400" />
-              )}
+              <span className={isCollapsed ? "lg:hidden" : "inline"}>
+                {openMenus.downline || activeTab.startsWith("downline-") ? (
+                  <ChevronDown className="w-4 h-4 text-slate-400" />
+                ) : (
+                  <ChevronRight className="w-4 h-4 text-slate-400" />
+                )}
+              </span>
             </button>
             {(openMenus.downline || activeTab.startsWith("downline-")) && (
-              <div className="pl-11 pr-2 py-1 space-y-1">
+              <div className={`${isCollapsed ? "lg:hidden" : "block"} pl-11 pr-2 py-1 space-y-1`}>
                 <button
+                  type="button"
                   onClick={() => handleSelectTab("downline-direct")}
                   className={`w-full text-left py-2 px-3 rounded-lg text-xs font-medium transition-all ${
                     activeTab === "downline-direct"
-                      ? "text-blue-400 bg-blue-950/40 font-semibold"
-                      : "text-slate-400 hover:text-slate-200 hover:bg-[#0d1830]"
+                      ? "text-amber-300 bg-amber-500/15 font-bold border-l-2 border-amber-400"
+                      : "text-slate-400 hover:text-amber-200 hover:bg-amber-500/5"
                   }`}
                 >
                   • Direct Team
                 </button>
                 <button
+                  type="button"
                   onClick={() => handleSelectTab("downline-team")}
                   className={`w-full text-left py-2 px-3 rounded-lg text-xs font-medium transition-all ${
                     activeTab === "downline-team"
-                      ? "text-blue-400 bg-blue-950/40 font-semibold"
-                      : "text-slate-400 hover:text-slate-200 hover:bg-[#0d1830]"
+                      ? "text-amber-300 bg-amber-500/15 font-bold border-l-2 border-amber-400"
+                      : "text-slate-400 hover:text-amber-200 hover:bg-amber-500/5"
                   }`}
                 >
                   • Team List
@@ -220,61 +282,71 @@ export function MemberSidebar({
           {/* Income Accordion */}
           <div>
             <button
+              type="button"
               onClick={() => toggleMenu("income")}
-              className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all text-left ${
+              title={isCollapsed ? "Income" : undefined}
+              className={`w-full flex items-center ${
+                isCollapsed ? "lg:justify-center lg:px-2" : "justify-between px-3.5"
+              } py-2.5 rounded-xl font-medium text-sm transition-all text-left ${
                 activeTab.startsWith("income-")
-                  ? "bg-blue-600/20 text-blue-400 border border-blue-500/50 shadow-lg shadow-blue-500/10 font-semibold"
-                  : "text-slate-400 hover:text-slate-200 hover:bg-[#0d1830]"
+                  ? "bg-gradient-to-r from-amber-500/20 via-amber-500/10 to-transparent text-amber-300 border border-amber-500/40 shadow-md shadow-amber-500/10 font-bold"
+                  : "text-slate-400 hover:text-amber-200 hover:bg-amber-500/5"
               }`}
             >
               <div className="flex items-center gap-3.5">
-                <Banknote className="w-5 h-5 text-emerald-400" />
-                <span>Income</span>
+                <Banknote className="w-5 h-5 text-emerald-400 shrink-0" />
+                <span className={isCollapsed ? "lg:hidden" : "inline"}>Income</span>
               </div>
-              {openMenus.income || activeTab.startsWith("income-") ? (
-                <ChevronDown className="w-4 h-4 text-slate-400" />
-              ) : (
-                <ChevronRight className="w-4 h-4 text-slate-400" />
-              )}
+              <span className={isCollapsed ? "lg:hidden" : "inline"}>
+                {openMenus.income || activeTab.startsWith("income-") ? (
+                  <ChevronDown className="w-4 h-4 text-slate-400" />
+                ) : (
+                  <ChevronRight className="w-4 h-4 text-slate-400" />
+                )}
+              </span>
             </button>
             {(openMenus.income || activeTab.startsWith("income-")) && (
-              <div className="pl-11 pr-2 py-1 space-y-1">
+              <div className={`${isCollapsed ? "lg:hidden" : "block"} pl-11 pr-2 py-1 space-y-1`}>
                 <button
+                  type="button"
                   onClick={() => handleSelectTab("income-roi")}
                   className={`w-full text-left py-2 px-3 rounded-lg text-xs font-medium transition-all ${
                     activeTab === "income-roi"
-                      ? "text-blue-400 bg-blue-950/40 font-semibold"
-                      : "text-slate-400 hover:text-slate-200 hover:bg-[#0d1830]"
+                      ? "text-amber-300 bg-amber-500/15 font-bold border-l-2 border-amber-400"
+                      : "text-slate-400 hover:text-amber-200 hover:bg-amber-500/5"
                   }`}
                 >
                   • Daily ROI Income
                 </button>
                 <button
+                  type="button"
                   onClick={() => handleSelectTab("income-fd")}
                   className={`w-full text-left py-2 px-3 rounded-lg text-xs font-medium transition-all ${
                     activeTab === "income-fd"
-                      ? "text-blue-400 bg-blue-950/40 font-semibold"
-                      : "text-slate-400 hover:text-slate-200 hover:bg-[#0d1830]"
+                      ? "text-amber-300 bg-amber-500/15 font-bold border-l-2 border-amber-400"
+                      : "text-slate-400 hover:text-amber-200 hover:bg-amber-500/5"
                   }`}
                 >
                   • FD ROI Income
                 </button>
                 <button
+                  type="button"
                   onClick={() => handleSelectTab("income-referral")}
                   className={`w-full text-left py-2 px-3 rounded-lg text-xs font-medium transition-all ${
                     activeTab === "income-referral"
-                      ? "text-blue-400 bg-blue-950/40 font-semibold"
-                      : "text-slate-400 hover:text-slate-200 hover:bg-[#0d1830]"
+                      ? "text-amber-300 bg-amber-500/15 font-bold border-l-2 border-amber-400"
+                      : "text-slate-400 hover:text-amber-200 hover:bg-amber-500/5"
                   }`}
                 >
                   • Direct Referral Income
                 </button>
                 <button
+                  type="button"
                   onClick={() => handleSelectTab("income-level")}
                   className={`w-full text-left py-2 px-3 rounded-lg text-xs font-medium transition-all ${
                     activeTab === "income-level"
-                      ? "text-blue-400 bg-blue-950/40 font-semibold"
-                      : "text-slate-400 hover:text-slate-200 hover:bg-[#0d1830]"
+                      ? "text-amber-300 bg-amber-500/15 font-bold border-l-2 border-amber-400"
+                      : "text-slate-400 hover:text-amber-200 hover:bg-amber-500/5"
                   }`}
                 >
                   • Level ROI Income
@@ -286,61 +358,71 @@ export function MemberSidebar({
           {/* Transactional Accordion */}
           <div>
             <button
+              type="button"
               onClick={() => toggleMenu("transactional")}
-              className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all text-left ${
+              title={isCollapsed ? "Transactional" : undefined}
+              className={`w-full flex items-center ${
+                isCollapsed ? "lg:justify-center lg:px-2" : "justify-between px-3.5"
+              } py-2.5 rounded-xl font-medium text-sm transition-all text-left ${
                 activeTab.startsWith("tx-")
-                  ? "bg-blue-600/20 text-blue-400 border border-blue-500/50 shadow-lg shadow-blue-500/10 font-semibold"
-                  : "text-slate-400 hover:text-slate-200 hover:bg-[#0d1830]"
+                  ? "bg-gradient-to-r from-amber-500/20 via-amber-500/10 to-transparent text-amber-300 border border-amber-500/40 shadow-md shadow-amber-500/10 font-bold"
+                  : "text-slate-400 hover:text-amber-200 hover:bg-amber-500/5"
               }`}
             >
               <div className="flex items-center gap-3.5">
-                <Repeat className="w-5 h-5 text-blue-400" />
-                <span>Transactional</span>
+                <Repeat className="w-5 h-5 text-amber-400 shrink-0" />
+                <span className={isCollapsed ? "lg:hidden" : "inline"}>Transactional</span>
               </div>
-              {openMenus.transactional || activeTab.startsWith("tx-") ? (
-                <ChevronDown className="w-4 h-4 text-slate-400" />
-              ) : (
-                <ChevronRight className="w-4 h-4 text-slate-400" />
-              )}
+              <span className={isCollapsed ? "lg:hidden" : "inline"}>
+                {openMenus.transactional || activeTab.startsWith("tx-") ? (
+                  <ChevronDown className="w-4 h-4 text-slate-400" />
+                ) : (
+                  <ChevronRight className="w-4 h-4 text-slate-400" />
+                )}
+              </span>
             </button>
             {(openMenus.transactional || activeTab.startsWith("tx-")) && (
-              <div className="pl-11 pr-2 py-1 space-y-1">
+              <div className={`${isCollapsed ? "lg:hidden" : "block"} pl-11 pr-2 py-1 space-y-1`}>
                 <button
+                  type="button"
                   onClick={() => handleSelectTab("tx-transfer")}
                   className={`w-full text-left py-2 px-3 rounded-lg text-xs font-medium transition-all ${
                     activeTab === "tx-transfer"
-                      ? "text-blue-400 bg-blue-950/40 font-semibold"
-                      : "text-slate-400 hover:text-slate-200 hover:bg-[#0d1830]"
+                      ? "text-amber-300 bg-amber-500/15 font-bold border-l-2 border-amber-400"
+                      : "text-slate-400 hover:text-amber-200 hover:bg-amber-500/5"
                   }`}
                 >
                   • Fund Transfer (P2P)
                 </button>
                 <button
+                  type="button"
                   onClick={() => handleSelectTab("tx-swipe")}
                   className={`w-full text-left py-2 px-3 rounded-lg text-xs font-medium transition-all ${
                     activeTab === "tx-swipe"
-                      ? "text-blue-400 bg-blue-950/40 font-semibold"
-                      : "text-slate-400 hover:text-slate-200 hover:bg-[#0d1830]"
+                      ? "text-amber-300 bg-amber-500/15 font-bold border-l-2 border-amber-400"
+                      : "text-slate-400 hover:text-amber-200 hover:bg-amber-500/5"
                   }`}
                 >
                   • Swipe (0% Fee)
                 </button>
                 <button
+                  type="button"
                   onClick={() => handleSelectTab("tx-withdraw")}
                   className={`w-full text-left py-2 px-3 rounded-lg text-xs font-medium transition-all ${
                     activeTab === "tx-withdraw"
-                      ? "text-blue-400 bg-blue-950/40 font-semibold"
-                      : "text-slate-400 hover:text-slate-200 hover:bg-[#0d1830]"
+                      ? "text-amber-300 bg-amber-500/15 font-bold border-l-2 border-amber-400"
+                      : "text-slate-400 hover:text-amber-200 hover:bg-amber-500/5"
                   }`}
                 >
                   • Withdrawal
                 </button>
                 <button
+                  type="button"
                   onClick={() => handleSelectTab("tx-withdraw-report")}
                   className={`w-full text-left py-2 px-3 rounded-lg text-xs font-medium transition-all ${
                     activeTab === "tx-withdraw-report"
-                      ? "text-blue-400 bg-blue-950/40 font-semibold"
-                      : "text-slate-400 hover:text-slate-200 hover:bg-[#0d1830]"
+                      ? "text-amber-300 bg-amber-500/15 font-bold border-l-2 border-amber-400"
+                      : "text-slate-400 hover:text-amber-200 hover:bg-amber-500/5"
                   }`}
                 >
                   • Withdrawal Report
@@ -352,41 +434,49 @@ export function MemberSidebar({
           {/* Reports Accordion */}
           <div>
             <button
+              type="button"
               onClick={() => toggleMenu("reports")}
-              className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all text-left ${
+              title={isCollapsed ? "Reports" : undefined}
+              className={`w-full flex items-center ${
+                isCollapsed ? "lg:justify-center lg:px-2" : "justify-between px-3.5"
+              } py-2.5 rounded-xl font-medium text-sm transition-all text-left ${
                 activeTab.startsWith("report-")
-                  ? "bg-blue-600/20 text-blue-400 border border-blue-500/50 shadow-lg shadow-blue-500/10 font-semibold"
-                  : "text-slate-400 hover:text-slate-200 hover:bg-[#0d1830]"
+                  ? "bg-gradient-to-r from-amber-500/20 via-amber-500/10 to-transparent text-amber-300 border border-amber-500/40 shadow-md shadow-amber-500/10 font-bold"
+                  : "text-slate-400 hover:text-amber-200 hover:bg-amber-500/5"
               }`}
             >
               <div className="flex items-center gap-3.5">
-                <BarChart3 className="w-5 h-5 text-amber-400" />
-                <span>Reports</span>
+                <BarChart3 className="w-5 h-5 text-amber-400 shrink-0" />
+                <span className={isCollapsed ? "lg:hidden" : "inline"}>Reports</span>
               </div>
-              {openMenus.reports || activeTab.startsWith("report-") ? (
-                <ChevronDown className="w-4 h-4 text-slate-400" />
-              ) : (
-                <ChevronRight className="w-4 h-4 text-slate-400" />
-              )}
+              <span className={isCollapsed ? "lg:hidden" : "inline"}>
+                {openMenus.reports || activeTab.startsWith("report-") ? (
+                  <ChevronDown className="w-4 h-4 text-slate-400" />
+                ) : (
+                  <ChevronRight className="w-4 h-4 text-slate-400" />
+                )}
+              </span>
             </button>
             {(openMenus.reports || activeTab.startsWith("report-")) && (
-              <div className="pl-11 pr-2 py-1 space-y-1">
+              <div className={`${isCollapsed ? "lg:hidden" : "block"} pl-11 pr-2 py-1 space-y-1`}>
                 <button
+                  type="button"
                   onClick={() => handleSelectTab("report-statement")}
                   className={`w-full text-left py-2 px-3 rounded-lg text-xs font-medium transition-all ${
                     activeTab === "report-statement"
-                      ? "text-blue-400 bg-blue-950/40 font-semibold"
-                      : "text-slate-400 hover:text-slate-200 hover:bg-[#0d1830]"
+                      ? "text-amber-300 bg-amber-500/15 font-bold border-l-2 border-amber-400"
+                      : "text-slate-400 hover:text-amber-200 hover:bg-amber-500/5"
                   }`}
                 >
                   • Account Statement
                 </button>
                 <button
+                  type="button"
                   onClick={() => handleSelectTab("report-packages")}
                   className={`w-full text-left py-2 px-3 rounded-lg text-xs font-medium transition-all ${
                     activeTab === "report-packages"
-                      ? "text-blue-400 bg-blue-950/40 font-semibold"
-                      : "text-slate-400 hover:text-slate-200 hover:bg-[#0d1830]"
+                      ? "text-amber-300 bg-amber-500/15 font-bold border-l-2 border-amber-400"
+                      : "text-slate-400 hover:text-amber-200 hover:bg-amber-500/5"
                   }`}
                 >
                   • Package History
@@ -397,37 +487,48 @@ export function MemberSidebar({
 
           {/* Support Ticket */}
           <button
+            type="button"
             onClick={() => handleSelectTab("support")}
-            className={`w-full flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all text-left ${
+            title={isCollapsed ? "Support Ticket" : undefined}
+            className={`w-full flex items-center ${
+              isCollapsed ? "lg:justify-center lg:px-2" : "gap-3.5 px-3.5"
+            } py-2.5 rounded-xl font-medium text-sm transition-all text-left ${
               activeTab === "support"
-                ? "bg-blue-600/20 text-blue-400 border border-blue-500/50 shadow-lg shadow-blue-500/10 font-semibold"
-                : "text-slate-400 hover:text-slate-200 hover:bg-[#0d1830]"
+                ? "bg-gradient-to-r from-amber-500/20 via-amber-500/10 to-transparent text-amber-300 border border-amber-500/40 shadow-md shadow-amber-500/10 font-bold"
+                : "text-slate-400 hover:text-amber-200 hover:bg-amber-500/5"
             }`}
           >
-            <Headphones className="w-5 h-5 text-cyan-400" />
-            <span>Support Ticket</span>
+            <Headphones className="w-5 h-5 text-cyan-400 shrink-0" />
+            <span className={isCollapsed ? "lg:hidden" : "inline"}>Support Ticket</span>
           </button>
 
           {/* Admin Panel Link */}
           {userRole === "SUPER_ADMIN" && (
             <Link
               href="/admin"
-              className="w-full flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl font-medium text-sm text-red-400 hover:bg-red-950/30 transition-all border border-red-500/20"
+              title={isCollapsed ? "Admin Console" : undefined}
+              className={`w-full flex items-center ${
+                isCollapsed ? "lg:justify-center lg:px-2" : "gap-3.5 px-3.5"
+              } py-2.5 rounded-xl font-bold text-xs text-amber-400 hover:bg-amber-400/10 transition-all border border-amber-500/30`}
             >
-              <ShieldAlert className="w-5 h-5 text-red-500" />
-              <span>Admin Panel</span>
+              <ShieldAlert className="w-5 h-5 text-amber-400 shrink-0" />
+              <span className={isCollapsed ? "lg:hidden" : "inline"}>Admin Console</span>
             </Link>
           )}
         </div>
 
         {/* Logout at Bottom */}
-        <div className="p-3 border-t border-[#152238] bg-[#070e20]">
+        <div className="p-3 border-t border-amber-500/20 bg-[#0c1322] shrink-0">
           <button
+            type="button"
             onClick={handleLogout}
-            className="w-full flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl font-medium text-sm text-red-400 hover:text-red-300 hover:bg-red-950/30 transition-all"
+            title={isCollapsed ? "Logout" : undefined}
+            className={`w-full flex items-center ${
+              isCollapsed ? "lg:justify-center lg:px-2" : "justify-center gap-2 px-3"
+            } py-2.5 rounded-xl font-bold text-xs text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 border border-rose-500/20 hover:border-rose-500/40 transition-all`}
           >
-            <LogOut className="w-5 h-5 text-red-500" />
-            <span>Logout</span>
+            <LogOut className="w-4 h-4 shrink-0" />
+            <span className={isCollapsed ? "lg:hidden" : "inline"}>Logout</span>
           </button>
         </div>
       </aside>

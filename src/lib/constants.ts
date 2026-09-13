@@ -7,30 +7,26 @@ export const APP_CONFIG = {
   headquarters: "Office 3802, Latifa Tower, Sheikh Zayed Road, Financial District, Dubai, UAE",
   depositAddress: "0x39a0B29A5c66e927598Fa4eCE9bFf84a44bA8812", // Company USDT BEP-20
   depositNetwork: "USDT BEP-20 (Binance Smart Chain)",
+  signupBonusUsdt: 0.50, // Dark PDF Slide 21: $0.50 Signup Bonus
+  signupBonusInr: 50,
   usdtToInrRate: 110,
-  signupBonusUsdt: 0.50, // Slide 21: $0.50 Signup Bonus + $0.50/12-Level Bonus
-  signupBonusInr: 55,
-  directReferralPercent: 10.0, // Slide 1, 10, 15: 10% INSTANT DIRECT
-  minWithdrawalUsdt: 2, // Slide 21: Min $2 USDT
-  maxWithdrawalUsdt: 5000, // Slide 21: Max $5,000 USDT
-  withdrawalAdminFeePercent: 10.0, // Slide 21: Flat 10% Admin Charge
-  minWithdrawalInr: 220,
-  maxWithdrawalInr: 550000,
+  directReferralPercent: 10.0, // Dark PDF Slide 1, 10, 15: 10% INSTANT DIRECT
+  minWithdrawalUsdt: 2, // Dark PDF Slide 21: Min $2 USDT
+  maxWithdrawalUsdt: 5000, // Dark PDF Slide 21: Max $5,000 USDT
+  withdrawalAdminFeePercent: 10.0, // Dark PDF Slide 21: Flat 10% Admin Charge
   withdrawalWindow: {
     startHour: 10, // 10:00 AM IST
     endHour: 14, // 02:00 PM IST
     timezone: "Asia/Kolkata",
   },
-  // Slide 5-9: $5 to $5,000 USDT Packages
+  // Dark PDF Slide 5-9: $5 to $5,000 USDT Packages (28 Days)
   basicPackagesUsd: [5, 10, 20, 50, 100, 500, 1000, 2000, 5000],
   basicPlan: {
     minUsdt: 5,
     maxUsdt: 5000,
-    minInr: 550,
-    maxInr: 550000,
-    dailyRoiRate: 5.0, // 5% daily (Slide 1, 5, 11)
-    tenureDays: 28, // 28 Days Fixed Contract (Slide 1, 4, 5, 9, 11, 21)
-    netProfitPercent: 40.0, // 40% Net Profit (Slide 6, 7, 8, 9, 11)
+    dailyRoiRate: 5.0, // 5% daily (Dark PDF Slide 1, 5, 11)
+    tenureDays: 28, // 28 Days Fixed Contract (Dark PDF Slide 1, 4, 5, 9, 11, 21)
+    netProfitPercent: 40.0, // 40% Net Profit (Dark PDF Slide 6, 7, 8, 9, 11)
     principalPercent: 100.0,
     totalReturnPercent: 140.0, // 140% Gross Total Payout (28 * 5%)
   },
@@ -131,9 +127,9 @@ export function isWithdrawalWindowOpen(): boolean {
 }
 
 export function inrToUsdt(inrAmount: number): number {
-  return Number((inrAmount / APP_CONFIG.usdtToInrRate).toFixed(4));
+  return Number(Number(inrAmount).toFixed(4));
 }
 
 export function usdtToInr(usdtAmount: number): number {
-  return Number((usdtAmount * APP_CONFIG.usdtToInrRate).toFixed(2));
+  return Number(Number(usdtAmount).toFixed(2));
 }

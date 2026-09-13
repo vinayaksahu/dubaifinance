@@ -18,8 +18,17 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<string>("dashboard");
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [cronLoading, setCronLoading] = useState(false);
   const [cronMsg, setCronMsg] = useState<string | null>(null);
+
+  const handleToggleSidebar = () => {
+    if (typeof window !== "undefined" && window.innerWidth < 1024) {
+      setSidebarOpen((prev) => !prev);
+    } else {
+      setSidebarCollapsed((prev) => !prev);
+    }
+  };
 
   const loadData = async () => {
     try {
@@ -73,10 +82,10 @@ export default function AdminPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#050b18] flex items-center justify-center">
+      <div className="min-h-screen bg-[#080c14] flex items-center justify-center">
         <div className="flex flex-col items-center gap-3">
-          <div className="w-12 h-12 rounded-full border-4 border-purple-500 border-t-transparent animate-spin" />
-          <p className="text-purple-400 font-extrabold tracking-widest text-sm uppercase">
+          <div className="w-12 h-12 rounded-full border-4 border-amber-500 border-t-transparent animate-spin" />
+          <p className="text-amber-400 font-extrabold tracking-widest text-sm uppercase">
             Loading Admin Console...
           </p>
         </div>
@@ -87,21 +96,28 @@ export default function AdminPage() {
   if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-[#050b18] text-slate-100 flex flex-col antialiased">
+    <div className="min-h-screen bg-[#080c14] text-slate-100 flex flex-col antialiased">
       {/* Sidebar */}
       <AdminSidebar
         activeTab={activeTab}
         setActiveTab={setActiveTab}
         isOpen={sidebarOpen}
         setIsOpen={setSidebarOpen}
+        isCollapsed={sidebarCollapsed}
+        setIsCollapsed={setSidebarCollapsed}
+        pendingDepositsCount={stats?.pendingDeposits || 0}
+        pendingWithdrawalsCount={stats?.pendingWithdrawals || 0}
       />
 
       {/* Main Content Area */}
-      <div className="lg:pl-64 flex flex-col flex-1 min-h-screen">
+      <div className={`flex flex-col flex-1 min-h-screen transition-all duration-300 ease-in-out ${
+        sidebarCollapsed ? "lg:pl-20" : "lg:pl-64"
+      }`}>
         {/* Top Navbar */}
         <AdminTopNavbar
           user={user}
-          onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
+          onToggleSidebar={handleToggleSidebar}
+          isCollapsed={sidebarCollapsed}
         />
 
         {/* Dynamic View Body */}
@@ -112,6 +128,7 @@ export default function AdminPage() {
               onTriggerCron={triggerCron}
               cronLoading={cronLoading}
               cronMsg={cronMsg}
+              setActiveTab={setActiveTab}
             />
           )}
 
@@ -133,6 +150,7 @@ export default function AdminPage() {
               onTriggerCron={triggerCron}
               cronLoading={cronLoading}
               cronMsg={cronMsg}
+              setActiveTab={setActiveTab}
             />
           )}
 

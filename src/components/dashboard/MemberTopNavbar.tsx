@@ -1,17 +1,18 @@
 "use client";
 
 import React, { useState } from "react";
-import { Menu, Moon, Sun, ChevronDown, User, Key, LogOut } from "lucide-react";
+import Image from "next/image";
+import { ChevronDown, LogOut, PanelLeftClose, PanelLeft, ShieldCheck } from "lucide-react";
 import { useRouter } from "next/navigation";
-
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 
 interface MemberTopNavbarProps {
   user: any;
   onToggleSidebar: () => void;
+  isCollapsed?: boolean;
 }
 
-export function MemberTopNavbar({ user, onToggleSidebar }: MemberTopNavbarProps) {
+export function MemberTopNavbar({ user, onToggleSidebar, isCollapsed = false }: MemberTopNavbarProps) {
   const router = useRouter();
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
@@ -26,15 +27,21 @@ export function MemberTopNavbar({ user, onToggleSidebar }: MemberTopNavbarProps)
   };
 
   return (
-    <header className="h-16 bg-[#070e20] border-b border-[#152238] px-4 sm:px-6 flex items-center justify-between sticky top-0 z-30 shadow-md">
-      {/* Left: Hamburger & Mode Toggle */}
-      <div className="flex items-center gap-3 sm:gap-4">
+    <header className="h-16 bg-[#080c14]/95 backdrop-blur-xl border-b border-amber-500/20 px-4 sm:px-6 flex items-center justify-between sticky top-0 z-30 shadow-md transition-colors duration-200">
+      {/* Left: Sidebar Slide/Collapse Toggle & Theme Toggle */}
+      <div className="flex items-center gap-2 sm:gap-3">
         <button
+          type="button"
           onClick={onToggleSidebar}
-          className="p-2 rounded-xl text-slate-300 hover:text-white hover:bg-[#132042] transition-colors"
-          title="Toggle Navigation"
+          className="p-2 rounded-xl border border-amber-500/30 text-amber-400 hover:text-amber-300 hover:bg-amber-400/10 transition-colors shrink-0"
+          title={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
+          aria-label="Toggle Side Panel"
         >
-          <Menu className="w-6 h-6" />
+          {isCollapsed ? (
+            <PanelLeft className="w-5 h-5 text-amber-400" />
+          ) : (
+            <PanelLeftClose className="w-5 h-5 text-amber-400" />
+          )}
         </button>
 
         <ThemeToggle variant="compact" />
@@ -44,14 +51,19 @@ export function MemberTopNavbar({ user, onToggleSidebar }: MemberTopNavbarProps)
       <div className="relative">
         <button
           onClick={() => setDropdownOpen(!dropdownOpen)}
-          className="flex items-center gap-3 px-3 py-1.5 rounded-full bg-[#0d1933] border border-[#1d3058] hover:border-blue-500/50 transition-all text-left"
+          className="flex items-center gap-2.5 px-3 py-1.5 rounded-xl bg-[#0c1322] border border-amber-500/25 hover:border-amber-400 transition-all text-left shadow-sm"
         >
-          {/* Circular Red Avatar Emblem */}
-          <div className="w-8 h-8 rounded-full border-2 border-red-500 bg-[#160608] flex items-center justify-center p-0.5 shadow-md shadow-red-500/20">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
-              <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-              <polyline points="9 22 9 12 15 12 15 22" />
-            </svg>
+          {/* Dubai Finance Gold Emblem */}
+          <div className="w-7 h-7 rounded-lg overflow-hidden bg-gradient-to-br from-amber-400 to-amber-600 p-0.5 shadow-sm shadow-amber-500/20 shrink-0">
+            <div className="w-full h-full rounded-[6px] bg-slate-950 flex items-center justify-center overflow-hidden">
+              <Image
+                src="/dubaiLogo.png"
+                alt="Dubai Finance Logo"
+                width={20}
+                height={20}
+                className="object-contain"
+              />
+            </div>
           </div>
 
           <div className="hidden sm:flex flex-col">

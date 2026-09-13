@@ -12,9 +12,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { amountInInr, transactionPin } = await req.json();
+    const { amountInInr, amountInUsdt, amount, transactionPin } = await req.json();
+    const rawAmount = amountInUsdt ?? amount ?? amountInInr;
 
-    if (!amountInInr || !transactionPin) {
+    if (!rawAmount || !transactionPin) {
       return NextResponse.json({ error: "Amount and 6-digit PIN are required." }, { status: 400 });
     }
 
@@ -32,9 +33,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Invalid 6-digit Transaction PIN." }, { status: 401 });
     }
 
-    const amountInrDec = new Decimal(amountInInr.toString());
-    const amountUsdt = inrToUsdt(amountInrDec.toNumber());
-    const amountUsdtDec = new Decimal(amountUsdt.toString());
+    let parsedUsdt = Number(rawAmount);
+    if (!amountInUsdt && !amount && Number(amountInInr) > 5000) {
+      parsedUsdt = Number(amountInInr) / 110;
+    }
+    const amountUsdtDec = new Decimal(parsedUsdt.toString());
 
     const incomeBal = new Decimal(user.incomeBalance.toString());
     if (incomeBal.lessThan(amountUsdtDec)) {

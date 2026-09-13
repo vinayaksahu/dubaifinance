@@ -25,9 +25,9 @@ export function formatUsdt(amount: number | string | { toString(): string }): st
 }
 
 export function inrToUsdt(inrAmount: number): number {
-  return Number((inrAmount / APP_CONFIG.usdtToInrRate).toFixed(4));
+  return Number(Number(inrAmount).toFixed(4));
 }
 
 export function usdtToInr(usdtAmount: number): number {
-  return Number((usdtAmount * APP_CONFIG.usdtToInrRate).toFixed(2));
+  return Number(Number(usdtAmount).toFixed(2));
 }

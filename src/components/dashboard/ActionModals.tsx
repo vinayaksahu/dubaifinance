@@ -27,11 +27,11 @@ export function ActionModals({ user, onRefresh }: { user: any; onRefresh: () => 
   const [depositAmount, setDepositAmount] = useState("");
   const [depositHash, setDepositHash] = useState("");
 
-  const [basicAmount, setBasicAmount] = useState("1000");
+  const [basicAmount, setBasicAmount] = useState("50");
   const [targetId, setTargetId] = useState(user.customId);
   const [pin, setPin] = useState("");
 
-  const [fdTier, setFdTier] = useState("10000");
+  const [fdTier, setFdTier] = useState("50");
   const [fdDays, setFdDays] = useState<180 | 210>(180);
 
   const [p2pRecipient, setP2pRecipient] = useState("");
@@ -39,7 +39,7 @@ export function ActionModals({ user, onRefresh }: { user: any; onRefresh: () => 
 
   const [swipeAmount, setSwipeAmount] = useState("");
 
-  const [withdrawAmount, setWithdrawAmount] = useState("500");
+  const [withdrawAmount, setWithdrawAmount] = useState("50");
   const [withdrawAddress, setWithdrawAddress] = useState(user.usdtAddress || "");
 
   const closeModal = () => {
@@ -83,7 +83,8 @@ export function ActionModals({ user, onRefresh }: { user: any; onRefresh: () => 
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           packageType: type,
-          amountInInr: amount,
+          amountInUsdt: amount,
+          amount: amount,
           targetCustomId: targetId,
           transactionPin: pin,
           fdTenureDays: fdDays,
@@ -112,7 +113,8 @@ export function ActionModals({ user, onRefresh }: { user: any; onRefresh: () => 
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           recipientCustomId: p2pRecipient,
-          amountInInr: p2pAmount,
+          amountInUsdt: p2pAmount,
+          amount: p2pAmount,
           transactionPin: pin,
         }),
       });
@@ -138,7 +140,11 @@ export function ActionModals({ user, onRefresh }: { user: any; onRefresh: () => 
       const res = await fetch("/api/wallet/swipe", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ amountInInr: swipeAmount, transactionPin: pin }),
+        body: JSON.stringify({
+          amountInUsdt: swipeAmount,
+          amount: swipeAmount,
+          transactionPin: pin,
+        }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Swipe failed");
@@ -163,7 +169,8 @@ export function ActionModals({ user, onRefresh }: { user: any; onRefresh: () => 
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          amountInInr: withdrawAmount,
+          amountInUsdt: withdrawAmount,
+          amount: withdrawAmount,
           toAddress: withdrawAddress,
           transactionPin: pin,
         }),
@@ -185,9 +192,7 @@ export function ActionModals({ user, onRefresh }: { user: any; onRefresh: () => 
   const endHour = cfg.WITHDRAWAL_END_HOUR !== undefined ? Number(cfg.WITHDRAWAL_END_HOUR) : APP_CONFIG.withdrawalWindow.endHour;
   const minWithdrawUsdt = cfg.MIN_WITHDRAWAL_USDT !== undefined ? Number(cfg.MIN_WITHDRAWAL_USDT) : APP_CONFIG.minWithdrawalUsdt;
   const maxWithdrawUsdt = cfg.MAX_WITHDRAWAL_USDT !== undefined ? Number(cfg.MAX_WITHDRAWAL_USDT) : APP_CONFIG.maxWithdrawalUsdt;
-  const usdtToInrRate = cfg.USDT_TO_INR_RATE !== undefined ? Number(cfg.USDT_TO_INR_RATE) : APP_CONFIG.usdtToInrRate;
-  const minWithdrawInr = minWithdrawUsdt * usdtToInrRate;
-  const maxWithdrawInr = maxWithdrawUsdt * usdtToInrRate;
+  const adminFeePercent = cfg.WITHDRAWAL_ADMIN_FEE_PERCENT !== undefined ? Number(cfg.WITHDRAWAL_ADMIN_FEE_PERCENT) : APP_CONFIG.withdrawalAdminFeePercent;
 
   const now = new Date();
   const utc = now.getTime() + now.getTimezoneOffset() * 60000;

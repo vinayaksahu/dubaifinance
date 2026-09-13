@@ -8,11 +8,6 @@ export const DEFAULT_SYSTEM_CONFIGS: Record<string, { value: string; description
     description: "Official USDT BEP-20 receiving wallet address for recharges",
     category: "wallet",
   },
-  USDT_TO_INR_RATE: {
-    value: String(APP_CONFIG.usdtToInrRate),
-    description: "Fixed exchange rate peg: 1 USDT in INR",
-    category: "wallet",
-  },
 
   // 2. Basic Saving Package (Dark PDF Slide 5-9 & 11)
   BASIC_PLAN_DAILY_ROI: {
@@ -164,10 +159,10 @@ export const DEFAULT_SYSTEM_CONFIGS: Record<string, { value: string; description
     category: "withdrawal",
   },
 
-  // 7. Wallet Transfers & Bonus (PDF Page 3 & 10)
-  SIGNUP_BONUS_INR: {
-    value: String(APP_CONFIG.signupBonusInr),
-    description: "Welcome bonus credited to new member upon registration in INR",
+  // 7. Wallet Transfers & Bonus (Dark PDF Slide 20 & 21)
+  SIGNUP_BONUS_USDT: {
+    value: "0.50",
+    description: "Welcome bonus credited upon registration in USDT ($0.50 as per Dark PDF Slide 21)",
     category: "transfers",
   },
   MIN_P2P_TRANSFER_USDT: {

@@ -1,6 +1,7 @@
-import { formatInr } from "@/lib/utils";
-
 export function IncomeBreakdown({ user }: { user: any }) {
+  const directBiz = Number(user.directBusiness || 0);
+  const fdLocked = Number(user.fdLockedBalance || 0);
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
       {/* Basic Income Breakdown */}
@@ -10,35 +11,35 @@ export function IncomeBreakdown({ user }: { user: any }) {
             Basic Income Breakdown
           </h4>
           <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 text-[10px] font-bold">
-            Daily 5% ROI
+            Daily 5% ROI (28 Days)
           </span>
         </div>
 
         <div className="space-y-3 text-xs">
           <div className="flex justify-between py-1.5 border-b border-slate-800/60">
-            <span className="text-slate-400">Joining Bonus:</span>
-            <span className="font-bold text-white">₹50.00</span>
+            <span className="text-slate-400">Welcome Bonus:</span>
+            <span className="font-bold text-white">$0.50 USDT</span>
           </div>
 
           <div className="flex justify-between py-1.5 border-b border-slate-800/60">
             <span className="text-slate-400">Direct Referral Income (10%):</span>
-            <span className="font-bold text-amber-300">₹0.00</span>
+            <span className="font-bold text-amber-300">$0.00 USDT</span>
           </div>
 
           <div className="flex justify-between py-1.5 border-b border-slate-800/60">
             <span className="text-slate-400">Today Basic ROI:</span>
-            <span className="font-bold text-emerald-400">₹0.00</span>
+            <span className="font-bold text-emerald-400">$0.00 USDT</span>
           </div>
 
           <div className="flex justify-between py-1.5 border-b border-slate-800/60">
             <span className="text-slate-400">Today Basic Level Income:</span>
-            <span className="font-bold text-cyan-400">₹0.00</span>
+            <span className="font-bold text-cyan-400">$0.00 USDT</span>
           </div>
 
           <div className="flex justify-between py-1.5">
             <span className="text-slate-400">Direct Business Volume:</span>
             <span className="font-bold text-white">
-              {formatInr(Number(user.directBusiness))}
+              ${directBiz.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USDT
             </span>
           </div>
         </div>
@@ -58,24 +59,24 @@ export function IncomeBreakdown({ user }: { user: any }) {
         <div className="space-y-3 text-xs">
           <div className="flex justify-between py-1.5 border-b border-slate-800/60">
             <span className="text-slate-400">Today FD ROI Income:</span>
-            <span className="font-bold text-cyan-300">₹0.00</span>
+            <span className="font-bold text-cyan-300">$0.00 USDT</span>
           </div>
 
           <div className="flex justify-between py-1.5 border-b border-slate-800/60">
             <span className="text-slate-400">Today FD Level Income:</span>
-            <span className="font-bold text-purple-400">₹0.00</span>
+            <span className="font-bold text-purple-400">$0.00 USDT</span>
           </div>
 
           <div className="flex justify-between py-1.5 border-b border-slate-800/60">
             <span className="text-slate-400">Total FD Accumulated:</span>
             <span className="font-bold text-white">
-              {formatInr(Number(user.fdLockedBalance) * 110)}
+              ${fdLocked.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USDT
             </span>
           </div>
 
           <div className="flex justify-between py-1.5 border-b border-slate-800/60">
             <span className="text-slate-400">FD Capital Released to Balance:</span>
-            <span className="font-bold text-emerald-400">₹0.00</span>
+            <span className="font-bold text-emerald-400">$0.00 USDT</span>
           </div>
 
           <div className="flex justify-between py-1.5">

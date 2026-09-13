@@ -12,9 +12,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { recipientCustomId, amountInInr, transactionPin } = await req.json();
+    const { recipientCustomId, amountInInr, amountInUsdt, amount, transactionPin } = await req.json();
+    const rawAmount = amountInUsdt ?? amount ?? amountInInr;
 
-    if (!recipientCustomId || !amountInInr || !transactionPin) {
+    if (!recipientCustomId || !rawAmount || !transactionPin) {
       return NextResponse.json({ error: "Recipient ID, Amount, and PIN are required." }, { status: 400 });
     }
 
@@ -45,9 +46,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: `Recipient with ID ${recipientCustomId} not found.` }, { status: 404 });
     }
 
-    const amountInrDec = new Decimal(amountInInr.toString());
-    const amountUsdt = inrToUsdt(amountInrDec.toNumber());
-    const amountUsdtDec = new Decimal(amountUsdt.toString());
+    let parsedUsdt = Number(rawAmount);
+    if (!amountInUsdt && !amount && Number(amountInInr) > 5000) {
+      parsedUsdt = Number(amountInInr) / 110;
+    }
+    const amountUsdtDec = new Decimal(parsedUsdt.toString());
 
     const senderFund = new Decimal(sender.fundBalance.toString());
     if (senderFund.lessThan(amountUsdtDec)) {

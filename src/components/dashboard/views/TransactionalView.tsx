@@ -42,8 +42,8 @@ export function TransactionalView({ user, mode, onRefresh }: TransactionalViewPr
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           recipientCustomId: p2pTarget.trim(),
-          amountInInr: Number(p2pAmount) * APP_CONFIG.usdtToInrRate,
           amountInUsdt: Number(p2pAmount),
+          amount: Number(p2pAmount),
           transactionPin: p2pPin,
         }),
       });
@@ -70,8 +70,8 @@ export function TransactionalView({ user, mode, onRefresh }: TransactionalViewPr
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          amountInInr: Number(swipeAmount) * APP_CONFIG.usdtToInrRate,
           amountInUsdt: Number(swipeAmount),
+          amount: Number(swipeAmount),
           transactionPin: swipePin,
         }),
       });
@@ -97,8 +97,8 @@ export function TransactionalView({ user, mode, onRefresh }: TransactionalViewPr
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          amountInInr: Number(withdrawAmount) * APP_CONFIG.usdtToInrRate,
           amountInUsdt: Number(withdrawAmount),
+          amount: Number(withdrawAmount),
           toAddress: withdrawAddress.trim(),
           transactionPin: withdrawPin,
         }),

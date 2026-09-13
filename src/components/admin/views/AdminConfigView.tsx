@@ -37,7 +37,7 @@ const CATEGORY_ICONS: Record<string, any> = {
 
 const CATEGORY_NAMES: Record<string, string> = {
   all: "All Configurations",
-  wallet: "Wallet & Rate Peg",
+  wallet: "USDT Wallet Settings",
   withdrawal: "Withdrawal Window & Limits",
   plan: "Basic & FD Staking Plans",
   royalty: "Direct & 12-Level Royalty",
@@ -48,11 +48,10 @@ const CATEGORY_NAMES: Record<string, string> = {
 const FRIENDLY_NAMES: Record<string, string> = {
   // Financial & Wallet
   COMPANY_USDT_ADDRESS: "Company USDT (BEP-20) Receiving Wallet",
-  USDT_TO_INR_RATE: "Fixed Peg Exchange Rate (1 USDT in INR)",
 
   // Basic Saving Plan
   BASIC_PLAN_DAILY_ROI: "Basic Saving Daily ROI (%)",
-  BASIC_PLAN_TENURE_DAYS: "Basic Saving Tenure (Days)",
+  BASIC_PLAN_TENURE_DAYS: "Basic Saving Tenure (28 Days)",
   BASIC_PLAN_MIN_USDT: "Basic Saving Minimum (USDT)",
   BASIC_PLAN_MAX_USDT: "Basic Saving Maximum (USDT)",
 
@@ -84,10 +83,10 @@ const FRIENDLY_NAMES: Record<string, string> = {
   WITHDRAWAL_END_HOUR: "Withdrawal Window End Hour (24h IST)",
   MIN_WITHDRAWAL_USDT: "Minimum Single Withdrawal (USDT)",
   MAX_WITHDRAWAL_USDT: "Maximum Single Withdrawal (USDT)",
-  WITHDRAWAL_FEE_PERCENT: "Withdrawal Deduction Fee (%)",
+  WITHDRAWAL_FEE_PERCENT: "Withdrawal Admin Fee (%)",
 
   // Transfers & Bonus
-  SIGNUP_BONUS_INR: "Welcome Signup Bonus (INR)",
+  SIGNUP_BONUS_USDT: "Welcome Signup Bonus (USDT)",
   MIN_P2P_TRANSFER_USDT: "Minimum P2P Transfer (USDT)",
   P2P_FEE_PERCENT: "P2P Transfer Fee (%)",
   SWIPE_FEE_PERCENT: "Income-to-Fund Swipe Fee (%)",

@@ -1,11 +1,11 @@
-import { formatInr, formatUsdt, usdtToInr } from "@/lib/utils";
+import { formatUsdt } from "@/lib/utils";
 import { Wallet, Coins, ArrowDownLeft, ArrowUpRight } from "lucide-react";
 
 export function BalanceCards({ user }: { user: any }) {
-  const fundInr = usdtToInr(Number(user.fundBalance));
-  const incomeInr = usdtToInr(Number(user.incomeBalance));
-  const totalWithdrawnInr = usdtToInr(Number(user.totalWithdrawn));
-  const fdLockedInr = usdtToInr(Number(user.fdLockedBalance));
+  const fundBal = Number(user.fundBalance || 0);
+  const incomeBal = Number(user.incomeBalance || 0);
+  const totalWithdrawn = Number(user.totalWithdrawn || 0);
+  const fdLocked = Number(user.fdLockedBalance || 0);
 
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
@@ -16,24 +16,24 @@ export function BalanceCards({ user }: { user: any }) {
           <Wallet className="w-4 h-4 text-amber-400" />
         </div>
         <div className="text-xl sm:text-2xl font-black text-amber-300">
-          {formatInr(fundInr)}
+          ${fundBal.toFixed(2)} USDT
         </div>
         <div className="text-[11px] text-slate-400 mt-0.5 font-medium">
-          {formatUsdt(user.fundBalance)}
+          Pure USDT (BEP-20)
         </div>
       </div>
 
       {/* Available Income */}
       <div className="glass-card p-5 rounded-2xl border-l-4 border-l-emerald-400">
         <div className="flex items-center justify-between text-xs text-slate-400 font-semibold mb-1">
-          <span>Available Balance (Income)</span>
+          <span>Available Income</span>
           <Coins className="w-4 h-4 text-emerald-400" />
         </div>
         <div className="text-xl sm:text-2xl font-black text-emerald-400">
-          {formatInr(incomeInr)}
+          ${incomeBal.toFixed(2)} USDT
         </div>
         <div className="text-[11px] text-slate-400 mt-0.5 font-medium">
-          {formatUsdt(user.incomeBalance)} (Withdrawable)
+          Withdrawable Balance
         </div>
       </div>
 
@@ -44,10 +44,10 @@ export function BalanceCards({ user }: { user: any }) {
           <ArrowDownLeft className="w-4 h-4 text-cyan-400" />
         </div>
         <div className="text-xl sm:text-2xl font-black text-cyan-400">
-          {formatInr(fdLockedInr)}
+          ${fdLocked.toFixed(2)} USDT
         </div>
         <div className="text-[11px] text-slate-400 mt-0.5 font-medium">
-          {formatUsdt(user.fdLockedBalance)} (Locked to Maturity)
+          Locked to Maturity
         </div>
       </div>
 
@@ -58,10 +58,10 @@ export function BalanceCards({ user }: { user: any }) {
           <ArrowUpRight className="w-4 h-4 text-purple-400" />
         </div>
         <div className="text-xl sm:text-2xl font-black text-purple-300">
-          {formatInr(totalWithdrawnInr)}
+          ${totalWithdrawn.toFixed(2)} USDT
         </div>
         <div className="text-[11px] text-slate-400 mt-0.5 font-medium">
-          {formatUsdt(user.totalWithdrawn)}
+          Dispatched to Wallet
         </div>
       </div>
     </div>
