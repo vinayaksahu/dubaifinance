@@ -40,10 +40,10 @@ export function Navbar() {
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 w-full h-20 bg-[var(--bg-main)]/95 backdrop-blur-2xl border-b border-amber-500/20 shadow-lg shadow-black/20 transition-colors duration-200">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center justify-between gap-4">
-        {/* Left: Brand Logo & Title Lockup (Never wraps, clean spacing) */}
-        <Link href="/" className="flex items-center gap-3 shrink-0 group">
-          <div className="relative w-10 h-10 sm:w-11 sm:h-11 rounded-xl overflow-hidden bg-gradient-to-br from-amber-400 via-amber-500 to-amber-700 p-0.5 shadow-md shadow-amber-500/30 group-hover:scale-105 transition-transform duration-200 shrink-0">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-full flex items-center justify-between gap-2 sm:gap-4">
+        {/* Left: Brand Logo & Title Lockup */}
+        <Link href="/" className="flex items-center gap-2 sm:gap-3 shrink-0 group">
+          <div className="relative w-9 h-9 sm:w-11 sm:h-11 rounded-xl overflow-hidden bg-gradient-to-br from-amber-400 via-amber-500 to-amber-700 p-0.5 shadow-md shadow-amber-500/30 group-hover:scale-105 transition-transform duration-200 shrink-0">
             <div className="w-full h-full rounded-[10px] bg-slate-950 flex items-center justify-center overflow-hidden">
               <Image
                 src="/dubaiLogo.png"
@@ -57,15 +57,15 @@ export function Navbar() {
           </div>
 
           <div className="flex flex-col justify-center shrink-0">
-            <div className="flex items-center gap-2">
-              <span className="font-display font-black text-lg sm:text-xl tracking-wider text-amber-400 dark:text-amber-300 uppercase whitespace-nowrap leading-none">
+            <div className="flex items-center gap-1.5 sm:gap-2">
+              <span className="font-display font-black text-base sm:text-xl tracking-wider text-amber-400 dark:text-amber-300 uppercase whitespace-nowrap leading-none">
                 DUBAI FINANCE
               </span>
-              <span className="hidden sm:inline-block text-[9px] px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-500 dark:text-amber-400 font-black border border-amber-500/30 uppercase leading-none">
+              <span className="hidden md:inline-block text-[9px] px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-500 dark:text-amber-400 font-black border border-amber-500/30 uppercase leading-none">
                 PRE-LAUNCH
               </span>
             </div>
-            <span className="text-[10px] text-[var(--text-subtle)] tracking-widest uppercase font-semibold mt-1 whitespace-nowrap leading-none">
+            <span className="hidden sm:block text-[10px] text-[var(--text-subtle)] tracking-widest uppercase font-semibold mt-1 whitespace-nowrap leading-none">
               Official Investment Portal
             </span>
           </div>
@@ -84,43 +84,46 @@ export function Navbar() {
           ))}
         </nav>
 
-        {/* Right: Controls & Actions (Clean, proportional, zero cramming) */}
-        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-          {/* Compact Theme Dropdown (Only 36px wide!) */}
+        {/* Right: Controls & Actions (Always fits on mobile, no cutting off) */}
+        <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
+          {/* Compact Theme Dropdown */}
           <ThemeToggle variant="compact" />
 
-          {/* Dynamic Theme PDF Deck Download */}
+          {/* Dynamic Theme PDF Deck Download (Desktop only) */}
           <a
             href={pdfHref}
             download
-            className="hidden sm:inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-amber-500/30 text-amber-500 dark:text-amber-300 hover:bg-amber-400/10 text-xs font-bold transition whitespace-nowrap"
+            className="hidden lg:inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-amber-500/30 text-amber-500 dark:text-amber-300 hover:bg-amber-400/10 text-xs font-bold transition whitespace-nowrap"
             title={`Download ${isLight ? "Light" : "Dark"} Presentation Deck (23 Slides)`}
           >
             <Download className="w-3.5 h-3.5" />
             <span>{pdfPillLabel}</span>
           </a>
 
-          {/* Sign In */}
+          {/* Login Button - VISIBLE ON ALL SCREENS, INCLUDING MOBILE */}
           <Link
             href="/login"
-            className="hidden sm:inline-flex items-center px-3.5 py-2 rounded-xl border border-amber-500/30 text-amber-500 dark:text-amber-300 text-xs font-bold hover:bg-amber-400/10 transition whitespace-nowrap"
+            className="flex items-center px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl border border-amber-500/40 text-amber-500 dark:text-amber-300 text-xs font-bold hover:bg-amber-400/10 transition whitespace-nowrap shadow-sm"
           >
-            Sign In
+            <span className="sm:hidden">Login</span>
+            <span className="hidden sm:inline">Sign In</span>
           </Link>
 
-          {/* Get Started Button */}
+          {/* Get Started / Join Button */}
           <Link
             href="/register"
-            className="gold-btn px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-md whitespace-nowrap"
+            className="gold-btn px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-xl text-xs font-bold flex items-center gap-1 shadow-md whitespace-nowrap"
           >
-            Get Started <ArrowRight className="w-3.5 h-3.5" />
+            <span className="sm:hidden">Join</span>
+            <span className="hidden sm:inline">Get Started</span>
+            <ArrowRight className="w-3.5 h-3.5 hidden sm:inline" />
           </Link>
 
           {/* Mobile / Tablet Hamburger Button (< xl screens) */}
           <button
             type="button"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="xl:hidden p-2 rounded-xl border border-amber-500/30 text-[var(--text-main)] hover:bg-amber-400/10 transition"
+            className="xl:hidden p-1.5 sm:p-2 rounded-xl border border-amber-500/30 text-[var(--text-main)] hover:bg-amber-400/10 transition shrink-0"
             aria-label="Toggle navigation menu"
           >
             {mobileMenuOpen ? <X className="w-5 h-5 text-amber-400" /> : <Menu className="w-5 h-5" />}
@@ -173,14 +176,14 @@ export function Navbar() {
                 onClick={() => setMobileMenuOpen(false)}
                 className="py-3 px-4 rounded-xl border border-amber-500/30 text-center font-bold text-xs sm:text-sm text-amber-500 dark:text-amber-300 hover:bg-amber-400/10 transition"
               >
-                Sign In
+                Login / Sign In
               </Link>
               <Link
                 href="/register"
                 onClick={() => setMobileMenuOpen(false)}
                 className="gold-btn py-3 px-4 rounded-xl text-center font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 shadow-md"
               >
-                Get Started <ArrowRight className="w-4 h-4" />
+                Join Now <ArrowRight className="w-4 h-4" />
               </Link>
             </div>
 
