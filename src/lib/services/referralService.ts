@@ -1,5 +1,6 @@
 import { db } from "../db";
 import { executeLedgerTransaction } from "../ledger";
+import { getNumericConfig } from "../configService";
 import { APP_CONFIG } from "../constants";
 import Decimal from "decimal.js";
 
@@ -22,10 +23,12 @@ export async function processDirectReferralReward(
 
   if (!sponsor) return null;
 
+  const directPercent = await getNumericConfig("DIRECT_REFERRAL_PERCENT", APP_CONFIG.directReferralPercent);
+  const usdtRate = await getNumericConfig("USDT_TO_INR_RATE", APP_CONFIG.usdtToInrRate);
+
   const amountInrDec = new Decimal(packageAmountInr.toString());
-  // 10% Instant Cash Reward
-  const commissionInr = amountInrDec.times(APP_CONFIG.directReferralPercent / 100);
-  const commissionUsdt = commissionInr.dividedBy(APP_CONFIG.usdtToInrRate);
+  const commissionInr = amountInrDec.times(directPercent / 100);
+  const commissionUsdt = commissionInr.dividedBy(usdtRate);
 
   const referenceKey = `DIR_REF_${contractId}_${sponsor.id}`;
 
@@ -35,7 +38,7 @@ export async function processDirectReferralReward(
     wallet: "INCOME",
     amount: commissionUsdt,
     referenceKey,
-    description: `${APP_CONFIG.directReferralPercent}% Direct Referral Commission from ${buyer.customId} (Deposit: $${amountInrDec.dividedBy(APP_CONFIG.usdtToInrRate).toFixed(2)} USDT)`,
+    description: `${directPercent}% Direct Referral Commission from ${buyer.customId} (Deposit: $${amountInrDec.dividedBy(usdtRate).toFixed(2)} USDT)`,
     sourceUserId: buyerId,
     levelNumber: 1,
   });

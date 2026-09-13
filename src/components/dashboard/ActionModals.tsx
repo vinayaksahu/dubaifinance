@@ -180,7 +180,26 @@ export function ActionModals({ user, onRefresh }: { user: any; onRefresh: () => 
     }
   };
 
-  const windowOpen = isWithdrawalWindowOpen();
+  const cfg = user?.systemConfig || {};
+  const startHour = cfg.WITHDRAWAL_START_HOUR !== undefined ? Number(cfg.WITHDRAWAL_START_HOUR) : APP_CONFIG.withdrawalWindow.startHour;
+  const endHour = cfg.WITHDRAWAL_END_HOUR !== undefined ? Number(cfg.WITHDRAWAL_END_HOUR) : APP_CONFIG.withdrawalWindow.endHour;
+  const minWithdrawUsdt = cfg.MIN_WITHDRAWAL_USDT !== undefined ? Number(cfg.MIN_WITHDRAWAL_USDT) : APP_CONFIG.minWithdrawalUsdt;
+  const maxWithdrawUsdt = cfg.MAX_WITHDRAWAL_USDT !== undefined ? Number(cfg.MAX_WITHDRAWAL_USDT) : APP_CONFIG.maxWithdrawalUsdt;
+  const usdtToInrRate = cfg.USDT_TO_INR_RATE !== undefined ? Number(cfg.USDT_TO_INR_RATE) : APP_CONFIG.usdtToInrRate;
+  const minWithdrawInr = minWithdrawUsdt * usdtToInrRate;
+  const maxWithdrawInr = maxWithdrawUsdt * usdtToInrRate;
+
+  const now = new Date();
+  const utc = now.getTime() + now.getTimezoneOffset() * 60000;
+  const ist = new Date(utc + 3600000 * 5.5);
+  const curHour = ist.getHours();
+  const windowOpen = curHour >= startHour && curHour < endHour;
+
+  const formatHour = (h: number) => {
+    const period = h >= 12 ? 'PM' : 'AM';
+    const hour12 = h % 12 === 0 ? 12 : h % 12;
+    return `${hour12 < 10 ? '0' : ''}${hour12}:00 ${period}`;
+  };
 
   return (
     <div>
@@ -639,14 +658,14 @@ export function ActionModals({ user, onRefresh }: { user: any; onRefresh: () => 
                 {!windowOpen && (
                   <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs font-semibold mb-4 flex items-center gap-2">
                     <Clock className="w-4 h-4 shrink-0" />
-                    Notice: Withdrawal window is open daily from 10:00 AM to 02:00 PM (IST).
+                    Notice: Withdrawal window is open daily from {formatHour(startHour)} to {formatHour(endHour)} (IST).
                   </div>
                 )}
 
                 <div className="space-y-3">
                   <div>
                     <label className="block text-[11px] font-bold text-slate-300 mb-1">
-                      Amount in INR (Min ₹{APP_CONFIG.minWithdrawalInr}, Max ₹{APP_CONFIG.maxWithdrawalInr})
+                      Amount in INR (Min ₹{minWithdrawInr.toLocaleString()}, Max ₹{maxWithdrawInr.toLocaleString()})
                     </label>
                     <input
                       type="number"
@@ -656,7 +675,7 @@ export function ActionModals({ user, onRefresh }: { user: any; onRefresh: () => 
                       className="w-full px-3.5 py-2.5 rounded-xl bg-black/50 border border-slate-700 text-white text-sm outline-none"
                     />
                     <span className="text-[11px] text-emerald-400 mt-1 block">
-                      You will receive: ${(Number(withdrawAmount) / APP_CONFIG.usdtToInrRate).toFixed(4)} USDT
+                      You will receive: ${(Number(withdrawAmount) / usdtToInrRate).toFixed(4)} USDT (${minWithdrawUsdt} - ${maxWithdrawUsdt} USDT limit)
                     </span>
                   </div>
 

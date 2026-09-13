@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { APP_CONFIG, usdtToInr } from "@/lib/constants";
+import { getNumericConfig } from "@/lib/configService";
 import Decimal from "decimal.js";
 
 export async function POST(req: NextRequest) {
@@ -27,8 +28,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "This transaction hash has already been submitted." }, { status: 400 });
     }
 
+    const rate = await getNumericConfig("USDT_TO_INR_RATE", APP_CONFIG.usdtToInrRate);
     const amountUsdtDec = new Decimal(amountInUsdt.toString());
-    const amountInr = usdtToInr(amountUsdtDec.toNumber());
+    const amountInr = amountUsdtDec.times(rate).toNumber();
 
     const deposit = await db.depositRequest.create({
       data: {

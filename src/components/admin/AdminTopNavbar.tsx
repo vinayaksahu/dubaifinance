@@ -4,6 +4,8 @@ import React from "react";
 import { Menu, LogOut, Crown, ArrowRight } from "lucide-react";
 import Link from "next/link";
 
+import { ThemeToggle } from "@/components/theme/ThemeToggle";
+
 interface AdminTopNavbarProps {
   user: any;
   onToggleSidebar: () => void;
@@ -36,6 +38,8 @@ export function AdminTopNavbar({ user, onToggleSidebar }: AdminTopNavbarProps) {
       </div>
 
       <div className="flex items-center gap-4">
+        <ThemeToggle variant="compact" />
+
         <Link 
           href="/member"
           className="hidden sm:flex items-center gap-2 px-3 py-1.5 text-xs font-medium bg-amber-500/10 text-amber-500 hover:bg-amber-500/20 rounded-lg transition-colors border border-amber-500/20"

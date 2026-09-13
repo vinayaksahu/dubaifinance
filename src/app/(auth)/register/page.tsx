@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { User, Mail, Phone, Lock, KeyRound, Users, ArrowRight } from "lucide-react";
+import { ThemeToggle } from "@/components/theme/ThemeToggle";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -57,19 +58,36 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-[#030712]">
+    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-[var(--bg-main)] text-[var(--text-main)] transition-colors duration-200">
       <div className="bg-glow-gold -top-32 -right-32" />
       <div className="bg-glow-blue -bottom-32 -left-32" />
 
-      <div className="w-full max-w-md glass-card-gold p-8 rounded-3xl relative z-10 shadow-2xl">
+      {/* Top Bar with Home & Theme Toggle */}
+      <div className="absolute top-6 left-6 right-6 flex items-center justify-between z-20">
+        <Link
+          href="/"
+          className="text-xs font-bold text-amber-500 hover:text-amber-400 flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-amber-500/20 bg-[var(--bg-card)] backdrop-blur-md"
+        >
+          &larr; Back to Home
+        </Link>
+        <ThemeToggle variant="compact" />
+      </div>
+
+      <div className="w-full max-w-md glass-card-gold p-8 rounded-3xl relative z-10 shadow-2xl mt-12 sm:mt-0">
         <div className="text-center mb-6">
           <Link href="/" className="inline-flex items-center gap-3 mb-2">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-300 to-amber-600 flex items-center justify-center text-2xl shadow-lg shadow-amber-500/30">
-              ⚜️
+            <div className="w-12 h-12 rounded-xl overflow-hidden bg-gradient-to-br from-amber-400 to-amber-700 p-0.5 shadow-lg shadow-amber-500/30">
+              <div className="w-full h-full rounded-[10px] bg-slate-950 flex items-center justify-center overflow-hidden">
+                <img
+                  src="/dubaiLogo.png"
+                  alt="Dubai Finance Logo"
+                  className="w-10 h-10 object-contain"
+                />
+              </div>
             </div>
           </Link>
-          <h2 className="text-2xl font-black text-white">Create Account</h2>
-          <p className="text-xs text-amber-300 font-semibold mt-1">Claim your $5 Free Welcome Bonus</p>
+          <h2 className="font-display text-2xl font-black text-[var(--text-main)]">Create Account</h2>
+          <p className="text-xs text-amber-500 dark:text-amber-300 font-semibold mt-1">Claim your Free $1.00 USDT Welcome Airdrop</p>
         </div>
 
         {error && (

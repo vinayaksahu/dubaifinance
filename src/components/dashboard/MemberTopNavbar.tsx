@@ -4,6 +4,8 @@ import React, { useState } from "react";
 import { Menu, Moon, Sun, ChevronDown, User, Key, LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
 
+import { ThemeToggle } from "@/components/theme/ThemeToggle";
+
 interface MemberTopNavbarProps {
   user: any;
   onToggleSidebar: () => void;
@@ -12,7 +14,6 @@ interface MemberTopNavbarProps {
 export function MemberTopNavbar({ user, onToggleSidebar }: MemberTopNavbarProps) {
   const router = useRouter();
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [isDarkMode, setIsDarkMode] = useState(true);
 
   const handleLogout = async () => {
     try {
@@ -36,17 +37,7 @@ export function MemberTopNavbar({ user, onToggleSidebar }: MemberTopNavbarProps)
           <Menu className="w-6 h-6" />
         </button>
 
-        <button
-          onClick={() => setIsDarkMode(!isDarkMode)}
-          className="w-8 h-8 rounded-full border border-slate-700/60 bg-[#0c162e] flex items-center justify-center text-slate-300 hover:text-amber-400 transition-colors shadow-inner"
-          title="Toggle Theme"
-        >
-          {isDarkMode ? (
-            <div className="w-4 h-4 rounded-full bg-gradient-to-r from-slate-200 to-slate-900 border border-slate-500" />
-          ) : (
-            <Sun className="w-4 h-4 text-amber-400" />
-          )}
-        </button>
+        <ThemeToggle variant="compact" />
       </div>
 
       {/* Right: User Profile Dropdown Pill */}

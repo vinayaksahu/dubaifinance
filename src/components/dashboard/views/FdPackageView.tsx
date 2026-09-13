@@ -11,12 +11,46 @@ interface FdPackageViewProps {
 
 export function FdPackageView({ user, onRefresh }: FdPackageViewProps) {
   const [selectedTier, setSelectedTier] = useState<any>(null);
-  const [selectedTenure, setSelectedTenure] = useState<number>(180);
+  const cfg = user?.systemConfig || {};
+  const rate180 = cfg.FD_PLAN_180_DAILY_ROI !== undefined ? Number(cfg.FD_PLAN_180_DAILY_ROI) : 10.0;
+  const days180 = cfg.FD_PLAN_180_DAYS !== undefined ? Number(cfg.FD_PLAN_180_DAYS) : 180;
+  const rate210 = cfg.FD_PLAN_210_DAILY_ROI !== undefined ? Number(cfg.FD_PLAN_210_DAILY_ROI) : 15.0;
+  const days210 = cfg.FD_PLAN_210_DAYS !== undefined ? Number(cfg.FD_PLAN_210_DAYS) : 210;
+  const usdtToInrRate = cfg.USDT_TO_INR_RATE !== undefined ? Number(cfg.USDT_TO_INR_RATE) : 110;
+
+  const [selectedTenure, setSelectedTenure] = useState<number>(days180);
   const [pin, setPin] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState<{ text: string; error?: boolean } | null>(null);
 
   const fundBal = Number(user.fundBalance || 0);
+
+  const FD_TIERS = [
+    { id: "pkg-1", tier: "PACKAGE 1", amountUsdt: 10, featured: false },
+    { id: "pkg-2", tier: "PACKAGE 2", amountUsdt: 100, featured: false },
+    { id: "pkg-3", tier: "PACKAGE 3 (MOST POPULAR)", amountUsdt: 500, featured: true },
+    { id: "pkg-4", tier: "PACKAGE 4", amountUsdt: 1000, featured: false },
+    { id: "pkg-5", tier: "PACKAGE 5 (VIP)", amountUsdt: 5000, featured: false },
+  ];
+
+  const dynamicFdPlans = FD_TIERS.map((tier) => {
+    const daily180 = (tier.amountUsdt * rate180) / 100;
+    const profit180 = daily180 * days180;
+    const daily210 = (tier.amountUsdt * rate210) / 100;
+    const profit210 = daily210 * days210;
+
+    return {
+      id: tier.id,
+      tier: tier.tier,
+      amountUsdt: tier.amountUsdt,
+      amountInr: tier.amountUsdt * usdtToInrRate,
+      featured: tier.featured,
+      plans: [
+        { days: days180, rate: rate180, dailyUsdt: daily180, profitUsdt: profit180 },
+        { days: days210, rate: rate210, dailyUsdt: daily210, profitUsdt: profit210 },
+      ],
+    };
+  });
 
   const handlePurchase = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,6 +69,7 @@ export function FdPackageView({ user, onRefresh }: FdPackageViewProps) {
         body: JSON.stringify({
           packageType: "FIX_DEPOSIT",
           amountInInr: selectedTier.amountInr,
+          amountInUsdt: selectedTier.amountUsdt,
           fdTenureDays: selectedTenure,
           transactionPin: pin,
         }),
@@ -45,7 +80,7 @@ export function FdPackageView({ user, onRefresh }: FdPackageViewProps) {
         throw new Error(data.error || "FD Activation failed");
       }
 
-      setMessage({ text: data.message || `FD Package of $${(selectedTier as any).amountUsdt || selectedTier.amountInr} USDT activated successfully!` });
+      setMessage({ text: data.message || `FD Package of $${selectedTier.amountUsdt} USDT activated successfully!` });
       setPin("");
       onRefresh();
       setTimeout(() => {
@@ -83,7 +118,7 @@ export function FdPackageView({ user, onRefresh }: FdPackageViewProps) {
 
       {/* Grid of 5 FD Tiers */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {APP_CONFIG.fdPlans.map((pkg) => (
+        {dynamicFdPlans.map((pkg) => (
           <div
             key={pkg.id}
             className={`bg-[#091124] border rounded-3xl p-6 shadow-xl flex flex-col justify-between transition-all relative overflow-hidden ${
@@ -104,7 +139,7 @@ export function FdPackageView({ user, onRefresh }: FdPackageViewProps) {
                 <div>
                   <h3 className="text-base font-bold text-slate-100">{pkg.tier}</h3>
                   <p className="text-xl font-extrabold text-amber-400">
-                    ${(pkg as any).amountUsdt?.toLocaleString() || pkg.amountInr.toLocaleString("en-IN")} USDT
+                    ${pkg.amountUsdt.toLocaleString()} USDT
                   </p>
                 </div>
               </div>
@@ -122,11 +157,11 @@ export function FdPackageView({ user, onRefresh }: FdPackageViewProps) {
                     </div>
                     <div className="flex justify-between text-slate-400 text-[11px]">
                       <span>Daily Profit:</span>
-                      <span className="text-slate-200 font-semibold">${(p as any).dailyUsdt?.toLocaleString() || 0}/day</span>
+                      <span className="text-slate-200 font-semibold">${p.dailyUsdt.toLocaleString()}/day</span>
                     </div>
                     <div className="flex justify-between text-slate-400 text-[11px]">
                       <span>Total Payout:</span>
-                      <span className="text-cyan-400 font-bold">${(p as any).profitUsdt?.toLocaleString() || 0} USDT</span>
+                      <span className="text-cyan-400 font-bold">${p.profitUsdt.toLocaleString()} USDT</span>
                     </div>
                   </div>
                 ))}
@@ -138,24 +173,24 @@ export function FdPackageView({ user, onRefresh }: FdPackageViewProps) {
               <button
                 onClick={() => {
                   setSelectedTier(pkg);
-                  setSelectedTenure(180);
+                  setSelectedTenure(days180);
                   setMessage(null);
                   setPin("");
                 }}
                 className="py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs transition-all shadow-md shadow-blue-600/20 text-center"
               >
-                180 Days (10%)
+                {days180} Days ({rate180}%)
               </button>
               <button
                 onClick={() => {
                   setSelectedTier(pkg);
-                  setSelectedTenure(210);
+                  setSelectedTenure(days210);
                   setMessage(null);
                   setPin("");
                 }}
                 className="py-2.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs transition-all shadow-md shadow-amber-600/20 text-center"
               >
-                210 Days (15%)
+                {days210} Days ({rate210}%)
               </button>
             </div>
           </div>
@@ -177,13 +212,13 @@ export function FdPackageView({ user, onRefresh }: FdPackageViewProps) {
               Confirm Fix Deposit
             </h3>
             <p className="text-xs text-slate-400 mb-4">
-              Activating {selectedTier.tier} (${(selectedTier as any).amountUsdt || selectedTier.amountInr} USDT) for {selectedTenure} Days
+              Activating {selectedTier.tier} (${selectedTier.amountUsdt} USDT) for {selectedTenure} Days
             </p>
 
             <div className="bg-[#070e20] border border-[#182a50] rounded-2xl p-4 space-y-2 text-xs mb-5">
               <div className="flex justify-between">
                 <span className="text-slate-400">Locked Deposit:</span>
-                <span className="font-bold text-slate-200">${(selectedTier as any).amountUsdt || selectedTier.amountInr} USDT</span>
+                <span className="font-bold text-slate-200">${selectedTier.amountUsdt} USDT</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-slate-400">Tenure:</span>
@@ -192,7 +227,7 @@ export function FdPackageView({ user, onRefresh }: FdPackageViewProps) {
               <div className="flex justify-between">
                 <span className="text-slate-400">Daily Return:</span>
                 <span className="font-bold text-emerald-400">
-                  {selectedTenure === 180 ? "10%" : "15%"} Daily
+                  {selectedTenure === days180 ? `${rate180}%` : `${rate210}%`} Daily
                 </span>
               </div>
               <div className="flex justify-between">

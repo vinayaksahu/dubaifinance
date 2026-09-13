@@ -3,6 +3,7 @@ import { getSession, comparePin } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { executeLedgerTransaction } from "@/lib/ledger";
 import { processDirectReferralReward } from "@/lib/services/referralService";
+import { getNumericConfig } from "@/lib/configService";
 import { APP_CONFIG, inrToUsdt } from "@/lib/constants";
 import Decimal from "decimal.js";
 
@@ -44,8 +45,9 @@ export async function POST(req: NextRequest) {
       beneficiary = found;
     }
 
+    const rate = await getNumericConfig("USDT_TO_INR_RATE", APP_CONFIG.usdtToInrRate);
     const amountInrDec = new Decimal(amountInInr.toString());
-    const amountUsdt = inrToUsdt(amountInrDec.toNumber());
+    const amountUsdt = Number((amountInrDec.toNumber() / rate).toFixed(4));
     const amountUsdtDec = new Decimal(amountUsdt.toString());
 
     // Validate Package Limits
@@ -53,20 +55,39 @@ export async function POST(req: NextRequest) {
     let tenureDays: number;
 
     if (packageType === "BASIC_SAVING") {
-      if (amountUsdtDec.lessThan(APP_CONFIG.basicPlan.minUsdt) || amountUsdtDec.greaterThan(APP_CONFIG.basicPlan.maxUsdt)) {
+      const minUsdt = await getNumericConfig("BASIC_PLAN_MIN_USDT", APP_CONFIG.basicPlan.minUsdt);
+      const maxUsdt = await getNumericConfig("BASIC_PLAN_MAX_USDT", APP_CONFIG.basicPlan.maxUsdt);
+      const dailyRoi = await getNumericConfig("BASIC_PLAN_DAILY_ROI", APP_CONFIG.basicPlan.dailyRoiRate);
+      const tenure = await getNumericConfig("BASIC_PLAN_TENURE_DAYS", APP_CONFIG.basicPlan.tenureDays);
+
+      if (amountUsdtDec.lessThan(minUsdt) || amountUsdtDec.greaterThan(maxUsdt)) {
         return NextResponse.json({
-          error: `Basic Saving Package must be between $${APP_CONFIG.basicPlan.minUsdt} and $${APP_CONFIG.basicPlan.maxUsdt} USDT.`,
+          error: `Basic Saving Package must be between $${minUsdt} and $${maxUsdt} USDT.`,
         }, { status: 400 });
       }
-      dailyRoiRate = new Decimal(APP_CONFIG.basicPlan.dailyRoiRate);
-      tenureDays = APP_CONFIG.basicPlan.tenureDays; // 30 Days
-    } else if (packageType === "FIX_DEPOSIT") {
-      const tenure = Number(fdTenureDays) || 180;
-      if (tenure !== 180 && tenure !== 210) {
-        return NextResponse.json({ error: "FD Tenure must be either 180 Days (10%) or 210 Days (15%)." }, { status: 400 });
-      }
+      dailyRoiRate = new Decimal(dailyRoi);
       tenureDays = tenure;
-      dailyRoiRate = tenure === 180 ? new Decimal(10.0) : new Decimal(15.0);
+    } else if (packageType === "FIX_DEPOSIT") {
+      const minFd = await getNumericConfig("FD_MIN_USDT", 10);
+      const maxFd = await getNumericConfig("FD_MAX_USDT", 5000);
+      const fd180Roi = await getNumericConfig("FD_PLAN_180_DAILY_ROI", 10.0);
+      const fd180Days = await getNumericConfig("FD_PLAN_180_DAYS", 180);
+      const fd210Roi = await getNumericConfig("FD_PLAN_210_DAILY_ROI", 15.0);
+      const fd210Days = await getNumericConfig("FD_PLAN_210_DAYS", 210);
+
+      const tenure = Number(fdTenureDays) || fd180Days;
+      if (tenure !== fd180Days && tenure !== fd210Days) {
+        return NextResponse.json({ error: `FD Tenure must be either ${fd180Days} Days (${fd180Roi}%) or ${fd210Days} Days (${fd210Roi}%).` }, { status: 400 });
+      }
+
+      if (amountUsdtDec.lessThan(minFd) || amountUsdtDec.greaterThan(maxFd)) {
+        return NextResponse.json({
+          error: `Fix Deposit amount must be between $${minFd} and $${maxFd} USDT.`,
+        }, { status: 400 });
+      }
+
+      tenureDays = tenure;
+      dailyRoiRate = tenure === fd180Days ? new Decimal(fd180Roi) : new Decimal(fd210Roi);
     } else {
       return NextResponse.json({ error: "Invalid package type." }, { status: 400 });
     }

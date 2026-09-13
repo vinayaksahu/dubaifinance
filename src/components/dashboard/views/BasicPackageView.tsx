@@ -17,16 +17,16 @@ interface BasicPackageViewProps {
   onRefreshUser?: () => void;
 }
 
-const USD_PACKAGES = [
-  { id: 1, name: 'Starter', amount: 5, dailyRoi: 0.25, days: 30, totalReturn: 7.50 },
-  { id: 2, name: 'Basic', amount: 10, dailyRoi: 0.50, days: 30, totalReturn: 15.00 },
-  { id: 3, name: 'Silver', amount: 20, dailyRoi: 1.00, days: 30, totalReturn: 30.00 },
-  { id: 4, name: 'Gold', amount: 50, dailyRoi: 2.50, days: 30, totalReturn: 75.00 },
-  { id: 5, name: 'Platinum', amount: 100, dailyRoi: 5.00, days: 30, totalReturn: 150.00 },
-  { id: 6, name: 'Diamond', amount: 500, dailyRoi: 25.00, days: 30, totalReturn: 750.00 },
-  { id: 7, name: 'Elite', amount: 1000, dailyRoi: 50.00, days: 30, totalReturn: 1500.00 },
-  { id: 8, name: 'Royal', amount: 2000, dailyRoi: 100.00, days: 30, totalReturn: 3000.00 },
-  { id: 9, name: 'Crown', amount: 5000, dailyRoi: 250.00, days: 30, totalReturn: 7500.00 },
+const PACKAGE_TEMPLATES = [
+  { id: 1, name: 'Starter', amount: 5 },
+  { id: 2, name: 'Basic', amount: 10 },
+  { id: 3, name: 'Silver', amount: 20 },
+  { id: 4, name: 'Gold', amount: 50 },
+  { id: 5, name: 'Platinum', amount: 100 },
+  { id: 6, name: 'Diamond', amount: 500 },
+  { id: 7, name: 'Elite', amount: 1000 },
+  { id: 8, name: 'Royal', amount: 2000 },
+  { id: 9, name: 'Crown', amount: 5000 },
 ];
 
 export function BasicPackageView({ user, onRefresh, onRefreshUser }: BasicPackageViewProps) {
@@ -35,6 +35,23 @@ export function BasicPackageView({ user, onRefresh, onRefreshUser }: BasicPackag
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+
+  // Dynamic system configurations set by Admin
+  const cfg = user?.systemConfig || {};
+  const dailyRoiRate = cfg.BASIC_PLAN_DAILY_ROI !== undefined ? Number(cfg.BASIC_PLAN_DAILY_ROI) : 5.0;
+  const tenureDays = cfg.BASIC_PLAN_TENURE_DAYS !== undefined ? Number(cfg.BASIC_PLAN_TENURE_DAYS) : 30;
+  const usdtToInrRate = cfg.USDT_TO_INR_RATE !== undefined ? Number(cfg.USDT_TO_INR_RATE) : 110;
+
+  const dynamicPackages = PACKAGE_TEMPLATES.map((tmpl) => {
+    const dailyRoi = (tmpl.amount * dailyRoiRate) / 100;
+    const totalReturn = dailyRoi * tenureDays;
+    return {
+      ...tmpl,
+      dailyRoi,
+      days: tenureDays,
+      totalReturn,
+    };
+  });
 
   const handlePurchase = async () => {
     if (!selectedPlan) return;
@@ -53,7 +70,7 @@ export function BasicPackageView({ user, onRefresh, onRefreshUser }: BasicPackag
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           packageType: 'BASIC_SAVING',
-          amountInInr: selectedPlan.amount * 110,
+          amountInInr: selectedPlan.amount * usdtToInrRate,
           transactionPin
         }),
       });
@@ -80,7 +97,7 @@ export function BasicPackageView({ user, onRefresh, onRefreshUser }: BasicPackag
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-[#070e20] p-6 rounded-2xl border border-[#152238]">
         <div>
           <h2 className="text-2xl font-bold text-white mb-1">Basic Packages</h2>
-          <p className="text-slate-400">Fixed 5% daily ROI for 30 days</p>
+          <p className="text-slate-400">Fixed {dailyRoiRate}% daily ROI for {tenureDays} days</p>
         </div>
         <div className="bg-[#0a1229] p-4 rounded-xl border border-[#152238] flex items-center gap-4">
           <div className="p-3 bg-purple-500/20 rounded-lg text-purple-400">
@@ -108,11 +125,11 @@ export function BasicPackageView({ user, onRefresh, onRefreshUser }: BasicPackag
       )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {USD_PACKAGES.map((plan) => (
+        {dynamicPackages.map((plan) => (
           <div key={plan.id} className="bg-[#070e20] rounded-2xl border border-[#152238] overflow-hidden flex flex-col hover:border-purple-500/50 transition-colors">
             <div className="p-6 border-b border-[#152238] bg-gradient-to-br from-purple-500/5 to-transparent relative">
               <div className="absolute top-4 right-4 bg-purple-500/20 text-purple-400 text-xs font-bold px-2 py-1 rounded-full">
-                5% Daily
+                {dailyRoiRate}% Daily
               </div>
               <h3 className="text-xl font-bold text-white mb-2">{plan.name}</h3>
               <div className="flex items-baseline gap-1">

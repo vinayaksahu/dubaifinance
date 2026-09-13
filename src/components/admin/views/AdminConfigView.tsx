@@ -8,13 +8,15 @@ import {
   Wallet, 
   Clock, 
   TrendingUp, 
+  Crown,
+  ArrowLeftRight,
   Building2, 
   CheckCircle2, 
   AlertCircle, 
   Search,
   Loader2,
-  Lock,
-  ExternalLink
+  Sparkles,
+  Users
 } from "lucide-react";
 
 interface ConfigItem {
@@ -28,31 +30,70 @@ const CATEGORY_ICONS: Record<string, any> = {
   wallet: Wallet,
   withdrawal: Clock,
   plan: TrendingUp,
+  royalty: Crown,
+  transfers: ArrowLeftRight,
   company: Building2,
 };
 
 const CATEGORY_NAMES: Record<string, string> = {
   all: "All Configurations",
-  wallet: "Wallet & Currency Peg",
-  withdrawal: "Withdrawal Timings & Limits",
-  plan: "Plans & Commissions",
+  wallet: "Wallet & Rate Peg",
+  withdrawal: "Withdrawal Window & Limits",
+  plan: "Basic & FD Staking Plans",
+  royalty: "Direct & 12-Level Royalty",
+  transfers: "P2P, Swipe & Bonus",
   company: "Company & Headquarters",
 };
 
 const FRIENDLY_NAMES: Record<string, string> = {
+  // Financial & Wallet
   COMPANY_USDT_ADDRESS: "Company USDT (BEP-20) Receiving Wallet",
   USDT_TO_INR_RATE: "Fixed Peg Exchange Rate (1 USDT in INR)",
+
+  // Basic Saving Plan
+  BASIC_PLAN_DAILY_ROI: "Basic Saving Daily ROI (%)",
+  BASIC_PLAN_TENURE_DAYS: "Basic Saving Tenure (Days)",
+  BASIC_PLAN_MIN_USDT: "Basic Saving Minimum (USDT)",
+  BASIC_PLAN_MAX_USDT: "Basic Saving Maximum (USDT)",
+
+  // Fix Deposit (FD) Staking
+  FD_PLAN_180_DAILY_ROI: "FD 180-Day Daily Yield (%)",
+  FD_PLAN_180_DAYS: "FD 180-Day Duration (Days)",
+  FD_PLAN_210_DAILY_ROI: "FD 210-Day Daily Yield (%)",
+  FD_PLAN_210_DAYS: "FD 210-Day Duration (Days)",
+  FD_MIN_USDT: "Fix Deposit Minimum (USDT)",
+  FD_MAX_USDT: "Fix Deposit Maximum (USDT)",
+
+  // Direct Referral & 12-Level Royalty
+  DIRECT_REFERRAL_PERCENT: "Direct Sponsor Referral Commission (%)",
+  LEVEL_1_PERCENT: "Level 1 Royalty % (Req: 1 Direct)",
+  LEVEL_2_PERCENT: "Level 2 Royalty % (Req: 2 Directs)",
+  LEVEL_3_PERCENT: "Level 3 Royalty % (Req: 3 Directs)",
+  LEVEL_4_PERCENT: "Level 4 Royalty % (Req: 4 Directs)",
+  LEVEL_5_PERCENT: "Level 5 Royalty % (Req: 5 Directs)",
+  LEVEL_6_PERCENT: "Level 6 Royalty % (Req: 6 Directs)",
+  LEVEL_7_PERCENT: "Level 7 Royalty % (Req: 7 Directs)",
+  LEVEL_8_PERCENT: "Level 8 Royalty % (Req: 8 Directs)",
+  LEVEL_9_PERCENT: "Level 9 Royalty % (Req: 9 Directs)",
+  LEVEL_10_PERCENT: "Level 10 Royalty % (Req: 10 Directs)",
+  LEVEL_11_PERCENT: "Level 11 Royalty % (Req: 11 Directs)",
+  LEVEL_12_PERCENT: "Level 12 Royalty % (Req: 12 Directs)",
+
+  // Withdrawal Rules & Timings
   WITHDRAWAL_START_HOUR: "Withdrawal Window Start Hour (24h IST)",
   WITHDRAWAL_END_HOUR: "Withdrawal Window End Hour (24h IST)",
   MIN_WITHDRAWAL_USDT: "Minimum Single Withdrawal (USDT)",
   MAX_WITHDRAWAL_USDT: "Maximum Single Withdrawal (USDT)",
-  MIN_WITHDRAWAL_INR: "Minimum Single Withdrawal (INR Equivalent)",
-  MAX_WITHDRAWAL_INR: "Maximum Single Withdrawal (INR Equivalent)",
-  DIRECT_REFERRAL_PERCENT: "Direct Sponsor Referral Commission (%)",
-  BASIC_PLAN_DAILY_ROI: "Basic Saving Plan Daily ROI (%)",
-  BASIC_PLAN_TENURE_DAYS: "Basic Saving Contract Tenure (Days)",
-  SIGNUP_BONUS_INR: "New Member Signup Bonus (INR)",
-  OFFICIAL_EMAIL: "Official Support Email",
+  WITHDRAWAL_FEE_PERCENT: "Withdrawal Deduction Fee (%)",
+
+  // Transfers & Bonus
+  SIGNUP_BONUS_INR: "Welcome Signup Bonus (INR)",
+  MIN_P2P_TRANSFER_USDT: "Minimum P2P Transfer (USDT)",
+  P2P_FEE_PERCENT: "P2P Transfer Fee (%)",
+  SWIPE_FEE_PERCENT: "Income-to-Fund Swipe Fee (%)",
+
+  // Corporate Information
+  OFFICIAL_EMAIL: "Official Customer Support Email",
   CMD_NAME: "Platform Director / CMD Name",
   HEADQUARTERS: "Headquarters Registered Address",
 };
@@ -105,8 +146,8 @@ export function AdminConfigView() {
     setTimeout(() => setStatusMessage(null), 3000);
   };
 
-  const handleSave = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSave = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     setSaving(true);
     setStatusMessage(null);
 
@@ -120,7 +161,7 @@ export function AdminConfigView() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to save configuration");
 
-      setStatusMessage({ type: "success", text: data.message || "Configurations saved successfully!" });
+      setStatusMessage({ type: "success", text: data.message || "Configurations saved successfully and applied across all user portals!" });
       await fetchConfigs();
       setTimeout(() => setStatusMessage(null), 4000);
     } catch (err: any) {
@@ -164,7 +205,7 @@ export function AdminConfigView() {
               System Configuration
             </h1>
             <p className="text-slate-400 text-sm mt-1 max-w-xl">
-              Edit global financial rates, company wallet addresses, withdrawal windows, and referral percentages. Changes take effect instantly across all user and admin views.
+              Edit global financial parameters according to the Dubai Finance plan. Changes instantly apply to User Dashboards, Package calculations, Referral rewards, 12-Level royalties, and Withdrawal limits.
             </p>
           </div>
 
@@ -181,7 +222,7 @@ export function AdminConfigView() {
 
             <button
               type="button"
-              onClick={handleSave}
+              onClick={() => handleSave()}
               disabled={saving || !hasUnsavedChanges}
               className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-amber-500 hover:from-purple-500 hover:to-amber-400 text-white font-bold text-sm flex items-center gap-2 shadow-lg shadow-purple-600/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
@@ -221,7 +262,7 @@ export function AdminConfigView() {
         {hasUnsavedChanges && !statusMessage && (
           <div className="mt-4 inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-semibold">
             <AlertCircle className="w-3.5 h-3.5" />
-            <span>You have unsaved changes. Click &quot;Save Changes&quot; to apply.</span>
+            <span>You have unsaved modifications. Click &quot;Save Changes&quot; to apply immediately.</span>
           </div>
         )}
       </div>
@@ -230,7 +271,7 @@ export function AdminConfigView() {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         {/* Category Pills */}
         <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-[#070e20] border border-[#152238] overflow-x-auto max-w-full">
-          {["all", "wallet", "withdrawal", "plan", "company"].map((cat) => {
+          {["all", "wallet", "withdrawal", "plan", "royalty", "transfers", "company"].map((cat) => {
             const Icon = CATEGORY_ICONS[cat] || Settings;
             const isActive = activeCategory === cat;
             return (
@@ -274,10 +315,13 @@ export function AdminConfigView() {
           No configurations match your search or filter.
         </div>
       ) : (
-        <form onSubmit={handleSave} className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+        <form onSubmit={handleSave} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {filteredKeys.map((key) => {
             const item = configs[key];
             const isAddress = key.includes("ADDRESS");
+            const isRoyaltyLevel = key.startsWith("LEVEL_") && key.endsWith("_PERCENT");
+            const levelNum = isRoyaltyLevel ? key.split("_")[1] : null;
+
             const isNumber = 
               key.includes("RATE") || 
               key.includes("PERCENT") || 
@@ -290,7 +334,11 @@ export function AdminConfigView() {
             return (
               <div
                 key={key}
-                className="bg-slate-900/50 backdrop-blur border border-slate-800/60 hover:border-purple-500/40 rounded-2xl p-5 transition-all flex flex-col justify-between shadow-md"
+                className={`bg-slate-900/50 backdrop-blur border rounded-2xl p-5 transition-all flex flex-col justify-between shadow-md ${
+                  isRoyaltyLevel
+                    ? "border-amber-500/30 bg-gradient-to-br from-slate-900/60 to-amber-950/20"
+                    : "border-slate-800/60 hover:border-purple-500/40"
+                }`}
               >
                 <div>
                   <div className="flex items-start justify-between gap-2 mb-1.5">
@@ -305,6 +353,13 @@ export function AdminConfigView() {
                   <p className="text-xs text-slate-400 mb-3 leading-relaxed">
                     {item.description}
                   </p>
+
+                  {isRoyaltyLevel && (
+                    <div className="flex items-center gap-1.5 mb-2 text-[11px] font-semibold text-amber-400 bg-amber-950/40 border border-amber-500/30 rounded-lg px-2.5 py-1">
+                      <Users className="w-3.5 h-3.5" />
+                      <span>Unlock Condition: Requires {levelNum} Active Direct Referral{Number(levelNum) > 1 ? "s" : ""}</span>
+                    </div>
+                  )}
                 </div>
 
                 <div className="mt-2">
@@ -353,7 +408,7 @@ export function AdminConfigView() {
               </button>
               <button
                 type="button"
-                onClick={handleSave}
+                onClick={() => handleSave()}
                 disabled={saving}
                 className="px-4 py-1.5 rounded-lg bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold flex items-center gap-1.5 shadow-lg shadow-purple-600/30"
               >

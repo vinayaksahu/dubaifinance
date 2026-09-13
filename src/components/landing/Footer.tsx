@@ -1,32 +1,144 @@
 import Link from "next/link";
+import Image from "next/image";
+import { Download, ShieldCheck, Mail, MapPin, Sparkles } from "lucide-react";
+import { ThemeToggle } from "@/components/theme/ThemeToggle";
+import { APP_CONFIG } from "@/lib/constants";
 
 export function Footer() {
   return (
-    <footer className="relative z-10 border-t border-slate-800 py-12 bg-black">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-6">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-amber-500 flex items-center justify-center text-xl">
-            ⚜️
+    <footer className="relative z-10 border-t border-[var(--border-subtle)] bg-[var(--bg-main)] transition-colors duration-200 pt-16 pb-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-8 pb-12 border-b border-[var(--border-subtle)]">
+          {/* Brand & Address (5 Cols) */}
+          <div className="lg:col-span-5 space-y-4">
+            <Link href="/" className="flex items-center gap-3">
+              <div className="w-11 h-11 rounded-xl overflow-hidden bg-gradient-to-br from-amber-400 via-amber-500 to-amber-700 p-0.5 shadow-md shadow-amber-500/20">
+                <div className="w-full h-full rounded-[10px] bg-slate-950 flex items-center justify-center overflow-hidden">
+                  <Image
+                    src="/dubaiLogo.png"
+                    alt="Dubai Finance Logo"
+                    width={40}
+                    height={40}
+                    className="object-contain"
+                  />
+                </div>
+              </div>
+              <div>
+                <span className="font-display font-black text-xl tracking-wider text-amber-500 dark:text-amber-300 uppercase">
+                  DUBAI FINANCE
+                </span>
+                <span className="block text-[10px] text-[var(--text-subtle)] tracking-widest uppercase font-medium">
+                  Official Investment Portal &bull; Est. 2023
+                </span>
+              </div>
+            </Link>
+
+            <p className="text-sm text-[var(--text-muted)] leading-relaxed max-w-md font-medium">
+              Institutional crypto trading protocol delivering sustainable 5% to 15% Daily ROI in USDT BEP-20. Backed by 25+ years of business excellence and verified Dubai headquarters.
+            </p>
+
+            <div className="space-y-2 text-xs text-[var(--text-subtle)] pt-1">
+              <div className="flex items-start gap-2">
+                <MapPin className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
+                <span>{APP_CONFIG.headquarters}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Mail className="w-4 h-4 text-amber-500 shrink-0" />
+                <span>{APP_CONFIG.officialEmail}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-amber-500 shrink-0" />
+                <span>CMD: {APP_CONFIG.cmd}</span>
+              </div>
+            </div>
           </div>
-          <div>
-            <span className="font-black text-lg text-amber-300 uppercase tracking-wider">
-              DUBAI FINANCE
-            </span>
-            <span className="block text-[11px] text-slate-400">
-              Al Tayer Building, Sheikh Zayed Road, Dubai, UAE
-            </span>
+
+          {/* Quick Links (3 Cols) */}
+          <div className="lg:col-span-3 space-y-3">
+            <h4 className="font-display text-sm font-bold text-[var(--text-main)] uppercase tracking-wider">
+              Navigation
+            </h4>
+            <ul className="space-y-2 text-xs font-semibold text-[var(--text-muted)]">
+              <li>
+                <a href="#about" className="hover:text-amber-500 transition">About &amp; Leadership</a>
+              </li>
+              <li>
+                <a href="#packages" className="hover:text-amber-500 transition">Basic &amp; Fix Deposit (FD)</a>
+              </li>
+              <li>
+                <a href="#calculator" className="hover:text-amber-500 transition">Compounding Multiplier</a>
+              </li>
+              <li>
+                <a href="#referrals" className="hover:text-amber-500 transition">12-Level Team Royalties</a>
+              </li>
+              <li>
+                <a href="#ranks" className="hover:text-amber-500 transition">Milestone Executive Rewards</a>
+              </li>
+              <li>
+                <a href="#terms" className="hover:text-amber-500 transition">Official Rules &amp; Zero Deductions</a>
+              </li>
+              <li>
+                <a href="#faq" className="hover:text-amber-500 transition">Frequently Asked Questions</a>
+              </li>
+            </ul>
+          </div>
+
+          {/* Member Portals & Presentation Download (4 Cols) */}
+          <div className="lg:col-span-4 space-y-4">
+            <h4 className="font-display text-sm font-bold text-[var(--text-main)] uppercase tracking-wider">
+              Official Resources
+            </h4>
+
+            <a
+              href="/Dubai_Finance_Presentation.pdf"
+              download
+              className="w-full py-3 px-4 rounded-xl border border-amber-500/30 bg-[var(--bg-card)] hover:border-amber-400 text-[var(--text-main)] text-xs font-bold transition flex items-center justify-between shadow-sm"
+            >
+              <span className="flex items-center gap-2">
+                <Download className="w-4 h-4 text-amber-500" />
+                Download PDF Presentation Deck
+              </span>
+              <span className="text-[10px] px-2 py-0.5 rounded bg-amber-500/15 text-amber-600 dark:text-amber-300">
+                40+ Slides
+              </span>
+            </a>
+
+            <div className="grid grid-cols-2 gap-3">
+              <Link
+                href="/login"
+                className="py-2.5 px-3 rounded-xl border border-[var(--border-subtle)] text-center text-xs font-bold text-[var(--text-main)] hover:border-amber-400 transition"
+              >
+                Sign In Portal
+              </Link>
+              <Link
+                href="/register"
+                className="gold-btn py-2.5 px-3 rounded-xl text-center text-xs font-bold"
+              >
+                Register &amp; Bonus
+              </Link>
+            </div>
+
+            <div className="p-3 rounded-xl bg-inner-panel flex items-center justify-between text-xs">
+              <span className="font-bold text-[var(--text-main)]">Theme Preference</span>
+              <ThemeToggle variant="segmented" />
+            </div>
           </div>
         </div>
 
-        <div className="flex gap-6 text-xs text-slate-400">
-          <Link href="/login" className="hover:text-amber-300">Member Portal</Link>
-          <Link href="/register" className="hover:text-amber-300">Register</Link>
-          <a href="#about" className="hover:text-amber-300">About</a>
-          <a href="#terms" className="hover:text-amber-300">Rules &amp; Terms</a>
-        </div>
+        {/* Bottom copyright & security bar */}
+        <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[var(--text-subtle)]">
+          <div className="flex items-center gap-2">
+            <ShieldCheck className="w-4 h-4 text-emerald-500" />
+            <span>&copy; 2023 - 2026 Dubai Finance. Official Investment Portal. All Rights Reserved.</span>
+          </div>
 
-        <div className="text-xs text-slate-500">
-          &copy; 2026 Dubai Finance. All Rights Reserved.
+          <div className="flex items-center gap-4 text-[11px]">
+            <span>USDT BEP-20 Standard</span>
+            <span>&bull;</span>
+            <span>Zero TDS / Zero Admin Fees</span>
+            <span>&bull;</span>
+            <span>P2P Enabled</span>
+          </div>
         </div>
       </div>
     </footer>

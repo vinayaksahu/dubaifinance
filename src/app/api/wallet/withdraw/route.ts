@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSession, comparePin } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { executeLedgerTransaction } from "@/lib/ledger";
-import { APP_CONFIG, isWithdrawalWindowOpen, inrToUsdt } from "@/lib/constants";
+import { getNumericConfig } from "@/lib/configService";
+import { APP_CONFIG } from "@/lib/constants";
 import Decimal from "decimal.js";
 
 export async function POST(req: NextRequest) {
@@ -12,10 +13,27 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Check Withdrawal Window (10 AM to 02 PM IST)
-    if (!isWithdrawalWindowOpen()) {
+    // Dynamic withdrawal window check
+    const startHour = await getNumericConfig("WITHDRAWAL_START_HOUR", APP_CONFIG.withdrawalWindow.startHour);
+    const endHour = await getNumericConfig("WITHDRAWAL_END_HOUR", APP_CONFIG.withdrawalWindow.endHour);
+    const minUsdt = await getNumericConfig("MIN_WITHDRAWAL_USDT", APP_CONFIG.minWithdrawalUsdt);
+    const maxUsdt = await getNumericConfig("MAX_WITHDRAWAL_USDT", APP_CONFIG.maxWithdrawalUsdt);
+    const usdtRate = await getNumericConfig("USDT_TO_INR_RATE", APP_CONFIG.usdtToInrRate);
+
+    // Current IST Time calculation
+    const now = new Date();
+    const utcHours = now.getUTCHours();
+    const utcMinutes = now.getUTCMinutes();
+    let istHours = (utcHours + 5) % 24;
+    let istMinutes = utcMinutes + 30;
+    if (istMinutes >= 60) {
+      istHours = (istHours + 1) % 24;
+    }
+    const isWindowOpen = istHours >= startHour && istHours < endHour;
+
+    if (!isWindowOpen) {
       return NextResponse.json({
-        error: "Withdrawal window is closed. Withdrawals are strictly processed daily between 10:00 AM and 02:00 PM (IST).",
+        error: `Withdrawal window is closed. Withdrawals are processed daily between ${startHour}:00 and ${endHour}:00 IST.`,
       }, { status: 403 });
     }
 
@@ -51,19 +69,18 @@ export async function POST(req: NextRequest) {
     }
 
     const amountInrDec = new Decimal(amountInInr.toString());
-
-    const amountUsdt = inrToUsdt(amountInrDec.toNumber());
+    const amountUsdt = Number((amountInrDec.toNumber() / usdtRate).toFixed(4));
     const amountUsdtDec = new Decimal(amountUsdt.toString());
 
-    // Validate limits
-    if (amountUsdtDec.lessThan(APP_CONFIG.minWithdrawalUsdt)) {
+    // Validate dynamic limits
+    if (amountUsdtDec.lessThan(minUsdt)) {
       return NextResponse.json({
-        error: `Minimum withdrawal is $${APP_CONFIG.minWithdrawalUsdt} USDT.`,
+        error: `Minimum withdrawal is $${minUsdt} USDT.`,
       }, { status: 400 });
     }
-    if (amountUsdtDec.greaterThan(APP_CONFIG.maxWithdrawalUsdt)) {
+    if (amountUsdtDec.greaterThan(maxUsdt)) {
       return NextResponse.json({
-        error: `Maximum withdrawal is $${APP_CONFIG.maxWithdrawalUsdt} USDT.`,
+        error: `Maximum withdrawal is $${maxUsdt} USDT.`,
       }, { status: 400 });
     }
 
@@ -74,33 +91,35 @@ export async function POST(req: NextRequest) {
       }, { status: 400 });
     }
 
-    const withdrawal = await db.withdrawalRequest.create({
-      data: {
-        userId: user.id,
-        amountInInr: amountInrDec.toFixed(2),
-        amountInUsdt: amountUsdtDec.toFixed(8),
-        toAddress: payoutAddress,
-        status: "PENDING",
-      },
-    });
-
-    // Debit user income balance immediately (Zero deduction, 100% payout)
+    // Deduct Income Balance via Ledger
     await executeLedgerTransaction({
       userId: user.id,
       type: "WITHDRAWAL",
       wallet: "INCOME",
       amount: amountUsdtDec.negated(),
-      referenceKey: `WITHDRAWAL_${withdrawal.id}`,
-      description: `Withdrawal request of $${amountUsdtDec.toFixed(2)} USDT to ${payoutAddress}`,
+      referenceKey: `WITHDRAWAL_REQ_${Date.now()}_${user.id}`,
+      description: `Requested USDT Payout of $${amountUsdtDec.toFixed(2)} USDT to ${payoutAddress.slice(0, 8)}...`,
+    });
+
+    // Create WithdrawalRequest in DB
+    const request = await db.withdrawalRequest.create({
+      data: {
+        userId: user.id,
+        amountInInr: amountInrDec.toFixed(2),
+        amountInUsdt: amountUsdtDec.toFixed(8),
+        toAddress: payoutAddress,
+        network: "USDT_BEP20",
+        status: "PENDING",
+      },
     });
 
     return NextResponse.json({
       success: true,
-      message: `Withdrawal of $${amountUsdtDec.toFixed(2)} USDT placed successfully! Zero admin deduction.`,
-      withdrawalId: withdrawal.id,
+      message: "Withdrawal request submitted successfully! Admin will dispatch payout shortly.",
+      withdrawalId: request.id,
     });
   } catch (error: any) {
     console.error("Withdrawal error:", error);
-    return NextResponse.json({ error: error.message || "Failed to process withdrawal." }, { status: 500 });
+    return NextResponse.json({ error: error.message || "Withdrawal failed." }, { status: 500 });
   }
 }

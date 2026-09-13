@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { getAllSystemConfigs } from "@/lib/configService";
 import Decimal from "decimal.js";
 
 export async function GET() {
@@ -148,7 +149,10 @@ export async function GET() {
     currentLevelUserIds = nextLevelUsers.map((u) => u.id);
   }
 
+  const systemConfig = await getAllSystemConfigs();
+
   return NextResponse.json({
+    systemConfig,
     user: {
       id: user.id,
       customId: user.customId,
@@ -184,6 +188,7 @@ export async function GET() {
         amountInUsdt: Number(w.amountInUsdt != null ? w.amountInUsdt.toString() : (Number(w.amountInInr) / 110)),
       })),
       ledgerEntries: user.ledgers,
+      systemConfig,
     },
   });
 }

@@ -1,5 +1,6 @@
 import { db } from "../db";
 import { executeLedgerTransaction, WalletType } from "../ledger";
+import { getNumericConfig } from "../configService";
 import { APP_CONFIG } from "../constants";
 import Decimal from "decimal.js";
 
@@ -43,9 +44,9 @@ export async function processLevelIncomeForRoi(
     const isQualified = sponsor.status === "ACTIVE" && activeDirectsCount >= level;
 
     if (isQualified) {
-      // Rate: Level 1 = 5%, Level 2-12 = 1%
-      const rateConfig = APP_CONFIG.levelRates.find((r) => r.level === level);
-      const ratePercent = rateConfig ? rateConfig.percent : 1.0;
+      // Dynamic Level Royalty rate from System Config
+      const defaultRate = APP_CONFIG.levelRates.find((r) => r.level === level)?.percent ?? 1.0;
+      const ratePercent = await getNumericConfig(`LEVEL_${level}_PERCENT`, defaultRate);
 
       const levelIncomeUsdt = dailyRoiUsdt.times(ratePercent / 100);
 

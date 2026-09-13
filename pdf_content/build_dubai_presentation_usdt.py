@@ -3,7 +3,7 @@ import base64
 import subprocess
 import fitz
 
-workspace = os.path.dirname(os.path.abspath(__file__))
+workspace = r"c:\Users\user\Desktop\DubaiFinance\pdf_content"
 
 def get_base64_image(rel_path):
     full_path = os.path.join(workspace, rel_path)
@@ -58,16 +58,17 @@ body {{
     padding: 70px 100px;
     display: flex;
     flex-direction: column;
+    justify-content: space-between;
 }}
 
-/* Top Brand Header Bar */
+/* Header Components */
 .slide-header {{
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 36px;
-    position: relative;
-    z-index: 10;
+    border-bottom: 2px solid rgba(255, 215, 0, 0.2);
+    padding-bottom: 20px;
+    margin-bottom: 20px;
 }}
 
 .logo-container {{
@@ -84,158 +85,158 @@ body {{
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 0 25px rgba(245, 158, 11, 0.4);
+    box-shadow: 0 0 25px rgba(245, 158, 11, 0.5);
 }}
 
 .logo-text {{
     font-family: 'Space Grotesk', sans-serif;
-    font-size: 36px;
+    font-size: 34px;
     font-weight: 800;
     letter-spacing: 2px;
-    color: #ffd056;
+    background: linear-gradient(to right, #ffffff, #ffd056);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
 }}
 
 .header-badge {{
     background: rgba(255, 208, 86, 0.1);
-    border: 1px solid rgba(255, 208, 86, 0.35);
-    color: #fce082;
-    padding: 10px 24px;
+    border: 1px solid rgba(255, 208, 86, 0.3);
+    padding: 8px 24px;
     border-radius: 999px;
-    font-size: 18px;
+    font-size: 16px;
     font-weight: 700;
+    color: #ffd056;
     letter-spacing: 1px;
     text-transform: uppercase;
 }}
 
-/* Bottom Footer Bar */
-.slide-footer {{
-    margin-top: auto;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-top: 1px solid rgba(255, 255, 255, 0.08);
-    padding-top: 18px;
-    font-size: 16px;
-    color: #64748b;
-    font-weight: 600;
-    position: relative;
-    z-index: 10;
-}}
-
 /* Typography */
 .category-title {{
-    color: #ffd056;
     font-size: 20px;
     font-weight: 800;
-    letter-spacing: 3px;
+    color: #38bdf8;
     text-transform: uppercase;
-    margin-bottom: 10px;
+    letter-spacing: 2.5px;
+    margin-bottom: 6px;
 }}
 
 .main-title {{
     font-family: 'Space Grotesk', sans-serif;
-    font-size: 64px;
+    font-size: 56px;
     font-weight: 800;
-    color: #ffffff;
     line-height: 1.15;
+    color: #ffffff;
     margin-bottom: 12px;
 }}
 
 .subtitle {{
-    font-size: 25px;
+    font-size: 22px;
     color: #94a3b8;
-    margin-bottom: 36px;
     line-height: 1.4;
+    max-width: 1400px;
+    margin-bottom: 24px;
 }}
 
-/* Glass Cards */
+/* Cards & Containers */
 .card {{
-    background: rgba(15, 23, 42, 0.75);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(15, 23, 42, 0.65);
+    border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 24px;
-    padding: 34px;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.45);
-    position: relative;
     backdrop-filter: blur(16px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
 }}
 
 .card-gold {{
-    border: 1px solid rgba(255, 208, 86, 0.35);
-    background: linear-gradient(145deg, rgba(26, 32, 53, 0.9), rgba(15, 23, 42, 0.85));
-    box-shadow: 0 20px 50px rgba(245, 158, 11, 0.12);
+    background: linear-gradient(135deg, rgba(30, 27, 75, 0.6), rgba(15, 23, 42, 0.8));
+    border: 1px solid rgba(255, 208, 86, 0.3);
+    box-shadow: 0 20px 50px rgba(245, 158, 11, 0.1);
 }}
 
 .card-vip {{
-    border: 2px solid #ffd056;
-    background: linear-gradient(145deg, rgba(35, 42, 70, 0.95), rgba(18, 25, 48, 0.9));
-    box-shadow: 0 25px 60px rgba(245, 158, 11, 0.25);
+    background: radial-gradient(circle at top left, rgba(244, 63, 94, 0.15), rgba(15, 23, 42, 0.85));
+    border: 1px solid rgba(244, 63, 94, 0.4);
+}}
+
+/* Grids */
+.grid-2 {{
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 32px;
+}}
+
+.grid-3 {{
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 28px;
+}}
+
+.grid-4 {{
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+}}
+
+.grid-5 {{
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 20px;
 }}
 
 /* Tables */
 .custom-table {{
     width: 100%;
     border-collapse: separate;
-    border-spacing: 0;
-    border-radius: 20px;
-    overflow: hidden;
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-spacing: 0 10px;
 }}
 
 .custom-table th {{
-    background: #0f172a;
+    background: rgba(30, 41, 59, 0.8);
     color: #ffd056;
-    padding: 20px 24px;
-    font-size: 21px;
+    font-size: 20px;
     font-weight: 800;
     text-transform: uppercase;
-    letter-spacing: 1px;
-    border-bottom: 2px solid rgba(255, 208, 86, 0.3);
+    letter-spacing: 1.5px;
+    padding: 16px 22px;
     text-align: left;
+    border: none;
 }}
+
+.custom-table th:first-child {{ border-radius: 14px 0 0 14px; }}
+.custom-table th:last-child {{ border-radius: 0 14px 14px 0; }}
 
 .custom-table td {{
-    background: rgba(15, 23, 42, 0.65);
-    padding: 17px 24px;
-    font-size: 22px;
-    font-weight: 700;
-    color: #f1f5f9;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    background: rgba(15, 23, 42, 0.7);
+    color: #e2e8f0;
+    font-size: 20px;
+    font-weight: 600;
+    padding: 14px 22px;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }}
 
-.custom-table tr:last-child td {{
-    border-bottom: none;
+.custom-table tr td:first-child {{
+    border-left: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 14px 0 0 14px;
 }}
 
-.custom-table tr:nth-child(even) td {{
-    background: rgba(30, 41, 59, 0.45);
+.custom-table tr td:last-child {{
+    border-right: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 0 14px 14px 0;
 }}
 
-/* Grid Utilities */
-.grid-2 {{
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 40px;
+/* Footer */
+.slide-footer {{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding-top: 18px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #64748b;
+    letter-spacing: 1px;
 }}
 
-.grid-3 {{
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: 36px;
-}}
-
-.grid-4 {{
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 28px;
-}}
-
-.grid-5 {{
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 24px;
-}}
-
-/* Button & Pill */
 .btn-primary {{
     background: linear-gradient(135deg, #e11d48, #be123c);
     color: #ffffff;
@@ -280,14 +281,14 @@ body {{
     <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 24px; width: 100%; max-width: 1680px; margin-bottom: 44px;">
         <div class="card card-gold" style="padding: 24px; text-align: center;">
             <div style="font-size: 38px; font-weight: 900; color: #ffd056;">5% DAILY</div>
-            <div style="font-size: 18px; color: #94a3b8; font-weight: 700; margin-top: 6px;">BASIC ROI (30 DAYS)</div>
+            <div style="font-size: 18px; color: #94a3b8; font-weight: 700; margin-top: 6px;">BASIC ROI (28 DAYS)</div>
         </div>
         <div class="card card-gold" style="padding: 24px; text-align: center;">
             <div style="font-size: 38px; font-weight: 900; color: #38bdf8;">10% & 15%</div>
             <div style="font-size: 18px; color: #94a3b8; font-weight: 700; margin-top: 6px;">FIX DEPOSIT (FD) ROI</div>
         </div>
         <div class="card card-gold" style="padding: 24px; text-align: center;">
-            <div style="font-size: 38px; font-weight: 900; color: #10b981;">15% INSTANT</div>
+            <div style="font-size: 38px; font-weight: 900; color: #10b981;">10% INSTANT</div>
             <div style="font-size: 18px; color: #94a3b8; font-weight: 700; margin-top: 6px;">DIRECT REFERRAL</div>
         </div>
         <div class="card card-gold" style="padding: 24px; text-align: center;">
@@ -302,6 +303,7 @@ body {{
 
     <div style="display: flex; align-items: center; gap: 40px;">
         <div class="btn-primary" style="font-size: 26px; padding: 18px 48px;">JOIN WITH AS LOW AS $5 USDT</div>
+        <div style="font-size: 24px; color: #ffd056; font-weight: 800;">🎁 $1.00 USDT Welcome Bonus Active!</div>
         <div style="font-size: 24px; color: #94a3b8; font-weight: 700;">🌐 Dubaifinance.online</div>
         <div style="font-size: 24px; color: #94a3b8; font-weight: 700;">📍 Sheikh Zayed Road, Dubai, UAE</div>
     </div>
@@ -319,14 +321,14 @@ body {{
     
     <div class="category-title">Institutional Financial Strength</div>
     <h2 class="main-title">About Dubai Finance</h2>
-    <p class="subtitle">A premier global financial conglomerate with 25+ years of cross-industry mastery and 7+ years of crypto market leadership.</p>
+    <p class="subtitle">A premier global financial conglomerate with 30+ years of proven track record and 10+ years of crypto market leadership.</p>
 
     <div class="grid-2" style="align-items: center;">
         <div style="display: flex; flex-direction: column; gap: 24px;">
             <div class="card" style="display: flex; gap: 24px; align-items: flex-start;">
                 <div style="width: 70px; height: 70px; border-radius: 18px; background: rgba(245, 158, 11, 0.15); display: flex; align-items: center; justify-content: center; font-size: 36px; border: 1px solid #ffd056;">🏢</div>
                 <div>
-                    <h3 style="font-size: 28px; font-weight: 800; color: #ffd056; margin-bottom: 8px;">25+ Years Proven Track Record</h3>
+                    <h3 style="font-size: 28px; font-weight: 800; color: #ffd056; margin-bottom: 8px;">30+ Years Proven Track Record</h3>
                     <p style="font-size: 20px; color: #cbd5e1; line-height: 1.4;">Deep-rooted experience in Prime Real Estate, Five-Star Hospitality, Wholesale Trade, and Global Tourism & Travel networks.</p>
                 </div>
             </div>
@@ -334,7 +336,7 @@ body {{
             <div class="card" style="display: flex; gap: 24px; align-items: flex-start;">
                 <div style="width: 70px; height: 70px; border-radius: 18px; background: rgba(56, 189, 248, 0.15); display: flex; align-items: center; justify-content: center; font-size: 36px; border: 1px solid #38bdf8;">📈</div>
                 <div>
-                    <h3 style="font-size: 28px; font-weight: 800; color: #38bdf8; margin-bottom: 8px;">7+ Years Crypto Market Leadership</h3>
+                    <h3 style="font-size: 28px; font-weight: 800; color: #38bdf8; margin-bottom: 8px;">10+ Years Crypto Market Leadership</h3>
                     <p style="font-size: 20px; color: #cbd5e1; line-height: 1.4;">Proprietary quantitative arbitrage, crypto derivatives trading, automated high-frequency bot liquidity, and risk-hedged futures strategies.</p>
                 </div>
             </div>
@@ -342,7 +344,7 @@ body {{
             <div class="card" style="display: flex; gap: 24px; align-items: flex-start;">
                 <div style="width: 70px; height: 70px; border-radius: 18px; background: rgba(16, 185, 129, 0.15); display: flex; align-items: center; justify-content: center; font-size: 36px; border: 1px solid #10b981;">💰</div>
                 <div>
-                    <h3 style="font-size: 28px; font-weight: 800; color: #10b981; margin-bottom: 8px;">$100+ Million Generated</h3>
+                    <h3 style="font-size: 28px; font-weight: 800; color: #10b981; margin-bottom: 8px;">$25+ Million Generated</h3>
                     <p style="font-size: 20px; color: #cbd5e1; line-height: 1.4;">Substantial multi-million dollar liquidity generation enabling guaranteed, sustainable daily returns to community members worldwide.</p>
                 </div>
             </div>
@@ -355,7 +357,7 @@ body {{
 
     <div class="slide-footer">
         <span>Dubai Finance • Institutional Corporate Profile</span>
-        <span>Slide 02 / 23</span>
+        <span>Slide 02 / 24</span>
     </div>
 </div>
 
@@ -392,7 +394,7 @@ body {{
                 <h4 style="font-size: 24px; font-weight: 800; color: #38bdf8; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 1px;">Corporate Verification</h4>
                 <div style="display: flex; flex-direction: column; gap: 16px; font-size: 20px;">
                     <div style="display: flex; gap: 16px;"><span style="color: #ffd056; font-size: 24px;">📍</span> <span><strong>Office Address:</strong> Office 3802, Latifa Tower, Sheikh Zayed Road, Dubai, UAE</span></div>
-                    <div style="display: flex; gap: 16px;"><span style="color: #10b981; font-size: 24px;">🗓️</span> <span><strong>Official Launch Date:</strong> 15th December 2023</span></div>
+                    <div style="display: flex; gap: 16px;"><span style="color: #10b981; font-size: 24px;">🗓️</span> <span><strong>Official Launch Date:</strong> Pre-Launching Phase</span></div>
                     <div style="display: flex; gap: 16px;"><span style="color: #f43f5e; font-size: 24px;">✉️</span> <span><strong>Official Email:</strong> support@dubaifinance.online</span></div>
                     <div style="display: flex; gap: 16px;"><span style="color: #a855f7; font-size: 24px;">🌐</span> <span><strong>Web Portal:</strong> Dubaifinance.online</span></div>
                 </div>
@@ -410,7 +412,7 @@ body {{
 
     <div class="slide-footer">
         <span>Dubai Finance • Executive Leadership & Headquarters</span>
-        <span>Slide 03 / 23</span>
+        <span>Slide 03 / 24</span>
     </div>
 </div>
 
@@ -437,26 +439,26 @@ body {{
 
         <div class="card card-gold" style="text-align: center; padding: 48px 30px;">
             <div style="width: 90px; height: 90px; margin: 0 auto 24px; border-radius: 24px; background: rgba(16, 185, 129, 0.15); display: flex; align-items: center; justify-content: center; font-size: 48px; border: 1px solid #10b981;">🛡️</div>
-            <h3 style="font-size: 30px; font-weight: 900; color: #10b981; margin-bottom: 14px;">100% Net Payout</h3>
-            <p style="font-size: 20px; color: #cbd5e1; line-height: 1.4;">0% Admin Deductions, 0% TDS, 0% Hidden Fees. You receive 100% of your hard-earned profits.</p>
+            <h3 style="font-size: 30px; font-weight: 900; color: #10b981; margin-bottom: 14px;">10% Admin Deduction</h3>
+            <p style="font-size: 20px; color: #cbd5e1; line-height: 1.4;">Transparent 10% admin deduction on withdrawals to maintain top-tier liquidity pools, blockchain node security, and server infrastructure.</p>
         </div>
 
         <div class="card card-gold" style="text-align: center; padding: 48px 30px;">
             <div style="width: 90px; height: 90px; margin: 0 auto 24px; border-radius: 24px; background: rgba(245, 158, 11, 0.15); display: flex; align-items: center; justify-content: center; font-size: 48px; border: 1px solid #ffd056;">⚡</div>
-            <h3 style="font-size: 30px; font-weight: 900; color: #ffd056; margin-bottom: 14px;">Daily 5% ROI (30 Days)</h3>
-            <p style="font-size: 20px; color: #cbd5e1; line-height: 1.4;">Generates steady cash flow 7 days a week with transparent 30-day fixed tenure contracts.</p>
+            <h3 style="font-size: 30px; font-weight: 900; color: #ffd056; margin-bottom: 14px;">Daily 5% ROI (28 Days)</h3>
+            <p style="font-size: 20px; color: #cbd5e1; line-height: 1.4;">Generates steady cash flow 7 days a week with transparent 28-day fixed tenure contracts delivering 140% gross returns.</p>
         </div>
 
         <div class="card card-gold" style="text-align: center; padding: 48px 30px;">
             <div style="width: 90px; height: 90px; margin: 0 auto 24px; border-radius: 24px; background: rgba(225, 29, 72, 0.15); display: flex; align-items: center; justify-content: center; font-size: 48px; border: 1px solid #e11d48;">🔓</div>
             <h3 style="font-size: 30px; font-weight: 900; color: #f43f5e; margin-bottom: 14px;">No Referral Condition</h3>
-            <p style="font-size: 20px; color: #cbd5e1; line-height: 1.4;">Withdraw your daily earnings freely every day. No compulsory direct referral required to withdraw!</p>
+            <p style="font-size: 20px; color: #cbd5e1; line-height: 1.4;">Withdraw your daily ROI earnings freely every day. No compulsory direct referrals required to withdraw your basic returns!</p>
         </div>
     </div>
 
     <div class="slide-footer">
         <span>Dubai Finance • Key Competitive Strengths</span>
-        <span>Slide 04 / 23</span>
+        <span>Slide 04 / 24</span>
     </div>
 </div>
 
@@ -472,68 +474,68 @@ body {{
     
     <div class="category-title">Accessible to Everyone</div>
     <h2 class="main-title">Joining Packages: $5 To $5,000 USDT</h2>
-    <p class="subtitle">Select the package that fits your financial goals. All packages run on a disciplined <strong>30-Day Tenure</strong> at <strong>5% Daily ROI</strong>.</p>
+    <p class="subtitle">Select the package that fits your financial goals. All packages run on a disciplined <strong>28-Day Tenure</strong> at <strong>5% Daily ROI</strong>.</p>
 
     <!-- 9 Packages Grid (3x3) -->
     <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-top: 10px;">
         <div class="card" style="padding: 24px; text-align: center; border: 1px solid rgba(56, 189, 248, 0.3);">
             <div style="font-size: 16px; color: #38bdf8; font-weight: 800; letter-spacing: 2px;">STARTER TIER</div>
             <div style="font-size: 52px; font-weight: 900; color: #ffffff; margin: 8px 0;">$5 <span style="font-size: 22px; color: #94a3b8;">USDT</span></div>
-            <div style="font-size: 18px; color: #10b981; font-weight: 700;">Daily ROI: $0.25 (5%) • 30 Days: $7.50</div>
+            <div style="font-size: 18px; color: #10b981; font-weight: 700;">Daily ROI: $0.25 (5%) • 28 Days: $7.00</div>
         </div>
 
         <div class="card" style="padding: 24px; text-align: center; border: 1px solid rgba(56, 189, 248, 0.3);">
             <div style="font-size: 16px; color: #38bdf8; font-weight: 800; letter-spacing: 2px;">STARTER TIER</div>
             <div style="font-size: 52px; font-weight: 900; color: #ffffff; margin: 8px 0;">$10 <span style="font-size: 22px; color: #94a3b8;">USDT</span></div>
-            <div style="font-size: 18px; color: #10b981; font-weight: 700;">Daily ROI: $0.50 (5%) • 30 Days: $15.00</div>
+            <div style="font-size: 18px; color: #10b981; font-weight: 700;">Daily ROI: $0.50 (5%) • 28 Days: $14.00</div>
         </div>
 
         <div class="card" style="padding: 24px; text-align: center; border: 1px solid rgba(56, 189, 248, 0.3);">
             <div style="font-size: 16px; color: #38bdf8; font-weight: 800; letter-spacing: 2px;">STARTER TIER</div>
             <div style="font-size: 52px; font-weight: 900; color: #ffffff; margin: 8px 0;">$20 <span style="font-size: 22px; color: #94a3b8;">USDT</span></div>
-            <div style="font-size: 18px; color: #10b981; font-weight: 700;">Daily ROI: $1.00 (5%) • 30 Days: $30.00</div>
+            <div style="font-size: 18px; color: #10b981; font-weight: 700;">Daily ROI: $1.00 (5%) • 28 Days: $28.00</div>
         </div>
 
         <div class="card card-gold" style="padding: 24px; text-align: center;">
             <div style="font-size: 16px; color: #ffd056; font-weight: 800; letter-spacing: 2px;">GROWTH TIER</div>
             <div style="font-size: 52px; font-weight: 900; color: #ffd056; margin: 8px 0;">$50 <span style="font-size: 22px; color: #94a3b8;">USDT</span></div>
-            <div style="font-size: 18px; color: #10b981; font-weight: 700;">Daily ROI: $2.50 (5%) • 30 Days: $75.00</div>
+            <div style="font-size: 18px; color: #10b981; font-weight: 700;">Daily ROI: $2.50 (5%) • 28 Days: $70.00</div>
         </div>
 
         <div class="card card-gold" style="padding: 24px; text-align: center;">
             <div style="font-size: 16px; color: #ffd056; font-weight: 800; letter-spacing: 2px;">GROWTH TIER</div>
             <div style="font-size: 52px; font-weight: 900; color: #ffd056; margin: 8px 0;">$100 <span style="font-size: 22px; color: #94a3b8;">USDT</span></div>
-            <div style="font-size: 18px; color: #10b981; font-weight: 700;">Daily ROI: $5.00 (5%) • 30 Days: $150.00</div>
+            <div style="font-size: 18px; color: #10b981; font-weight: 700;">Daily ROI: $5.00 (5%) • 28 Days: $140.00</div>
         </div>
 
         <div class="card card-gold" style="padding: 24px; text-align: center;">
             <div style="font-size: 16px; color: #ffd056; font-weight: 800; letter-spacing: 2px;">GROWTH TIER</div>
             <div style="font-size: 52px; font-weight: 900; color: #ffd056; margin: 8px 0;">$500 <span style="font-size: 22px; color: #94a3b8;">USDT</span></div>
-            <div style="font-size: 18px; color: #10b981; font-weight: 700;">Daily ROI: $25.00 (5%) • 30 Days: $750.00</div>
+            <div style="font-size: 18px; color: #10b981; font-weight: 700;">Daily ROI: $25.00 (5%) • 28 Days: $700.00</div>
         </div>
 
         <div class="card card-vip" style="padding: 24px; text-align: center;">
             <div style="font-size: 16px; color: #f43f5e; font-weight: 800; letter-spacing: 2px;">ELITE VIP</div>
             <div style="font-size: 52px; font-weight: 900; color: #ffffff; margin: 8px 0;">$1,000 <span style="font-size: 22px; color: #ffd056;">USDT</span></div>
-            <div style="font-size: 18px; color: #ffd056; font-weight: 800;">Daily ROI: $50.00 (5%) • 30 Days: $1,500.00</div>
+            <div style="font-size: 18px; color: #ffd056; font-weight: 800;">Daily ROI: $50.00 (5%) • 28 Days: $1,400.00</div>
         </div>
 
         <div class="card card-vip" style="padding: 24px; text-align: center;">
             <div style="font-size: 16px; color: #f43f5e; font-weight: 800; letter-spacing: 2px;">ELITE VIP</div>
             <div style="font-size: 52px; font-weight: 900; color: #ffffff; margin: 8px 0;">$2,000 <span style="font-size: 22px; color: #ffd056;">USDT</span></div>
-            <div style="font-size: 18px; color: #ffd056; font-weight: 800;">Daily ROI: $100.00 (5%) • 30 Days: $3,000.00</div>
+            <div style="font-size: 18px; color: #ffd056; font-weight: 800;">Daily ROI: $100.00 (5%) • 28 Days: $2,800.00</div>
         </div>
 
         <div class="card card-vip" style="padding: 24px; text-align: center; border: 2px solid #10b981;">
             <div style="font-size: 16px; color: #10b981; font-weight: 800; letter-spacing: 2px;">ROYAL DIAMOND</div>
             <div style="font-size: 52px; font-weight: 900; color: #10b981; margin: 8px 0;">$5,000 <span style="font-size: 22px; color: #ffffff;">USDT</span></div>
-            <div style="font-size: 18px; color: #10b981; font-weight: 900;">Daily ROI: $250.00 (5%) • 30 Days: $7,500.00</div>
+            <div style="font-size: 18px; color: #10b981; font-weight: 900;">Daily ROI: $250.00 (5%) • 28 Days: $7,000.00</div>
         </div>
     </div>
 
     <div class="slide-footer">
         <span>Dubai Finance • Complete Joining Packages Suite ($5 - $5,000)</span>
-        <span>Slide 05 / 23</span>
+        <span>Slide 05 / 24</span>
     </div>
 </div>
 
@@ -560,9 +562,9 @@ body {{
 
             <div style="background: rgba(3, 7, 18, 0.6); border-radius: 18px; padding: 24px; text-align: left; display: flex; flex-direction: column; gap: 14px; font-size: 20px;">
                 <div style="display: flex; justify-content: space-between;"><span>Daily Yield (5%):</span> <strong style="color: #ffd056;">$0.25 USDT</strong></div>
-                <div style="display: flex; justify-content: space-between;"><span>Tenure Duration:</span> <strong>30 Days</strong></div>
-                <div style="display: flex; justify-content: space-between;"><span>Gross Return:</span> <strong style="color: #10b981;">$7.50 USDT</strong></div>
-                <div style="display: flex; justify-content: space-between;"><span>Net Profit:</span> <strong style="color: #38bdf8;">$2.50 USDT (50%)</strong></div>
+                <div style="display: flex; justify-content: space-between;"><span>Tenure Duration:</span> <strong>28 Days</strong></div>
+                <div style="display: flex; justify-content: space-between;"><span>Gross Return:</span> <strong style="color: #10b981;">$7.00 USDT</strong></div>
+                <div style="display: flex; justify-content: space-between;"><span>Net Profit:</span> <strong style="color: #38bdf8;">$2.00 USDT (40%)</strong></div>
             </div>
         </div>
 
@@ -574,9 +576,9 @@ body {{
 
             <div style="background: rgba(3, 7, 18, 0.6); border-radius: 18px; padding: 24px; text-align: left; display: flex; flex-direction: column; gap: 14px; font-size: 20px;">
                 <div style="display: flex; justify-content: space-between;"><span>Daily Yield (5%):</span> <strong style="color: #ffd056;">$0.50 USDT</strong></div>
-                <div style="display: flex; justify-content: space-between;"><span>Tenure Duration:</span> <strong>30 Days</strong></div>
-                <div style="display: flex; justify-content: space-between;"><span>Gross Return:</span> <strong style="color: #10b981;">$15.00 USDT</strong></div>
-                <div style="display: flex; justify-content: space-between;"><span>Net Profit:</span> <strong style="color: #38bdf8;">$5.00 USDT (50%)</strong></div>
+                <div style="display: flex; justify-content: space-between;"><span>Tenure Duration:</span> <strong>28 Days</strong></div>
+                <div style="display: flex; justify-content: space-between;"><span>Gross Return:</span> <strong style="color: #10b981;">$14.00 USDT</strong></div>
+                <div style="display: flex; justify-content: space-between;"><span>Net Profit:</span> <strong style="color: #38bdf8;">$4.00 USDT (40%)</strong></div>
             </div>
         </div>
 
@@ -588,16 +590,16 @@ body {{
 
             <div style="background: rgba(3, 7, 18, 0.6); border-radius: 18px; padding: 24px; text-align: left; display: flex; flex-direction: column; gap: 14px; font-size: 20px;">
                 <div style="display: flex; justify-content: space-between;"><span>Daily Yield (5%):</span> <strong style="color: #ffd056;">$1.00 USDT</strong></div>
-                <div style="display: flex; justify-content: space-between;"><span>Tenure Duration:</span> <strong>30 Days</strong></div>
-                <div style="display: flex; justify-content: space-between;"><span>Gross Return:</span> <strong style="color: #10b981;">$30.00 USDT</strong></div>
-                <div style="display: flex; justify-content: space-between;"><span>Net Profit:</span> <strong style="color: #38bdf8;">$10.00 USDT (50%)</strong></div>
+                <div style="display: flex; justify-content: space-between;"><span>Tenure Duration:</span> <strong>28 Days</strong></div>
+                <div style="display: flex; justify-content: space-between;"><span>Gross Return:</span> <strong style="color: #10b981;">$28.00 USDT</strong></div>
+                <div style="display: flex; justify-content: space-between;"><span>Net Profit:</span> <strong style="color: #38bdf8;">$8.00 USDT (40%)</strong></div>
             </div>
         </div>
     </div>
 
     <div class="slide-footer">
         <span>Dubai Finance • Starter Packages ($5, $10, $20 USDT)</span>
-        <span>Slide 06 / 23</span>
+        <span>Slide 06 / 24</span>
     </div>
 </div>
 
@@ -624,9 +626,9 @@ body {{
 
             <div style="background: rgba(3, 7, 18, 0.6); border-radius: 18px; padding: 24px; text-align: left; display: flex; flex-direction: column; gap: 14px; font-size: 20px;">
                 <div style="display: flex; justify-content: space-between;"><span>Daily Yield (5%):</span> <strong style="color: #ffd056;">$2.50 USDT</strong></div>
-                <div style="display: flex; justify-content: space-between;"><span>Tenure Duration:</span> <strong>30 Days</strong></div>
-                <div style="display: flex; justify-content: space-between;"><span>Gross Return:</span> <strong style="color: #10b981;">$75.00 USDT</strong></div>
-                <div style="display: flex; justify-content: space-between;"><span>Net Profit:</span> <strong style="color: #38bdf8;">$25.00 USDT (50%)</strong></div>
+                <div style="display: flex; justify-content: space-between;"><span>Tenure Duration:</span> <strong>28 Days</strong></div>
+                <div style="display: flex; justify-content: space-between;"><span>Gross Return:</span> <strong style="color: #10b981;">$70.00 USDT</strong></div>
+                <div style="display: flex; justify-content: space-between;"><span>Net Profit:</span> <strong style="color: #38bdf8;">$20.00 USDT (40%)</strong></div>
             </div>
         </div>
 
@@ -638,9 +640,9 @@ body {{
 
             <div style="background: rgba(3, 7, 18, 0.6); border-radius: 18px; padding: 24px; text-align: left; display: flex; flex-direction: column; gap: 14px; font-size: 20px;">
                 <div style="display: flex; justify-content: space-between;"><span>Daily Yield (5%):</span> <strong style="color: #ffd056;">$5.00 USDT</strong></div>
-                <div style="display: flex; justify-content: space-between;"><span>Tenure Duration:</span> <strong>30 Days</strong></div>
-                <div style="display: flex; justify-content: space-between;"><span>Gross Return:</span> <strong style="color: #10b981;">$150.00 USDT</strong></div>
-                <div style="display: flex; justify-content: space-between;"><span>Net Profit:</span> <strong style="color: #38bdf8;">$50.00 USDT (50%)</strong></div>
+                <div style="display: flex; justify-content: space-between;"><span>Tenure Duration:</span> <strong>28 Days</strong></div>
+                <div style="display: flex; justify-content: space-between;"><span>Gross Return:</span> <strong style="color: #10b981;">$140.00 USDT</strong></div>
+                <div style="display: flex; justify-content: space-between;"><span>Net Profit:</span> <strong style="color: #38bdf8;">$40.00 USDT (40%)</strong></div>
             </div>
         </div>
 
@@ -652,16 +654,16 @@ body {{
 
             <div style="background: rgba(3, 7, 18, 0.6); border-radius: 18px; padding: 24px; text-align: left; display: flex; flex-direction: column; gap: 14px; font-size: 20px;">
                 <div style="display: flex; justify-content: space-between;"><span>Daily Yield (5%):</span> <strong style="color: #ffd056;">$25.00 USDT</strong></div>
-                <div style="display: flex; justify-content: space-between;"><span>Tenure Duration:</span> <strong>30 Days</strong></div>
-                <div style="display: flex; justify-content: space-between;"><span>Gross Return:</span> <strong style="color: #10b981;">$750.00 USDT</strong></div>
-                <div style="display: flex; justify-content: space-between;"><span>Net Profit:</span> <strong style="color: #38bdf8;">$250.00 USDT (50%)</strong></div>
+                <div style="display: flex; justify-content: space-between;"><span>Tenure Duration:</span> <strong>28 Days</strong></div>
+                <div style="display: flex; justify-content: space-between;"><span>Gross Return:</span> <strong style="color: #10b981;">$700.00 USDT</strong></div>
+                <div style="display: flex; justify-content: space-between;"><span>Net Profit:</span> <strong style="color: #38bdf8;">$200.00 USDT (40%)</strong></div>
             </div>
         </div>
     </div>
 
     <div class="slide-footer">
         <span>Dubai Finance • Growth Packages ($50, $100, $500 USDT)</span>
-        <span>Slide 07 / 23</span>
+        <span>Slide 07 / 24</span>
     </div>
 </div>
 
@@ -688,9 +690,9 @@ body {{
 
             <div style="background: rgba(3, 7, 18, 0.75); border-radius: 18px; padding: 24px; text-align: left; display: flex; flex-direction: column; gap: 14px; font-size: 20px;">
                 <div style="display: flex; justify-content: space-between;"><span>Daily Yield (5%):</span> <strong style="color: #ffd056;">$50.00 USDT</strong></div>
-                <div style="display: flex; justify-content: space-between;"><span>Tenure Duration:</span> <strong>30 Days</strong></div>
-                <div style="display: flex; justify-content: space-between;"><span>Gross Return:</span> <strong style="color: #10b981;">$1,500.00 USDT</strong></div>
-                <div style="display: flex; justify-content: space-between;"><span>Net Profit:</span> <strong style="color: #38bdf8;">$500.00 USDT (50%)</strong></div>
+                <div style="display: flex; justify-content: space-between;"><span>Tenure Duration:</span> <strong>28 Days</strong></div>
+                <div style="display: flex; justify-content: space-between;"><span>Gross Return:</span> <strong style="color: #10b981;">$1,400.00 USDT</strong></div>
+                <div style="display: flex; justify-content: space-between;"><span>Net Profit:</span> <strong style="color: #38bdf8;">$400.00 USDT (40%)</strong></div>
             </div>
         </div>
 
@@ -702,9 +704,9 @@ body {{
 
             <div style="background: rgba(3, 7, 18, 0.75); border-radius: 18px; padding: 24px; text-align: left; display: flex; flex-direction: column; gap: 14px; font-size: 20px;">
                 <div style="display: flex; justify-content: space-between;"><span>Daily Yield (5%):</span> <strong style="color: #ffd056;">$100.00 USDT</strong></div>
-                <div style="display: flex; justify-content: space-between;"><span>Tenure Duration:</span> <strong>30 Days</strong></div>
-                <div style="display: flex; justify-content: space-between;"><span>Gross Return:</span> <strong style="color: #10b981;">$3,000.00 USDT</strong></div>
-                <div style="display: flex; justify-content: space-between;"><span>Net Profit:</span> <strong style="color: #38bdf8;">$1,000.00 USDT (50%)</strong></div>
+                <div style="display: flex; justify-content: space-between;"><span>Tenure Duration:</span> <strong>28 Days</strong></div>
+                <div style="display: flex; justify-content: space-between;"><span>Gross Return:</span> <strong style="color: #10b981;">$2,800.00 USDT</strong></div>
+                <div style="display: flex; justify-content: space-between;"><span>Net Profit:</span> <strong style="color: #38bdf8;">$800.00 USDT (40%)</strong></div>
             </div>
         </div>
 
@@ -716,16 +718,16 @@ body {{
 
             <div style="background: rgba(3, 7, 18, 0.75); border-radius: 18px; padding: 24px; text-align: left; display: flex; flex-direction: column; gap: 14px; font-size: 20px;">
                 <div style="display: flex; justify-content: space-between;"><span>Daily Yield (5%):</span> <strong style="color: #ffd056;">$250.00 USDT</strong></div>
-                <div style="display: flex; justify-content: space-between;"><span>Tenure Duration:</span> <strong>30 Days</strong></div>
-                <div style="display: flex; justify-content: space-between;"><span>Gross Return:</span> <strong style="color: #10b981;">$7,500.00 USDT</strong></div>
-                <div style="display: flex; justify-content: space-between;"><span>Net Profit:</span> <strong style="color: #38bdf8;">$2,500.00 USDT (50%)</strong></div>
+                <div style="display: flex; justify-content: space-between;"><span>Tenure Duration:</span> <strong>28 Days</strong></div>
+                <div style="display: flex; justify-content: space-between;"><span>Gross Return:</span> <strong style="color: #10b981;">$7,000.00 USDT</strong></div>
+                <div style="display: flex; justify-content: space-between;"><span>Net Profit:</span> <strong style="color: #38bdf8;">$2,000.00 USDT (40%)</strong></div>
             </div>
         </div>
     </div>
 
     <div class="slide-footer">
         <span>Dubai Finance • VIP Elite Packages ($1,000, $2,000, $5,000 USDT)</span>
-        <span>Slide 08 / 23</span>
+        <span>Slide 08 / 24</span>
     </div>
 </div>
 
@@ -739,104 +741,104 @@ body {{
         <div class="header-badge">Financial Returns Matrix</div>
     </div>
     
-    <div class="category-title">Comprehensive 30-Day Projections</div>
+    <div class="category-title">Comprehensive 28-Day Projections</div>
     <h2 class="main-title">Basic ROI Packages & Return Matrix</h2>
-    <p class="subtitle">Complete transparent calculation of daily returns and total gross payout over the 30-day contractual tenure.</p>
+    <p class="subtitle">Complete transparent calculation of daily returns, 7-day, 14-day milestones, and total gross payout over the 28-day contractual tenure.</p>
 
     <table class="custom-table" style="margin-top: 10px;">
         <thead>
             <tr>
                 <th>Package (USDT)</th>
                 <th>Daily ROI (5%)</th>
-                <th>10 Days Return</th>
-                <th>20 Days Return</th>
-                <th>30 Days (150% Return)</th>
-                <th>Net Profit (50%)</th>
+                <th>7 Days Return</th>
+                <th>14 Days Return</th>
+                <th>28 Days (140% Return)</th>
+                <th>Net Profit (40%)</th>
             </tr>
         </thead>
         <tbody>
             <tr>
                 <td><strong style="color: #ffffff;">$5 USDT</strong></td>
                 <td><strong style="color: #ffd056;">$0.25</strong></td>
-                <td>$2.50</td>
-                <td>$5.00</td>
-                <td><strong style="color: #10b981;">$7.50 USDT</strong></td>
-                <td><strong style="color: #38bdf8;">+$2.50 USDT</strong></td>
+                <td>$1.75</td>
+                <td>$3.50</td>
+                <td><strong style="color: #10b981;">$7.00 USDT</strong></td>
+                <td><strong style="color: #38bdf8;">+$2.00 USDT</strong></td>
             </tr>
             <tr>
                 <td><strong style="color: #ffffff;">$10 USDT</strong></td>
                 <td><strong style="color: #ffd056;">$0.50</strong></td>
-                <td>$5.00</td>
-                <td>$10.00</td>
-                <td><strong style="color: #10b981;">$15.00 USDT</strong></td>
-                <td><strong style="color: #38bdf8;">+$5.00 USDT</strong></td>
+                <td>$3.50</td>
+                <td>$7.00</td>
+                <td><strong style="color: #10b981;">$14.00 USDT</strong></td>
+                <td><strong style="color: #38bdf8;">+$4.00 USDT</strong></td>
             </tr>
             <tr>
                 <td><strong style="color: #ffffff;">$20 USDT</strong></td>
                 <td><strong style="color: #ffd056;">$1.00</strong></td>
-                <td>$10.00</td>
-                <td>$20.00</td>
-                <td><strong style="color: #10b981;">$30.00 USDT</strong></td>
-                <td><strong style="color: #38bdf8;">+$10.00 USDT</strong></td>
+                <td>$7.00</td>
+                <td>$14.00</td>
+                <td><strong style="color: #10b981;">$28.00 USDT</strong></td>
+                <td><strong style="color: #38bdf8;">+$8.00 USDT</strong></td>
             </tr>
             <tr>
                 <td><strong style="color: #ffffff;">$50 USDT</strong></td>
                 <td><strong style="color: #ffd056;">$2.50</strong></td>
-                <td>$25.00</td>
-                <td>$50.00</td>
-                <td><strong style="color: #10b981;">$75.00 USDT</strong></td>
-                <td><strong style="color: #38bdf8;">+$25.00 USDT</strong></td>
+                <td>$17.50</td>
+                <td>$35.00</td>
+                <td><strong style="color: #10b981;">$70.00 USDT</strong></td>
+                <td><strong style="color: #38bdf8;">+$20.00 USDT</strong></td>
             </tr>
             <tr>
                 <td><strong style="color: #ffd056;">$100 USDT</strong></td>
                 <td><strong style="color: #ffd056;">$5.00</strong></td>
-                <td>$50.00</td>
-                <td>$100.00</td>
-                <td><strong style="color: #10b981;">$150.00 USDT</strong></td>
-                <td><strong style="color: #38bdf8;">+$50.00 USDT</strong></td>
+                <td>$35.00</td>
+                <td>$70.00</td>
+                <td><strong style="color: #10b981;">$140.00 USDT</strong></td>
+                <td><strong style="color: #38bdf8;">+$40.00 USDT</strong></td>
             </tr>
             <tr>
                 <td><strong style="color: #ffd056;">$500 USDT</strong></td>
                 <td><strong style="color: #ffd056;">$25.00</strong></td>
-                <td>$250.00</td>
-                <td>$500.00</td>
-                <td><strong style="color: #10b981;">$750.00 USDT</strong></td>
-                <td><strong style="color: #38bdf8;">+$250.00 USDT</strong></td>
+                <td>$175.00</td>
+                <td>$350.00</td>
+                <td><strong style="color: #10b981;">$700.00 USDT</strong></td>
+                <td><strong style="color: #38bdf8;">+$200.00 USDT</strong></td>
             </tr>
             <tr>
                 <td><strong style="color: #ffd056;">$1,000 USDT</strong></td>
                 <td><strong style="color: #ffd056;">$50.00</strong></td>
-                <td>$500.00</td>
-                <td>$1,000.00</td>
-                <td><strong style="color: #10b981;">$1,500.00 USDT</strong></td>
-                <td><strong style="color: #38bdf8;">+$500.00 USDT</strong></td>
+                <td>$350.00</td>
+                <td>$700.00</td>
+                <td><strong style="color: #10b981;">$1,400.00 USDT</strong></td>
+                <td><strong style="color: #38bdf8;">+$400.00 USDT</strong></td>
             </tr>
             <tr>
                 <td><strong style="color: #ffd056;">$2,000 USDT</strong></td>
                 <td><strong style="color: #ffd056;">$100.00</strong></td>
-                <td>$1,000.00</td>
-                <td>$2,000.00</td>
-                <td><strong style="color: #10b981;">$3,000.00 USDT</strong></td>
-                <td><strong style="color: #38bdf8;">+$1,000.00 USDT</strong></td>
+                <td>$700.00</td>
+                <td>$1,400.00</td>
+                <td><strong style="color: #10b981;">$2,800.00 USDT</strong></td>
+                <td><strong style="color: #38bdf8;">+$800.00 USDT</strong></td>
             </tr>
-            <tr style="background: rgba(16, 185, 129, 0.1);">
-                <td><strong style="color: #10b981;">$5,000 USDT</strong></td>
-                <td><strong style="color: #ffd056;">$250.00</strong></td>
-                <td>$2,500.00</td>
-                <td>$5,000.00</td>
-                <td><strong style="color: #10b981;">$7,500.00 USDT</strong></td>
-                <td><strong style="color: #38bdf8;">+$2,500.00 USDT</strong></td>
+            <tr style="background: rgba(16, 185, 129, 0.15);">
+                <td><strong style="color: #10b981; font-size: 22px;">$5,000 USDT</strong></td>
+                <td><strong style="color: #10b981;">$250.00</strong></td>
+                <td>$1,750.00</td>
+                <td>$3,500.00</td>
+                <td><strong style="color: #10b981; font-size: 22px;">$7,000.00 USDT</strong></td>
+                <td><strong style="color: #38bdf8; font-size: 22px;">+$2,000.00 USDT</strong></td>
             </tr>
         </tbody>
     </table>
 
     <div class="slide-footer">
-        <span>Dubai Finance • Complete 30-Day Financial Projections Matrix</span>
-        <span>Slide 09 / 23</span>
+        <span>Dubai Finance • Complete 28-Day Financial Projections Matrix</span>
+        <span>Slide 09 / 24</span>
     </div>
 </div>
 
-<!-- ==================== SLIDE 10: 5 TYPES OF INCOME ==================== -->
+<!-- ==================== SLIDE 10: 5 TYPES OF INCOME OVERVIEW ==================== -->
 <div class="slide">
     <div class="slide-header">
         <div class="logo-container">
@@ -855,15 +857,15 @@ body {{
             <div style="font-size: 50px; margin-bottom: 20px;">📈</div>
             <div style="font-size: 16px; color: #ffd056; font-weight: 800; letter-spacing: 1px;">INCOME 01</div>
             <h3 style="font-size: 26px; font-weight: 900; color: #ffffff; margin: 12px 0;">Basic Daily ROI</h3>
-            <div style="font-size: 36px; font-weight: 900; color: #ffd056; margin-bottom: 10px;">5% Daily</div>
-            <p style="font-size: 17px; color: #94a3b8; line-height: 1.4;">Earn 5% daily for 30 Days (150% gross). Credited 7 days a week.</p>
+            <div style="font-size: 34px; font-weight: 900; color: #ffd056; margin-bottom: 10px;">5% Daily</div>
+            <p style="font-size: 17px; color: #94a3b8; line-height: 1.4;">Earn 5% daily for 28 Days (140% gross). Credited 7 days a week.</p>
         </div>
 
         <div class="card card-gold" style="text-align: center; padding: 40px 20px;">
             <div style="font-size: 50px; margin-bottom: 20px;">🏦</div>
             <div style="font-size: 16px; color: #38bdf8; font-weight: 800; letter-spacing: 1px;">INCOME 02</div>
             <h3 style="font-size: 26px; font-weight: 900; color: #ffffff; margin: 12px 0;">Fix Deposit (FD)</h3>
-            <div style="font-size: 36px; font-weight: 900; color: #38bdf8; margin-bottom: 10px;">10% & 15%</div>
+            <div style="font-size: 34px; font-weight: 900; color: #38bdf8; margin-bottom: 10px;">10% & 15%</div>
             <p style="font-size: 17px; color: #94a3b8; line-height: 1.4;">High-yield locked staking contracts delivering massive compounding yields.</p>
         </div>
 
@@ -871,15 +873,15 @@ body {{
             <div style="font-size: 50px; margin-bottom: 20px;">⚡</div>
             <div style="font-size: 16px; color: #10b981; font-weight: 800; letter-spacing: 1px;">INCOME 03</div>
             <h3 style="font-size: 26px; font-weight: 900; color: #ffffff; margin: 12px 0;">Direct Referral</h3>
-            <div style="font-size: 36px; font-weight: 900; color: #10b981; margin-bottom: 10px;">15% Instant</div>
-            <p style="font-size: 17px; color: #94a3b8; line-height: 1.4;">Instant 15% cash bonus credited directly in USDT for every sponsor.</p>
+            <div style="font-size: 34px; font-weight: 900; color: #10b981; margin-bottom: 10px;">10% Instant</div>
+            <p style="font-size: 17px; color: #94a3b8; line-height: 1.4;">Instant 10% cash bonus credited directly in USDT for every sponsor.</p>
         </div>
 
         <div class="card card-gold" style="text-align: center; padding: 40px 20px;">
             <div style="font-size: 50px; margin-bottom: 20px;">👥</div>
             <div style="font-size: 16px; color: #f43f5e; font-weight: 800; letter-spacing: 1px;">INCOME 04</div>
             <h3 style="font-size: 26px; font-weight: 900; color: #ffffff; margin: 12px 0;">Daily 12 Level</h3>
-            <div style="font-size: 36px; font-weight: 900; color: #f43f5e; margin-bottom: 10px;">12 Levels</div>
+            <div style="font-size: 34px; font-weight: 900; color: #f43f5e; margin-bottom: 10px;">12 Levels</div>
             <p style="font-size: 17px; color: #94a3b8; line-height: 1.4;">Daily recurring team royalty up to 12 generations deep every single day.</p>
         </div>
 
@@ -887,14 +889,14 @@ body {{
             <div style="font-size: 50px; margin-bottom: 20px;">🏆</div>
             <div style="font-size: 16px; color: #a855f7; font-weight: 800; letter-spacing: 1px;">INCOME 05</div>
             <h3 style="font-size: 26px; font-weight: 900; color: #ffffff; margin: 12px 0;">Reward Income</h3>
-            <div style="font-size: 36px; font-weight: 900; color: #a855f7; margin-bottom: 10px;">Mega Ranks</div>
+            <div style="font-size: 34px; font-weight: 900; color: #a855f7; margin-bottom: 10px;">Mega Ranks</div>
             <p style="font-size: 17px; color: #94a3b8; line-height: 1.4;">Luxury watches, Dubai trips, and supercars on team turnover targets.</p>
         </div>
     </div>
 
     <div class="slide-footer">
         <span>Dubai Finance • 5 Pillars of Wealth Generation</span>
-        <span>Slide 10 / 23</span>
+        <span>Slide 10 / 24</span>
     </div>
 </div>
 
@@ -909,7 +911,7 @@ body {{
     </div>
     
     <div class="category-title">Daily Passive Growth</div>
-    <h2 class="main-title">Basic ROI Income: 5% Daily for 30 Days</h2>
+    <h2 class="main-title">Basic ROI Income: 5% Daily for 28 Days</h2>
     <p class="subtitle">Experience uninterrupted daily compounding yield credited directly into your wallet 7 days a week.</p>
 
     <div class="grid-2" style="align-items: center; margin-top: 10px;">
@@ -926,13 +928,13 @@ body {{
                 <h4 style="font-size: 24px; font-weight: 800; color: #38bdf8; margin-bottom: 20px; text-transform: uppercase;">Key Tenure Parameters</h4>
                 <div style="display: flex; flex-direction: column; gap: 14px; font-size: 21px;">
                     <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 10px;">
-                        <span>Contract Tenure:</span> <strong style="color: #ffd056;">30 Days Fixed</strong>
+                        <span>Contract Tenure:</span> <strong style="color: #ffd056;">28 Days Fixed</strong>
                     </div>
                     <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 10px;">
-                        <span>Total Gross Payout:</span> <strong style="color: #10b981;">150% of Deposit</strong>
+                        <span>Total Gross Payout:</span> <strong style="color: #10b981;">140% of Deposit</strong>
                     </div>
                     <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 10px;">
-                        <span>Net ROI Profit:</span> <strong style="color: #38bdf8;">50% Pure Gain</strong>
+                        <span>Net ROI Profit:</span> <strong style="color: #38bdf8;">40% Pure Gain</strong>
                     </div>
                     <div style="display: flex; justify-content: space-between;">
                         <span>Re-Topup Facility:</span> <strong style="color: #ffffff;">Available Anytime</strong>
@@ -947,8 +949,8 @@ body {{
     </div>
 
     <div class="slide-footer">
-        <span>Dubai Finance • Income 1: 5% Daily ROI (30-Day Tenure)</span>
-        <span>Slide 11 / 23</span>
+        <span>Dubai Finance • Income 1: 5% Daily ROI (28-Day Tenure)</span>
+        <span>Slide 11 / 24</span>
     </div>
 </div>
 
@@ -962,47 +964,55 @@ body {{
         <div class="header-badge">Income Stream #2</div>
     </div>
     
-    <div class="category-title">Institutional Staking Contracts</div>
+    <div class="category-title">Compounding Staking Vault</div>
     <h2 class="main-title">Fix Deposit (FD) Income: 10% & 15% Daily</h2>
-    <p class="subtitle">Lock your capital in premier institutional liquidity pools and earn supercharged daily yields with contractual guarantees.</p>
+    <p class="subtitle">Lock your capital in specialized algorithmic market-making pools for exponential returns over extended tenures.</p>
 
-    <div class="grid-2" style="margin-top: 20px;">
-        <!-- FD Option 1 -->
-        <div class="card card-gold" style="padding: 48px; border: 2px solid #38bdf8;">
-            <div style="background: rgba(56, 189, 248, 0.15); color: #38bdf8; display: inline-block; padding: 10px 26px; border-radius: 999px; font-size: 18px; font-weight: 800; letter-spacing: 2px; margin-bottom: 24px;">FD PLAN A</div>
-            <div style="font-size: 80px; font-weight: 900; color: #38bdf8; font-family: 'Space Grotesk', sans-serif; line-height: 1; margin-bottom: 12px;">10% <span style="font-size: 32px; color: #ffffff;">DAILY</span></div>
-            <div style="font-size: 24px; color: #cbd5e1; font-weight: 700; margin-bottom: 30px;">Contract Duration: 180 Days</div>
-
-            <div style="background: rgba(3, 7, 18, 0.65); border-radius: 20px; padding: 28px; display: flex; flex-direction: column; gap: 16px; font-size: 21px;">
-                <div style="display: flex; justify-content: space-between;"><span>Daily Credited Yield:</span> <strong style="color: #38bdf8;">10% Daily</strong></div>
+    <div class="grid-2" style="margin-top: 10px;">
+        <!-- Plan A Card -->
+        <div class="card card-gold" style="padding: 44px; display: flex; flex-direction: column; justify-content: space-between;">
+            <div>
+                <div style="background: rgba(56, 189, 248, 0.15); border: 1px solid #38bdf8; color: #38bdf8; display: inline-block; padding: 8px 24px; border-radius: 999px; font-size: 16px; font-weight: 800; letter-spacing: 1px; margin-bottom: 20px;">OPTION A • 180 DAYS</div>
+                <div style="font-size: 68px; font-weight: 900; color: #38bdf8; font-family: 'Space Grotesk', sans-serif;">10% DAILY</div>
+                <div style="font-size: 24px; color: #ffffff; font-weight: 800; margin: 12px 0 20px 0;">Deposit Bracket: $50 To $1,000 USDT</div>
+                <p style="font-size: 20px; color: #cbd5e1; line-height: 1.5; margin-bottom: 24px;">
+                    Earn 10% daily ROI credited continuously over an 180-day locking cycle. Capital is deployed in liquidity provision with automated re-staking.
+                </p>
+            </div>
+            
+            <div style="background: rgba(3, 7, 18, 0.6); border-radius: 18px; padding: 24px; display: flex; flex-direction: column; gap: 12px; font-size: 20px;">
+                <div style="display: flex; justify-content: space-between;"><span>Daily Yield:</span> <strong style="color: #38bdf8;">10% Daily</strong></div>
+                <div style="display: flex; justify-content: space-between;"><span>Locking Period:</span> <strong>180 Days</strong></div>
                 <div style="display: flex; justify-content: space-between;"><span>Total Contract Return:</span> <strong style="color: #10b981;">1,800% Total</strong></div>
-                <div style="display: flex; justify-content: space-between;"><span>Capital Lock:</span> <strong>Maturity Payout</strong></div>
-                <div style="display: flex; justify-content: space-between;"><span>Level Income on FD:</span> <strong style="color: #ffd056;">Full Royalty Active</strong></div>
             </div>
         </div>
 
-        <!-- FD Option 2 -->
-        <div class="card card-vip" style="padding: 48px; border: 2px solid #ffd056;">
-            <div style="background: rgba(245, 158, 11, 0.2); color: #ffd056; display: inline-block; padding: 10px 26px; border-radius: 999px; font-size: 18px; font-weight: 900; letter-spacing: 2px; margin-bottom: 24px;">FD PLAN B (VIP)</div>
-            <div style="font-size: 80px; font-weight: 900; color: #ffd056; font-family: 'Space Grotesk', sans-serif; line-height: 1; margin-bottom: 12px;">15% <span style="font-size: 32px; color: #ffffff;">DAILY</span></div>
-            <div style="font-size: 24px; color: #cbd5e1; font-weight: 700; margin-bottom: 30px;">Contract Duration: 210 Days</div>
-
-            <div style="background: rgba(3, 7, 18, 0.65); border-radius: 20px; padding: 28px; display: flex; flex-direction: column; gap: 16px; font-size: 21px;">
-                <div style="display: flex; justify-content: space-between;"><span>Daily Credited Yield:</span> <strong style="color: #ffd056;">15% Daily</strong></div>
+        <!-- Plan B Card -->
+        <div class="card card-vip" style="padding: 44px; display: flex; flex-direction: column; justify-content: space-between;">
+            <div>
+                <div style="background: rgba(244, 63, 94, 0.15); border: 1px solid #f43f5e; color: #f43f5e; display: inline-block; padding: 8px 24px; border-radius: 999px; font-size: 16px; font-weight: 800; letter-spacing: 1px; margin-bottom: 20px;">OPTION B • 210 DAYS</div>
+                <div style="font-size: 68px; font-weight: 900; color: #ffd056; font-family: 'Space Grotesk', sans-serif;">15% DAILY</div>
+                <div style="font-size: 24px; color: #ffffff; font-weight: 800; margin: 12px 0 20px 0;">Deposit Bracket: $1,500 To $5,000 USDT</div>
+                <p style="font-size: 20px; color: #cbd5e1; line-height: 1.5; margin-bottom: 24px;">
+                    VIP institutional high-yield staking yielding an astronomical 15% daily return for 210 days for qualified high-tier investors.
+                </p>
+            </div>
+            
+            <div style="background: rgba(3, 7, 18, 0.6); border-radius: 18px; padding: 24px; display: flex; flex-direction: column; gap: 12px; font-size: 20px;">
+                <div style="display: flex; justify-content: space-between;"><span>Daily Yield:</span> <strong style="color: #ffd056;">15% Daily</strong></div>
+                <div style="display: flex; justify-content: space-between;"><span>Locking Period:</span> <strong>210 Days</strong></div>
                 <div style="display: flex; justify-content: space-between;"><span>Total Contract Return:</span> <strong style="color: #10b981;">3,150% Total</strong></div>
-                <div style="display: flex; justify-content: space-between;"><span>Capital Lock:</span> <strong>Maturity Payout</strong></div>
-                <div style="display: flex; justify-content: space-between;"><span>Level Income on FD:</span> <strong style="color: #ffd056;">Full Royalty Active</strong></div>
             </div>
         </div>
     </div>
 
     <div class="slide-footer">
         <span>Dubai Finance • Income 2: Fix Deposit (FD) High-Yield Overview</span>
-        <span>Slide 12 / 23</span>
+        <span>Slide 12 / 24</span>
     </div>
 </div>
 
-<!-- ==================== SLIDE 13: FD PLAN A - 10% DAILY PACKAGES ==================== -->
+<!-- ==================== SLIDE 13: FD PLAN A BREAKDOWN TABLE ==================== -->
 <div class="slide">
     <div class="slide-header">
         <div class="logo-container">
@@ -1045,64 +1055,56 @@ body {{
                 <td><span style="color: #38bdf8; font-weight: 800;">18X Return</span></td>
             </tr>
             <tr>
-                <td><strong style="color: #ffd056;">$500 USDT</strong></td>
+                <td><strong style="color: #ffffff;">$200 USDT</strong></td>
+                <td><strong style="color: #ffd056;">$20.00 / day</strong></td>
+                <td>$600.00</td>
+                <td>$1,800.00</td>
+                <td><strong style="color: #10b981;">$3,600.00 USDT</strong></td>
+                <td><span style="color: #38bdf8; font-weight: 800;">18X Return</span></td>
+            </tr>
+            <tr>
+                <td><strong style="color: #ffffff;">$500 USDT</strong></td>
                 <td><strong style="color: #ffd056;">$50.00 / day</strong></td>
                 <td>$1,500.00</td>
                 <td>$4,500.00</td>
                 <td><strong style="color: #10b981;">$9,000.00 USDT</strong></td>
                 <td><span style="color: #38bdf8; font-weight: 800;">18X Return</span></td>
             </tr>
-            <tr>
-                <td><strong style="color: #ffd056;">$1,000 USDT</strong></td>
-                <td><strong style="color: #ffd056;">$100.00 / day</strong></td>
+            <tr style="background: rgba(56, 189, 248, 0.15);">
+                <td><strong style="color: #38bdf8; font-size: 22px;">$1,000 USDT</strong></td>
+                <td><strong style="color: #ffd056; font-size: 22px;">$100.00 / day</strong></td>
                 <td>$3,000.00</td>
                 <td>$9,000.00</td>
-                <td><strong style="color: #10b981;">$18,000.00 USDT</strong></td>
-                <td><span style="color: #38bdf8; font-weight: 800;">18X Return</span></td>
-            </tr>
-            <tr>
-                <td><strong style="color: #ffd056;">$2,000 USDT</strong></td>
-                <td><strong style="color: #ffd056;">$200.00 / day</strong></td>
-                <td>$6,000.00</td>
-                <td>$18,000.00</td>
-                <td><strong style="color: #10b981;">$36,000.00 USDT</strong></td>
-                <td><span style="color: #38bdf8; font-weight: 800;">18X Return</span></td>
-            </tr>
-            <tr style="background: rgba(16, 185, 129, 0.12);">
-                <td><strong style="color: #10b981;">$5,000 USDT</strong></td>
-                <td><strong style="color: #ffd056;">$500.00 / day</strong></td>
-                <td>$15,000.00</td>
-                <td>$45,000.00</td>
-                <td><strong style="color: #10b981;">$90,000.00 USDT</strong></td>
-                <td><span style="color: #ffd056; font-weight: 900;">18X Return</span></td>
+                <td><strong style="color: #10b981; font-size: 22px;">$18,000.00 USDT</strong></td>
+                <td><span style="color: #10b981; font-weight: 900; font-size: 22px;">18X Return</span></td>
             </tr>
         </tbody>
     </table>
 
     <div class="slide-footer">
         <span>Dubai Finance • FD Plan A: 10% Daily ROI Tier Breakdown</span>
-        <span>Slide 13 / 23</span>
+        <span>Slide 13 / 24</span>
     </div>
 </div>
 
-<!-- ==================== SLIDE 14: FD PLAN B - 15% DAILY PACKAGES ==================== -->
+<!-- ==================== SLIDE 14: FD PLAN B BREAKDOWN TABLE ==================== -->
 <div class="slide">
     <div class="slide-header">
         <div class="logo-container">
             <div class="logo-badge"><span style="font-size: 26px;">⚜️</span></div>
             <span class="logo-text">DUBAI FINANCE</span>
         </div>
-        <div class="header-badge">FD 210-Day VIP Plan</div>
+        <div class="header-badge">FD 210-Day VIP</div>
     </div>
     
     <div class="category-title">210 Days VIP Staking</div>
-    <h2 class="main-title">FD Plan B: 15% Daily ROI Breakdown</h2>
-    <p class="subtitle">Our most lucrative fixed contract offering explosive wealth multiplication for serious investors.</p>
+    <h2 class="main-title">FD Plan B: 15% Daily ROI VIP Matrix</h2>
+    <p class="subtitle">Exclusive institutional compounding tier delivering unparalleled exponential cash generation.</p>
 
     <table class="custom-table" style="margin-top: 10px;">
         <thead>
             <tr>
-                <th>FD Tier Deposit</th>
+                <th>VIP Tier Deposit</th>
                 <th>Daily Return (15%)</th>
                 <th>30 Days Profit</th>
                 <th>90 Days Profit</th>
@@ -1112,55 +1114,47 @@ body {{
         </thead>
         <tbody>
             <tr>
-                <td><strong style="color: #ffffff;">$100 USDT</strong></td>
-                <td><strong style="color: #ffd056;">$15.00 / day</strong></td>
-                <td>$450.00</td>
-                <td>$1,350.00</td>
-                <td><strong style="color: #10b981;">$3,150.00 USDT</strong></td>
-                <td><span style="color: #ffd056; font-weight: 800;">31.5X Return</span></td>
-            </tr>
-            <tr>
-                <td><strong style="color: #ffd056;">$500 USDT</strong></td>
-                <td><strong style="color: #ffd056;">$75.00 / day</strong></td>
-                <td>$2,250.00</td>
+                <td><strong style="color: #ffffff;">$1,500 USDT</strong></td>
+                <td><strong style="color: #ffd056;">$225.00 / day</strong></td>
                 <td>$6,750.00</td>
-                <td><strong style="color: #10b981;">$15,750.00 USDT</strong></td>
-                <td><span style="color: #ffd056; font-weight: 800;">31.5X Return</span></td>
+                <td>$20,250.00</td>
+                <td><strong style="color: #10b981;">$47,250.00 USDT</strong></td>
+                <td><span style="color: #38bdf8; font-weight: 800;">31.5X Return</span></td>
             </tr>
             <tr>
-                <td><strong style="color: #ffd056;">$1,000 USDT</strong></td>
-                <td><strong style="color: #ffd056;">$150.00 / day</strong></td>
-                <td>$4,500.00</td>
-                <td>$13,500.00</td>
-                <td><strong style="color: #10b981;">$31,500.00 USDT</strong></td>
-                <td><span style="color: #ffd056; font-weight: 800;">31.5X Return</span></td>
-            </tr>
-            <tr>
-                <td><strong style="color: #ffd056;">$2,000 USDT</strong></td>
+                <td><strong style="color: #ffffff;">$2,000 USDT</strong></td>
                 <td><strong style="color: #ffd056;">$300.00 / day</strong></td>
                 <td>$9,000.00</td>
                 <td>$27,000.00</td>
                 <td><strong style="color: #10b981;">$63,000.00 USDT</strong></td>
-                <td><span style="color: #ffd056; font-weight: 800;">31.5X Return</span></td>
+                <td><span style="color: #38bdf8; font-weight: 800;">31.5X Return</span></td>
             </tr>
-            <tr style="background: rgba(16, 185, 129, 0.15);">
-                <td><strong style="color: #10b981;">$5,000 USDT</strong></td>
-                <td><strong style="color: #ffd056;">$750.00 / day</strong></td>
+            <tr>
+                <td><strong style="color: #ffffff;">$3,000 USDT</strong></td>
+                <td><strong style="color: #ffd056;">$450.00 / day</strong></td>
+                <td>$13,500.00</td>
+                <td>$40,500.00</td>
+                <td><strong style="color: #10b981;">$94,500.00 USDT</strong></td>
+                <td><span style="color: #38bdf8; font-weight: 800;">31.5X Return</span></td>
+            </tr>
+            <tr style="background: rgba(244, 63, 94, 0.15);">
+                <td><strong style="color: #ffd056; font-size: 22px;">$5,000 USDT</strong></td>
+                <td><strong style="color: #ffd056; font-size: 22px;">$750.00 / day</strong></td>
                 <td>$22,500.00</td>
                 <td>$67,500.00</td>
-                <td><strong style="color: #10b981;">$157,500.00 USDT</strong></td>
-                <td><span style="color: #10b981; font-weight: 900;">31.5X Return</span></td>
+                <td><strong style="color: #10b981; font-size: 22px;">$157,500.00 USDT</strong></td>
+                <td><span style="color: #10b981; font-weight: 900; font-size: 22px;">31.5X Return</span></td>
             </tr>
         </tbody>
     </table>
 
     <div class="slide-footer">
         <span>Dubai Finance • FD Plan B: 15% Daily ROI VIP Tier Breakdown</span>
-        <span>Slide 14 / 23</span>
+        <span>Slide 14 / 24</span>
     </div>
 </div>
 
-<!-- ==================== SLIDE 15: INCOME 3 - DIRECT REFERRAL (15%) ==================== -->
+<!-- ==================== SLIDE 15: INCOME 3 - DIRECT REFERRAL (10%) ==================== -->
 <div class="slide">
     <div class="slide-header">
         <div class="logo-container">
@@ -1171,16 +1165,16 @@ body {{
     </div>
     
     <div class="category-title">Instant Cash Compensation</div>
-    <h2 class="main-title">Direct Referral Income: 15% Instant</h2>
-    <p class="subtitle">Earn a generous 15% instant commission in USDT (BEP-20) on every personal partner activation without limits.</p>
+    <h2 class="main-title">Direct Referral Income: 10% Instant</h2>
+    <p class="subtitle">Earn a generous 10% instant commission in USDT (BEP-20) on every personal partner activation without limits.</p>
 
     <div class="grid-2" style="align-items: center; margin-top: 10px;">
         <div style="display: flex; flex-direction: column; gap: 24px;">
             <div class="card card-gold" style="padding: 40px;">
-                <div style="font-size: 80px; font-weight: 900; color: #10b981; line-height: 1; margin-bottom: 12px;">15% INSTANT</div>
+                <div style="font-size: 80px; font-weight: 900; color: #10b981; line-height: 1; margin-bottom: 12px;">10% INSTANT</div>
                 <div style="font-size: 26px; color: #ffffff; font-weight: 800; margin-bottom: 16px;">Direct Wallet Credit Upon Deposit</div>
                 <p style="font-size: 21px; color: #cbd5e1; line-height: 1.5;">
-                    Share the opportunity with partners, friends, and investors. The moment they activate any package from $5 to $5,000, 15% of their package amount is instantly credited to your withdrawal wallet!
+                    Share the opportunity with partners, friends, and investors. The moment they activate any package from $5 to $5,000, 10% of their package amount is instantly credited to your withdrawal wallet!
                 </p>
             </div>
 
@@ -1188,16 +1182,16 @@ body {{
                 <h4 style="font-size: 22px; font-weight: 800; color: #ffd056; margin-bottom: 16px; text-transform: uppercase;">Direct Earning Examples</h4>
                 <div style="display: flex; flex-direction: column; gap: 12px; font-size: 20px;">
                     <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 8px;">
-                        <span>Direct Refer $100 Package:</span> <strong style="color: #10b981;">+$15.00 USDT Instant</strong>
+                        <span>Direct Refer $100 Package:</span> <strong style="color: #10b981;">+$10.00 USDT Instant</strong>
                     </div>
                     <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 8px;">
-                        <span>Direct Refer $500 Package:</span> <strong style="color: #10b981;">+$75.00 USDT Instant</strong>
+                        <span>Direct Refer $500 Package:</span> <strong style="color: #10b981;">+$50.00 USDT Instant</strong>
                     </div>
                     <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 8px;">
-                        <span>Direct Refer $1,000 Package:</span> <strong style="color: #10b981;">+$150.00 USDT Instant</strong>
+                        <span>Direct Refer $1,000 Package:</span> <strong style="color: #10b981;">+$100.00 USDT Instant</strong>
                     </div>
                     <div style="display: flex; justify-content: space-between;">
-                        <span>Direct Refer $5,000 Package:</span> <strong style="color: #10b981;">+$750.00 USDT Instant</strong>
+                        <span>Direct Refer $5,000 Package:</span> <strong style="color: #10b981;">+$500.00 USDT Instant</strong>
                     </div>
                 </div>
             </div>
@@ -1207,7 +1201,7 @@ body {{
             <div style="font-size: 70px; margin-bottom: 16px;">🚀</div>
             <h3 style="font-size: 34px; font-weight: 900; color: #ffd056; margin-bottom: 16px;">Unlimited Direct Potential</h3>
             <p style="font-size: 22px; color: #cbd5e1; line-height: 1.5; margin-bottom: 30px;">
-                There is NO cap on how many direct partners you can introduce. Refer 10 leaders with $1,000 packages and earn <strong>$1,500 USDT</strong> instantly!
+                There is NO cap on how many direct partners you can introduce. Refer 10 leaders with $1,000 packages and earn <strong>$1,000 USDT</strong> instantly!
             </p>
             <div style="background: rgba(16, 185, 129, 0.15); border: 2px solid #10b981; border-radius: 20px; padding: 24px;">
                 <div style="font-size: 28px; font-weight: 900; color: #10b981;">100% WITHDRAWABLE IMMEDIATELY</div>
@@ -1217,8 +1211,8 @@ body {{
     </div>
 
     <div class="slide-footer">
-        <span>Dubai Finance • Income 3: 15% Instant Direct Referral Income</span>
-        <span>Slide 15 / 23</span>
+        <span>Dubai Finance • Income 3: 10% Instant Direct Referral Income</span>
+        <span>Slide 15 / 24</span>
     </div>
 </div>
 
@@ -1242,7 +1236,7 @@ body {{
                 <div style="font-size: 54px; font-weight: 900; color: #f43f5e; line-height: 1; margin-bottom: 12px;">DAILY PASSIVE CASH FLOW</div>
                 <div style="font-size: 24px; color: #ffffff; font-weight: 800; margin-bottom: 16px;">Paid Every Single Day (Mon-Sun)</div>
                 <p style="font-size: 21px; color: #cbd5e1; line-height: 1.5;">
-                    Unlike one-time bonuses, the 12-Level Income pays you <strong>every day</strong> whenever your team members earn their daily ROI. As your team grows, your daily recurring income explodes!
+                    Unlike one-time bonuses, the 12-Level Income pays you <strong>every day</strong> whenever your team members earn their daily ROI. As your team grows, your daily recurring income compounds exponentially!
                 </p>
             </div>
 
@@ -1250,8 +1244,8 @@ body {{
                 <h4 style="font-size: 22px; font-weight: 800; color: #38bdf8; margin-bottom: 16px; text-transform: uppercase;">Key Royalty Rules</h4>
                 <div style="display: flex; flex-direction: column; gap: 12px; font-size: 20px;">
                     <div style="display: flex; gap: 14px;"><span>✅</span> <span>Royalty calculated daily on your downline's daily ROI yield</span></div>
-                    <div style="display: flex; gap: 14px;"><span>✅</span> <span>1 Direct Referral unlocks each progressive level</span></div>
-                    <div style="display: flex; gap: 14px;"><span>✅</span> <span>Total 12 Direct Referrals unlock all 12 Levels forever</span></div>
+                    <div style="display: flex; gap: 14px;"><span>✅</span> <span>1 Direct Referral ($50+ Package) unlocks each progressive level</span></div>
+                    <div style="display: flex; gap: 14px;"><span>✅</span> <span>Total 12 Directs ($50+ Package) unlock all 12 Levels forever</span></div>
                     <div style="display: flex; gap: 14px;"><span>✅</span> <span>Zero flushing, zero lapse of downline volume</span></div>
                 </div>
             </div>
@@ -1281,7 +1275,7 @@ body {{
 
     <div class="slide-footer">
         <span>Dubai Finance • Income 4: Daily 12-Level Team Royalty Overview</span>
-        <span>Slide 16 / 23</span>
+        <span>Slide 16 / 24</span>
     </div>
 </div>
 
@@ -1313,62 +1307,147 @@ body {{
             <tr>
                 <td><strong style="color: #ffd056;">Level 1</strong></td>
                 <td><strong style="color: #ffd056;">10% Daily</strong></td>
-                <td>1 Direct Referral Required</td>
-                <td>1 Direct</td>
+                <td>1 Direct Referral ($50+ Package Required)</td>
+                <td>1 Direct ($50+)</td>
                 <td><span style="color: #10b981; font-weight: 800;">ACTIVE</span></td>
             </tr>
             <tr>
                 <td><strong style="color: #38bdf8;">Level 2</strong></td>
                 <td><strong style="color: #38bdf8;">5% Daily</strong></td>
-                <td>+1 Direct Referral Required</td>
-                <td>2 Directs</td>
+                <td>+1 Direct Referral ($50+ Package Required)</td>
+                <td>2 Directs ($50+)</td>
                 <td><span style="color: #10b981; font-weight: 800;">ACTIVE</span></td>
             </tr>
             <tr>
                 <td><strong style="color: #10b981;">Level 3</strong></td>
                 <td><strong style="color: #10b981;">3% Daily</strong></td>
-                <td>+1 Direct Referral Required</td>
-                <td>3 Directs</td>
+                <td>+1 Direct Referral ($50+ Package Required)</td>
+                <td>3 Directs ($50+)</td>
                 <td><span style="color: #10b981; font-weight: 800;">ACTIVE</span></td>
             </tr>
             <tr>
                 <td><strong style="color: #a855f7;">Level 4</strong></td>
                 <td><strong style="color: #a855f7;">2% Daily</strong></td>
-                <td>+1 Direct Referral Required</td>
-                <td>4 Directs</td>
+                <td>+1 Direct Referral ($50+ Package Required)</td>
+                <td>4 Directs ($50+)</td>
                 <td><span style="color: #10b981; font-weight: 800;">ACTIVE</span></td>
             </tr>
             <tr>
                 <td><strong style="color: #a855f7;">Level 5</strong></td>
                 <td><strong style="color: #a855f7;">2% Daily</strong></td>
-                <td>+1 Direct Referral Required</td>
-                <td>5 Directs</td>
+                <td>+1 Direct Referral ($50+ Package Required)</td>
+                <td>5 Directs ($50+)</td>
                 <td><span style="color: #10b981; font-weight: 800;">ACTIVE</span></td>
             </tr>
             <tr>
                 <td><strong style="color: #a855f7;">Level 6</strong></td>
                 <td><strong style="color: #a855f7;">2% Daily</strong></td>
-                <td>+1 Direct Referral Required</td>
-                <td>6 Directs</td>
+                <td>+1 Direct Referral ($50+ Package Required)</td>
+                <td>6 Directs ($50+)</td>
                 <td><span style="color: #10b981; font-weight: 800;">ACTIVE</span></td>
             </tr>
             <tr>
                 <td><strong style="color: #f43f5e;">Level 7 to Level 12</strong></td>
                 <td><strong style="color: #f43f5e;">1% Daily (Each Level)</strong></td>
-                <td>+1 Direct Referral per Level</td>
-                <td>12 Directs Total</td>
+                <td>+1 Direct Referral per Level ($50+ Package Required)</td>
+                <td>12 Directs Total ($50+)</td>
                 <td><span style="color: #ffd056; font-weight: 900;">ALL LEVELS UNLOCKED</span></td>
             </tr>
         </tbody>
     </table>
 
+    <!-- Direct Referral Condition Alert Card -->
+    <div style="background: rgba(245, 158, 11, 0.15); border: 2px solid #ffd056; border-radius: 18px; padding: 20px 30px; margin-top: 20px; display: flex; align-items: center; gap: 24px;">
+        <div style="font-size: 40px;">⚠️</div>
+        <div>
+            <div style="color: #ffd056; font-size: 22px; font-weight: 900; text-transform: uppercase; letter-spacing: 1px;">CRITICAL DIRECT REFERRAL QUALIFICATION CONDITION:</div>
+            <div style="color: #ffffff; font-size: 20px; font-weight: 700; margin-top: 4px; line-height: 1.4;">
+                Sabhi 12 Level tak ki Daily Royalty Income lene ke liye, har ek Direct Referral ID minimum <span style="color: #10b981; font-weight: 900;">$50 USDT</span> ya usse upar ki honi chahiye — chahe aapki khud ki ID $10 USDT ki hi kyu na ho!
+                <br><span style="color: #94a3b8; font-size: 17px;">(To unlock daily royalty income up to all 12 levels, each direct sponsor referral ID must be $50+ USDT, even if your own personal account is activated at $10 USDT).</span>
+            </div>
+        </div>
+    </div>
+
     <div class="slide-footer">
         <span>Dubai Finance • Complete 12-Level Percentage & Directs Criteria</span>
-        <span>Slide 17 / 23</span>
+        <span>Slide 17 / 24</span>
     </div>
 </div>
 
-<!-- ==================== SLIDE 18: INCOME 5 - MEGA MILESTONE REWARDS ==================== -->
+<!-- ==================== SLIDE 18: SPECIAL SIGN-UP & 12-LEVEL BONUS ==================== -->
+<div class="slide">
+    <div class="slide-header">
+        <div class="logo-container">
+            <div class="logo-badge"><span style="font-size: 26px;">⚜️</span></div>
+            <span class="logo-text">DUBAI FINANCE</span>
+        </div>
+        <div class="header-badge">Community Incentive</div>
+    </div>
+    
+    <div class="category-title">Welcome Airdrop & Registration Bounty</div>
+    <h2 class="main-title">Free $1.00 USDT Registration & 12-Level Bonus</h2>
+    <p class="subtitle">Dubai Finance empowers every new member from Day 1. Total $1.00 USDT distributed across the user and 12 upline levels upon sign-up!</p>
+
+    <div class="grid-3" style="margin-top: 15px;">
+        <!-- Card 1: User Bonus -->
+        <div class="card card-gold" style="padding: 40px 30px; text-align: center; display: flex; flex-direction: column; justify-content: space-between;">
+            <div>
+                <div style="background: rgba(16, 185, 129, 0.15); border: 1px solid #10b981; color: #10b981; display: inline-block; padding: 8px 24px; border-radius: 999px; font-size: 16px; font-weight: 800; letter-spacing: 1px; margin-bottom: 20px;">NEW USER REWARD</div>
+                <div style="font-size: 72px; font-weight: 900; color: #10b981; font-family: 'Space Grotesk', sans-serif;">$0.50</div>
+                <div style="font-size: 24px; color: #ffffff; font-weight: 800; margin: 8px 0 20px 0;">Instant Sign-Up Bonus</div>
+                <p style="font-size: 19px; color: #cbd5e1; line-height: 1.4;">
+                    Credited immediately to the user wallet upon free registration on <strong>Dubaifinance.online</strong>. Zero waiting time!
+                </p>
+            </div>
+            
+            <div style="background: rgba(3, 7, 18, 0.6); border-radius: 16px; padding: 18px; margin-top: 20px; font-size: 18px; color: #38bdf8; font-weight: 700;">
+                🎁 Free Welcome Gift for All New Registrations
+            </div>
+        </div>
+
+        <!-- Card 2: 12-Level Bonus -->
+        <div class="card card-gold" style="padding: 40px 30px; text-align: center; display: flex; flex-direction: column; justify-content: space-between;">
+            <div>
+                <div style="background: rgba(56, 189, 248, 0.15); border: 1px solid #38bdf8; color: #38bdf8; display: inline-block; padding: 8px 24px; border-radius: 999px; font-size: 16px; font-weight: 800; letter-spacing: 1px; margin-bottom: 20px;">TEAM UPLINE REWARD</div>
+                <div style="font-size: 72px; font-weight: 900; color: #38bdf8; font-family: 'Space Grotesk', sans-serif;">$0.50</div>
+                <div style="font-size: 24px; color: #ffffff; font-weight: 800; margin: 8px 0 20px 0;">Distributed Across 12 Levels</div>
+                <p style="font-size: 19px; color: #cbd5e1; line-height: 1.4;">
+                    $0.50 USDT is distributed across the upper 12 sponsor generations. Every time a member registers in your downline, uplines earn!
+                </p>
+            </div>
+            
+            <div style="background: rgba(3, 7, 18, 0.6); border-radius: 16px; padding: 18px; margin-top: 20px; font-size: 18px; color: #ffd056; font-weight: 700;">
+                👥 Massive Incentive for Global Team Builders
+            </div>
+        </div>
+
+        <!-- Card 3: Total & Usage Rule -->
+        <div class="card card-vip" style="padding: 40px 30px; text-align: center; display: flex; flex-direction: column; justify-content: space-between;">
+            <div>
+                <div style="background: rgba(245, 158, 11, 0.2); border: 1px solid #ffd056; color: #ffd056; display: inline-block; padding: 8px 24px; border-radius: 999px; font-size: 16px; font-weight: 900; letter-spacing: 1px; margin-bottom: 20px;">TOTAL AIRDROP VALUE</div>
+                <div style="font-size: 72px; font-weight: 900; color: #ffd056; font-family: 'Space Grotesk', sans-serif;">$1.00</div>
+                <div style="font-size: 24px; color: #ffffff; font-weight: 800; margin: 8px 0 20px 0;">Total Distributed Per User</div>
+                <p style="font-size: 19px; color: #cbd5e1; line-height: 1.4;">
+                    Total $1 USDT liquidity injected into community ecosystem for every single free registration without any entry cost.
+                </p>
+            </div>
+            
+            <div style="background: rgba(16, 185, 129, 0.15); border: 2px solid #10b981; border-radius: 16px; padding: 18px; margin-top: 20px;">
+                <div style="color: #ffd056; font-size: 18px; font-weight: 900; text-transform: uppercase;">BONUS USAGE CRITERIA:</div>
+                <div style="color: #ffffff; font-size: 18px; font-weight: 700; margin-top: 6px;">
+                    <strong>$20 USDT</strong> se upar ($20+) wali active ID is bonus balance ko use / redeem kar sakti hai!
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide-footer">
+        <span>Dubai Finance • Special Community Welcome & 12-Level Registration Bounty</span>
+        <span>Slide 18 / 24</span>
+    </div>
+</div>
+
+<!-- ==================== SLIDE 19: INCOME 5 - MEGA MILESTONE REWARDS ==================== -->
 <div class="slide">
     <div class="slide-header">
         <div class="logo-container">
@@ -1397,6 +1476,7 @@ body {{
                 <div style="display: flex; flex-direction: column; gap: 12px; font-size: 20px;">
                     <div style="display: flex; gap: 14px;"><span>🏆</span> <span>Cumulative team business counts towards rank achievement</span></div>
                     <div style="display: flex; gap: 14px;"><span>💵</span> <span>Choose between physical reward or 100% instant USDT payout</span></div>
+                    <div style="display: flex; gap: 14px;"><span>⚖️</span> <span>Balanced volume structure: 50% Strong Leg & 50% Weak Leg</span></div>
                     <div style="display: flex; gap: 14px;"><span>✈️</span> <span>VIP invitations to Dubai Annual Leadership Summits</span></div>
                 </div>
             </div>
@@ -1409,11 +1489,11 @@ body {{
 
     <div class="slide-footer">
         <span>Dubai Finance • Income 5: Mega Milestone Rewards Overview</span>
-        <span>Slide 18 / 23</span>
+        <span>Slide 19 / 24</span>
     </div>
 </div>
 
-<!-- ==================== SLIDE 19: REWARDS MATRIX TABLE ==================== -->
+<!-- ==================== SLIDE 20: REWARDS MATRIX TABLE ==================== -->
 <div class="slide">
     <div class="slide-header">
         <div class="logo-container">
@@ -1431,7 +1511,7 @@ body {{
         <thead>
             <tr>
                 <th>Rank Title</th>
-                <th>Team Business (USDT)</th>
+                <th>Team Business (USDT)<br><span style="font-size: 15px; color: #ffd056; font-weight: 700;">(50% Strong Leg : 50% Weak Leg)</span></th>
                 <th>Guaranteed Reward</th>
                 <th>Cash Equivalent (USDT)</th>
             </tr>
@@ -1488,85 +1568,92 @@ body {{
         </tbody>
     </table>
 
+    <!-- 50-50 Leg Rule Card -->
+    <div style="background: rgba(15, 23, 42, 0.85); border: 2px solid #38bdf8; border-radius: 16px; padding: 18px 30px; margin-top: 20px; display: flex; align-items: center; justify-content: space-between;">
+        <div style="display: flex; align-items: center; gap: 20px;">
+            <span style="font-size: 32px;">⚖️</span>
+            <div>
+                <div style="color: #38bdf8; font-size: 20px; font-weight: 800; text-transform: uppercase;">Team Turnover Calculation Rule (50 : 50 Ratio)</div>
+                <div style="color: #ffffff; font-size: 18px; font-weight: 600; margin-top: 4px;">
+                    Sabhi Rank Rewards ke liye Team Business volume <strong>50% Strong Leg</strong> aur <strong>50% Weak/Other Legs</strong> se count hoga.
+                </div>
+            </div>
+        </div>
+        <div style="background: rgba(56, 189, 248, 0.15); border: 1px solid #38bdf8; border-radius: 12px; padding: 10px 24px; color: #38bdf8; font-weight: 800; font-size: 18px;">
+            50% Strong : 50% Weak Leg
+        </div>
+    </div>
+
     <div class="slide-footer">
-        <span>Dubai Finance • Complete Milestone Rewards Schedule</span>
-        <span>Slide 19 / 23</span>
+        <span>Dubai Finance • Complete Rank Rewards & Luxury Incentives Matrix</span>
+        <span>Slide 20 / 24</span>
     </div>
 </div>
 
-<!-- ==================== SLIDE 20: BLOCKCHAIN DEPOSIT & P2P SYSTEM ==================== -->
+<!-- ==================== SLIDE 21: BLOCKCHAIN & P2P SYSTEM ==================== -->
 <div class="slide">
     <div class="slide-header">
         <div class="logo-container">
             <div class="logo-badge"><span style="font-size: 26px;">⚜️</span></div>
             <span class="logo-text">DUBAI FINANCE</span>
         </div>
-        <div class="header-badge">Ecosystem Infrastructure</div>
+        <div class="header-badge">Decentralized Rails</div>
     </div>
     
-    <div class="category-title">Decentralized Power</div>
-    <h2 class="main-title">USDT BEP-20 Network & P2P Ecosystem</h2>
-    <p class="subtitle">Experience frictionless global transactions powered by the ultra-fast, low-gas Binance Smart Chain.</p>
+    <div class="category-title">Autonomous Infrastructure</div>
+    <h2 class="main-title">USDT (BEP-20) Blockchain & P2P System</h2>
+    <p class="subtitle">Complete financial sovereignty. Safe, immutable, and hyper-efficient transactions powered by smart contracts.</p>
 
     <div class="grid-2" style="align-items: center; margin-top: 10px;">
-        <div style="border-radius: 28px; overflow: hidden; border: 2px solid rgba(56, 189, 248, 0.4); height: 500px; box-shadow: 0 25px 60px rgba(0,0,0,0.6);">
-            <img src="{blockchain_b64}" style="width: 100%; height: 100%; object-fit: cover;">
-        </div>
-
         <div style="display: flex; flex-direction: column; gap: 24px;">
             <div class="card card-gold" style="padding: 36px;">
-                <div style="display: flex; align-items: center; gap: 20px; margin-bottom: 16px;">
-                    <div style="font-size: 40px;">⚡</div>
-                    <div>
-                        <h3 style="font-size: 28px; font-weight: 800; color: #ffd056;">Instant Automated Deposits</h3>
-                        <p style="font-size: 19px; color: #94a3b8;">Deposit USDT (BEP-20) seamlessly from Trust Wallet, MetaMask, Binance, or OKX.</p>
-                    </div>
-                </div>
+                <h3 style="font-size: 28px; font-weight: 900; color: #ffd056; margin-bottom: 12px;">Binance Smart Chain Integration</h3>
+                <p style="font-size: 20px; color: #cbd5e1; line-height: 1.5;">
+                    Operating natively on the BEP-20 token standard guarantees ultra-low transaction network fees (under $0.10) and sub-second confirmation times globally.
+                </p>
             </div>
 
-            <div class="card card-gold" style="padding: 36px;">
-                <div style="display: flex; align-items: center; gap: 20px; margin-bottom: 16px;">
-                    <div style="font-size: 40px;">🔄</div>
-                    <div>
-                        <h3 style="font-size: 28px; font-weight: 800; color: #38bdf8;">Zero-Fee P2P Wallet Transfer</h3>
-                        <p style="font-size: 19px; color: #94a3b8;">Transfer internal balance instantly to other members without any fee to activate new downline IDs.</p>
-                    </div>
-                </div>
+            <div class="card" style="padding: 36px;">
+                <h3 style="font-size: 28px; font-weight: 900; color: #38bdf8; margin-bottom: 12px;">P2P Instant Internal Transfers</h3>
+                <p style="font-size: 20px; color: #cbd5e1; line-height: 1.5;">
+                    Transfer USDT wallet balances between user accounts instantly with <strong>Zero (0%) Transaction Fees</strong>. Empower local teams and activate new members immediately!
+                </p>
             </div>
 
-            <div class="card card-gold" style="padding: 36px;">
-                <div style="display: flex; align-items: center; gap: 20px; margin-bottom: 16px;">
-                    <div style="font-size: 40px;">🔒</div>
-                    <div>
-                        <h3 style="font-size: 28px; font-weight: 800; color: #10b981;">Maximum Security & Automation</h3>
-                        <p style="font-size: 19px; color: #94a3b8;">All transactions protected by decentralized cryptographic verification with 99.99% uptime.</p>
-                    </div>
-                </div>
+            <div class="card" style="padding: 36px;">
+                <h3 style="font-size: 28px; font-weight: 900; color: #10b981; margin-bottom: 12px;">Decentralized Wallet Compatibility</h3>
+                <p style="font-size: 20px; color: #cbd5e1; line-height: 1.5;">
+                    Seamlessly compatible with MetaMask, Trust Wallet, Binance Web3 Wallet, SafePal, and all leading non-custodial crypto wallets.
+                </p>
             </div>
+        </div>
+
+        <div style="border-radius: 28px; overflow: hidden; border: 2px solid rgba(56, 189, 248, 0.4); height: 520px; box-shadow: 0 25px 60px rgba(0,0,0,0.6);">
+            <img src="{blockchain_b64}" style="width: 100%; height: 100%; object-fit: cover;">
         </div>
     </div>
 
     <div class="slide-footer">
-        <span>Dubai Finance • Blockchain Infrastructure & P2P Transfers</span>
-        <span>Slide 20 / 23</span>
+        <span>Dubai Finance • Binance Smart Chain Architecture & P2P Facility</span>
+        <span>Slide 21 / 24</span>
     </div>
 </div>
 
-<!-- ==================== SLIDE 21: TERMS & CONDITIONS ==================== -->
+<!-- ==================== SLIDE 22: TERMS & CONDITIONS ==================== -->
 <div class="slide">
     <div class="slide-header">
         <div class="logo-container">
             <div class="logo-badge"><span style="font-size: 26px;">⚜️</span></div>
             <span class="logo-text">DUBAI FINANCE</span>
         </div>
-        <div class="header-badge">Transparency Protocol</div>
+        <div class="header-badge">Rules & Protocols</div>
     </div>
     
-    <div class="category-title">Fair & Transparent Guidelines</div>
+    <div class="category-title">Operational Clarity</div>
     <h2 class="main-title">Terms & Conditions</h2>
-    <p class="subtitle">Clear, member-first rules ensuring seamless daily operation and guaranteed payout protection.</p>
+    <p class="subtitle">Clear, honest, and transparent guidelines ensuring sustainable long-term prosperity for all community participants.</p>
 
-    <div class="grid-2" style="margin-top: 10px;">
+    <div class="grid-3" style="margin-top: 15px;">
         <div class="card card-gold" style="padding: 36px; display: flex; gap: 24px; align-items: flex-start;">
             <div style="font-size: 44px; width: 70px; height: 70px; border-radius: 18px; background: rgba(56, 189, 248, 0.15); display: flex; align-items: center; justify-content: center; border: 1px solid #38bdf8;">💳</div>
             <div>
@@ -1589,21 +1676,21 @@ body {{
         </div>
 
         <div class="card card-gold" style="padding: 36px; display: flex; gap: 24px; align-items: flex-start;">
-            <div style="font-size: 44px; width: 70px; height: 70px; border-radius: 18px; background: rgba(16, 185, 129, 0.15); display: flex; align-items: center; justify-content: center; border: 1px solid #10b981;">🛡️</div>
+            <div style="font-size: 44px; width: 70px; height: 70px; border-radius: 18px; background: rgba(244, 63, 94, 0.15); display: flex; align-items: center; justify-content: center; border: 1px solid #f43f5e;">🛡️</div>
             <div>
-                <h3 style="font-size: 28px; font-weight: 800; color: #10b981; margin-bottom: 8px;">Zero Deductions (100% Payout)</h3>
+                <h3 style="font-size: 28px; font-weight: 800; color: #f43f5e; margin-bottom: 8px;">Withdrawal Admin Charge</h3>
                 <p style="font-size: 20px; color: #cbd5e1; line-height: 1.4;">
-                    <strong>0% Admin Charge • 0% TDS • 0% Hidden Fee</strong>. You receive exactly 100% of your earnings straight to your wallet.
+                    <strong>10% Admin Deduction</strong> applies on all withdrawal requests for ecosystem maintenance, server infrastructure, and network liquidity.
                 </p>
             </div>
         </div>
 
         <div class="card card-gold" style="padding: 36px; display: flex; gap: 24px; align-items: flex-start;">
-            <div style="font-size: 44px; width: 70px; height: 70px; border-radius: 18px; background: rgba(244, 63, 94, 0.15); display: flex; align-items: center; justify-content: center; border: 1px solid #f43f5e;">🔓</div>
+            <div style="font-size: 44px; width: 70px; height: 70px; border-radius: 18px; background: rgba(16, 185, 129, 0.15); display: flex; align-items: center; justify-content: center; border: 1px solid #10b981;">🔓</div>
             <div>
-                <h3 style="font-size: 28px; font-weight: 800; color: #f43f5e; margin-bottom: 8px;">No Withdrawal Conditions</h3>
+                <h3 style="font-size: 28px; font-weight: 800; color: #10b981; margin-bottom: 8px;">No Withdrawal Conditions</h3>
                 <p style="font-size: 20px; color: #cbd5e1; line-height: 1.4;">
-                    No mandatory direct referrals required to withdraw your daily ROI income. Complete financial freedom for all investors!
+                    No mandatory direct referrals required to withdraw your basic ROI daily earnings. Complete financial freedom for all investors!
                 </p>
             </div>
         </div>
@@ -1611,9 +1698,9 @@ body {{
         <div class="card card-gold" style="padding: 36px; display: flex; gap: 24px; align-items: flex-start;">
             <div style="font-size: 44px; width: 70px; height: 70px; border-radius: 18px; background: rgba(168, 85, 247, 0.15); display: flex; align-items: center; justify-content: center; border: 1px solid #a855f7;">⏳</div>
             <div>
-                <h3 style="font-size: 28px; font-weight: 800; color: #a855f7; margin-bottom: 8px;">Tenure Duration: 30 Days</h3>
+                <h3 style="font-size: 28px; font-weight: 800; color: #a855f7; margin-bottom: 8px;">Tenure Duration: 28 Days</h3>
                 <p style="font-size: 20px; color: #cbd5e1; line-height: 1.4;">
-                    Basic ROI plans mature after <strong>30 Days (150% gross payout)</strong>. Members can re-topup and compound continuously.
+                    Basic ROI plans mature after <strong>28 Days (140% gross payout)</strong>. Members can re-topup and compound continuously.
                 </p>
             </div>
         </div>
@@ -1631,11 +1718,11 @@ body {{
 
     <div class="slide-footer">
         <span>Dubai Finance • Official Transparency Terms & Protocols</span>
-        <span>Slide 21 / 23</span>
+        <span>Slide 22 / 24</span>
     </div>
 </div>
 
-<!-- ==================== SLIDE 22: OFFICIAL CORPORATE CONTACT ==================== -->
+<!-- ==================== SLIDE 23: OFFICIAL CORPORATE CONTACT ==================== -->
 <div class="slide">
     <div class="slide-header">
         <div class="logo-container">
@@ -1681,11 +1768,11 @@ body {{
 
     <div class="slide-footer">
         <span>Dubai Finance • Global Corporate Headquarters</span>
-        <span>Slide 22 / 23</span>
+        <span>Slide 23 / 24</span>
     </div>
 </div>
 
-<!-- ==================== SLIDE 23: CLOSING & CALL TO ACTION ==================== -->
+<!-- ==================== SLIDE 24: CLOSING & CALL TO ACTION ==================== -->
 <div class="slide" style="justify-content: center; align-items: center; text-align: center; background: linear-gradient(rgba(3, 7, 18, 0.8), rgba(3, 7, 18, 0.92)), url('{hero_b64}') center/cover no-repeat; padding: 80px;">
     <div style="background: rgba(255, 208, 86, 0.15); border: 2px solid #ffd056; padding: 12px 36px; border-radius: 999px; margin-bottom: 28px; display: inline-flex; align-items: center; gap: 14px;">
         <span style="font-size: 28px;">⚜️</span>
@@ -1733,7 +1820,7 @@ cmd = [
     html_path
 ]
 
-print("Running Chrome headless to generate 23-slide USDT PDF...")
+print("Running Chrome headless to generate 24-slide USDT PDF...")
 res = subprocess.run(cmd, capture_output=True, text=True)
 print(f"Chrome return code: {res.returncode}")
 

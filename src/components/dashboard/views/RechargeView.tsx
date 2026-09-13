@@ -17,14 +17,18 @@ export function RechargeView({ user, onRefresh }: RechargeViewProps) {
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState<{ text: string; error?: boolean } | null>(null);
 
+  const cfg = user?.systemConfig || {};
+  const companyAddress = cfg.COMPANY_USDT_ADDRESS || APP_CONFIG.depositAddress;
+  const usdtToInrRate = cfg.USDT_TO_INR_RATE !== undefined ? Number(cfg.USDT_TO_INR_RATE) : APP_CONFIG.usdtToInrRate;
+
   const copyAddress = () => {
-    navigator.clipboard.writeText(APP_CONFIG.depositAddress);
+    navigator.clipboard.writeText(companyAddress);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
 
   const calculatedInr = usdtAmount && !isNaN(Number(usdtAmount))
-    ? Number(usdtAmount) * APP_CONFIG.usdtToInrRate
+    ? Number(usdtAmount) * usdtToInrRate
     : 0;
 
   const handleSubmitDeposit = async (e: React.FormEvent) => {
@@ -220,13 +224,13 @@ export function RechargeView({ user, onRefresh }: RechargeViewProps) {
             <div className="flex flex-col items-center bg-[#070e20] border border-[#182a50] rounded-2xl p-4 mb-5">
               <div className="w-44 h-44 bg-white p-2 rounded-xl flex items-center justify-center shadow-lg">
                 <img
-                  src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${APP_CONFIG.depositAddress}`}
+                  src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${companyAddress}`}
                   alt="USDT Deposit QR"
                   className="w-full h-full object-contain"
                 />
               </div>
               <p className="text-[11px] font-mono text-slate-300 mt-3 break-all text-center px-2">
-                {APP_CONFIG.depositAddress}
+                {companyAddress}
               </p>
               <button
                 onClick={copyAddress}

@@ -1,40 +1,263 @@
 import { db } from "./db";
 import { APP_CONFIG } from "./constants";
 
-export async function getSystemConfigValue(key: string, defaultValue?: string): Promise<string> {
-  try {
-    const record = await db.systemConfig.findUnique({
-      where: { key },
-      select: { value: true },
-    });
-    if (record?.value != null && record.value !== "") {
-      return record.value;
-    }
-  } catch (error) {
-    console.error(`Error reading config ${key} from database:`, error);
+export const DEFAULT_SYSTEM_CONFIGS: Record<string, { value: string; description: string; category: string }> = {
+  // 1. Financial & Wallet
+  COMPANY_USDT_ADDRESS: {
+    value: APP_CONFIG.depositAddress,
+    description: "Official USDT BEP-20 receiving wallet address for recharges",
+    category: "wallet",
+  },
+  USDT_TO_INR_RATE: {
+    value: String(APP_CONFIG.usdtToInrRate),
+    description: "Fixed exchange rate peg: 1 USDT in INR",
+    category: "wallet",
+  },
+
+  // 2. Basic Saving Package (PDF Page 4 & 5)
+  BASIC_PLAN_DAILY_ROI: {
+    value: String(APP_CONFIG.basicPlan.dailyRoiRate),
+    description: "Basic Saving plan daily return percentage (e.g. 5.0 for 5%)",
+    category: "plan",
+  },
+  BASIC_PLAN_TENURE_DAYS: {
+    value: String(APP_CONFIG.basicPlan.tenureDays),
+    description: "Basic Saving contract duration in days (e.g. 30 days = 150% total)",
+    category: "plan",
+  },
+  BASIC_PLAN_MIN_USDT: {
+    value: String(APP_CONFIG.basicPlan.minUsdt),
+    description: "Minimum package amount in USDT for Basic Saving ($5)",
+    category: "plan",
+  },
+  BASIC_PLAN_MAX_USDT: {
+    value: String(APP_CONFIG.basicPlan.maxUsdt),
+    description: "Maximum package amount in USDT for Basic Saving ($5,000)",
+    category: "plan",
+  },
+
+  // 3. Fix Deposit (FD) Staking (PDF Page 6)
+  FD_PLAN_180_DAILY_ROI: {
+    value: "10.0",
+    description: "180-Day FD daily yield percentage (e.g. 10.0 for 10% daily)",
+    category: "plan",
+  },
+  FD_PLAN_180_DAYS: {
+    value: "180",
+    description: "180-Day FD contract duration in days",
+    category: "plan",
+  },
+  FD_PLAN_210_DAILY_ROI: {
+    value: "15.0",
+    description: "210-Day FD daily yield percentage (e.g. 15.0 for 15% daily)",
+    category: "plan",
+  },
+  FD_PLAN_210_DAYS: {
+    value: "210",
+    description: "210-Day FD contract duration in days",
+    category: "plan",
+  },
+  FD_MIN_USDT: {
+    value: "10",
+    description: "Minimum investment in USDT for Fix Deposit ($10)",
+    category: "plan",
+  },
+  FD_MAX_USDT: {
+    value: "5000",
+    description: "Maximum investment in USDT for Fix Deposit ($5,000)",
+    category: "plan",
+  },
+
+  // 4. Direct Referral Income (PDF Page 8)
+  DIRECT_REFERRAL_PERCENT: {
+    value: String(APP_CONFIG.directReferralPercent),
+    description: "Instant direct sponsor commission percentage (e.g. 15 for 15%)",
+    category: "royalty",
+  },
+
+  // 5. 12-Level Daily Royalty Income (PDF Page 9 - calculated on downline daily ROI)
+  LEVEL_1_PERCENT: {
+    value: "10.0",
+    description: "Level 1 Royalty % (Requires 1 Active Direct Referral)",
+    category: "royalty",
+  },
+  LEVEL_2_PERCENT: {
+    value: "5.0",
+    description: "Level 2 Royalty % (Requires 2 Active Direct Referrals)",
+    category: "royalty",
+  },
+  LEVEL_3_PERCENT: {
+    value: "3.0",
+    description: "Level 3 Royalty % (Requires 3 Active Direct Referrals)",
+    category: "royalty",
+  },
+  LEVEL_4_PERCENT: {
+    value: "2.0",
+    description: "Level 4 Royalty % (Requires 4 Active Direct Referrals)",
+    category: "royalty",
+  },
+  LEVEL_5_PERCENT: {
+    value: "2.0",
+    description: "Level 5 Royalty % (Requires 5 Active Direct Referrals)",
+    category: "royalty",
+  },
+  LEVEL_6_PERCENT: {
+    value: "2.0",
+    description: "Level 6 Royalty % (Requires 6 Active Direct Referrals)",
+    category: "royalty",
+  },
+  LEVEL_7_PERCENT: {
+    value: "1.0",
+    description: "Level 7 Royalty % (Requires 7 Active Direct Referrals)",
+    category: "royalty",
+  },
+  LEVEL_8_PERCENT: {
+    value: "1.0",
+    description: "Level 8 Royalty % (Requires 8 Active Direct Referrals)",
+    category: "royalty",
+  },
+  LEVEL_9_PERCENT: {
+    value: "1.0",
+    description: "Level 9 Royalty % (Requires 9 Active Direct Referrals)",
+    category: "royalty",
+  },
+  LEVEL_10_PERCENT: {
+    value: "1.0",
+    description: "Level 10 Royalty % (Requires 10 Active Direct Referrals)",
+    category: "royalty",
+  },
+  LEVEL_11_PERCENT: {
+    value: "1.0",
+    description: "Level 11 Royalty % (Requires 11 Active Direct Referrals)",
+    category: "royalty",
+  },
+  LEVEL_12_PERCENT: {
+    value: "1.0",
+    description: "Level 12 Royalty % (Requires 12 Active Direct Referrals)",
+    category: "royalty",
+  },
+
+  // 6. Withdrawal Rules & Timings (PDF Page 10)
+  WITHDRAWAL_START_HOUR: {
+    value: String(APP_CONFIG.withdrawalWindow.startHour),
+    description: "Daily withdrawal window start hour in 24h IST (e.g. 10 for 10:00 AM)",
+    category: "withdrawal",
+  },
+  WITHDRAWAL_END_HOUR: {
+    value: String(APP_CONFIG.withdrawalWindow.endHour),
+    description: "Daily withdrawal window close hour in 24h IST (e.g. 14 for 02:00 PM)",
+    category: "withdrawal",
+  },
+  MIN_WITHDRAWAL_USDT: {
+    value: String(APP_CONFIG.minWithdrawalUsdt),
+    description: "Minimum single withdrawal amount in USDT ($2)",
+    category: "withdrawal",
+  },
+  MAX_WITHDRAWAL_USDT: {
+    value: String(APP_CONFIG.maxWithdrawalUsdt),
+    description: "Maximum single withdrawal amount in USDT ($5,000)",
+    category: "withdrawal",
+  },
+  WITHDRAWAL_FEE_PERCENT: {
+    value: "0.0",
+    description: "Withdrawal deduction fee percentage (0% as per PDF)",
+    category: "withdrawal",
+  },
+
+  // 7. Wallet Transfers & Bonus (PDF Page 3 & 10)
+  SIGNUP_BONUS_INR: {
+    value: String(APP_CONFIG.signupBonusInr),
+    description: "Welcome bonus credited to new member upon registration in INR",
+    category: "transfers",
+  },
+  MIN_P2P_TRANSFER_USDT: {
+    value: "1",
+    description: "Minimum P2P fund transfer amount in USDT",
+    category: "transfers",
+  },
+  P2P_FEE_PERCENT: {
+    value: "0.0",
+    description: "P2P wallet-to-wallet transfer fee percentage (0%)",
+    category: "transfers",
+  },
+  SWIPE_FEE_PERCENT: {
+    value: "0.0",
+    description: "Income Wallet to Fund Wallet swipe deduction percentage (0%)",
+    category: "transfers",
+  },
+
+  // 8. Corporate Information (PDF Page 2)
+  OFFICIAL_EMAIL: {
+    value: APP_CONFIG.officialEmail,
+    description: "Official customer care & support email",
+    category: "company",
+  },
+  CMD_NAME: {
+    value: APP_CONFIG.cmd,
+    description: "Platform Director / CMD name",
+    category: "company",
+  },
+  HEADQUARTERS: {
+    value: APP_CONFIG.headquarters,
+    description: "Registered office and headquarters address",
+    category: "company",
+  },
+};
+
+// In-memory cache with 15-second TTL
+let cachedConfigs: Record<string, string> | null = null;
+let lastFetchTime = 0;
+const CACHE_TTL_MS = 15000;
+
+export function invalidateConfigCache() {
+  cachedConfigs = null;
+  lastFetchTime = 0;
+}
+
+export async function getAllSystemConfigs(): Promise<Record<string, string>> {
+  const now = Date.now();
+  if (cachedConfigs && now - lastFetchTime < CACHE_TTL_MS) {
+    return cachedConfigs;
   }
 
-  // Fallbacks from APP_CONFIG
-  switch (key) {
-    case "COMPANY_USDT_ADDRESS":
-      return APP_CONFIG.depositAddress;
-    case "USDT_TO_INR_RATE":
-      return String(APP_CONFIG.usdtToInrRate);
-    case "WITHDRAWAL_START_HOUR":
-      return String(APP_CONFIG.withdrawalWindow.startHour);
-    case "WITHDRAWAL_END_HOUR":
-      return String(APP_CONFIG.withdrawalWindow.endHour);
-    case "MIN_WITHDRAWAL_USDT":
-      return String(APP_CONFIG.minWithdrawalUsdt);
-    case "MAX_WITHDRAWAL_USDT":
-      return String(APP_CONFIG.maxWithdrawalUsdt);
-    case "DIRECT_REFERRAL_PERCENT":
-      return String(APP_CONFIG.directReferralPercent);
-    case "BASIC_PLAN_DAILY_ROI":
-      return String(APP_CONFIG.basicPlan.dailyRoiRate);
-    case "BASIC_PLAN_TENURE_DAYS":
-      return String(APP_CONFIG.basicPlan.tenureDays);
-    default:
-      return defaultValue ?? "";
+  const result: Record<string, string> = {};
+
+  // 1. Fill defaults
+  for (const [key, item] of Object.entries(DEFAULT_SYSTEM_CONFIGS)) {
+    result[key] = item.value;
   }
+
+  // 2. Fetch from database
+  try {
+    const dbRows = await db.systemConfig.findMany();
+    for (const row of dbRows) {
+      if (row.value != null && row.value !== "") {
+        result[row.key] = row.value;
+      }
+    }
+  } catch (error) {
+    console.error("[configService] Error loading systemConfig from db:", error);
+  }
+
+  cachedConfigs = result;
+  lastFetchTime = now;
+  return result;
+}
+
+export async function getSystemConfigValue(key: string, fallback?: string): Promise<string> {
+  const all = await getAllSystemConfigs();
+  if (all[key] != null) {
+    return all[key];
+  }
+  return fallback ?? DEFAULT_SYSTEM_CONFIGS[key]?.value ?? "";
+}
+
+export async function getNumericConfig(key: string, fallback: number): Promise<number> {
+  const val = await getSystemConfigValue(key, String(fallback));
+  const num = Number(val);
+  return isNaN(num) ? fallback : num;
+}
+
+export async function getStringConfig(key: string, fallback: string): Promise<string> {
+  return getSystemConfigValue(key, fallback);
 }
