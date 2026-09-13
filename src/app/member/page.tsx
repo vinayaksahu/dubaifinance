@@ -39,7 +39,7 @@ export default function MemberDashboardPage() {
         return;
       }
       const data = await res.json();
-      setUser(data.user);
+      setUser({ ...data.user, systemConfig: data.systemConfig });
     } catch {
       router.push("/login");
     } finally {

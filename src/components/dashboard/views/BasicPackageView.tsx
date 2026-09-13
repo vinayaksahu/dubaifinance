@@ -1,15 +1,7 @@
 "use client";
 
-import React, { useState } from 'react';
-import { Package, Check, X, ShieldCheck } from 'lucide-react';
-
-interface UserData {
-  id: string;
-  customId: string;
-  fullName: string;
-  email: string;
-  fundBalance: number;
-}
+import React, { useState } from "react";
+import { Package, Check, X, ShieldCheck, AlertCircle } from "lucide-react";
 
 interface BasicPackageViewProps {
   user: any;
@@ -18,23 +10,26 @@ interface BasicPackageViewProps {
 }
 
 const PACKAGE_TEMPLATES = [
-  { id: 1, name: 'Starter', amount: 5 },
-  { id: 2, name: 'Basic', amount: 10 },
-  { id: 3, name: 'Silver', amount: 20 },
-  { id: 4, name: 'Gold', amount: 50 },
-  { id: 5, name: 'Platinum', amount: 100 },
-  { id: 6, name: 'Diamond', amount: 500 },
-  { id: 7, name: 'Elite', amount: 1000 },
-  { id: 8, name: 'Royal', amount: 2000 },
-  { id: 9, name: 'Crown', amount: 5000 },
+  { id: 1, name: "Starter", amount: 5 },
+  { id: 2, name: "Basic", amount: 10 },
+  { id: 3, name: "Silver", amount: 20 },
+  { id: 4, name: "Gold", amount: 50 },
+  { id: 5, name: "Platinum", amount: 100 },
+  { id: 6, name: "Diamond", amount: 500 },
+  { id: 7, name: "Elite", amount: 1000 },
+  { id: 8, name: "Royal", amount: 2000 },
+  { id: 9, name: "Crown", amount: 5000 },
 ];
 
 export function BasicPackageView({ user, onRefresh, onRefreshUser }: BasicPackageViewProps) {
   const [selectedPlan, setSelectedPlan] = useState<any | null>(null);
-  const [transactionPin, setTransactionPin] = useState('');
+  const [transactionPin, setTransactionPin] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+
+  // Safe numerical fund balance
+  const fundBal = Number(user?.fundBalance ?? 0);
 
   // Dynamic system configurations set by Admin
   const cfg = user?.systemConfig || {};
@@ -55,184 +50,264 @@ export function BasicPackageView({ user, onRefresh, onRefreshUser }: BasicPackag
   const handlePurchase = async () => {
     if (!selectedPlan) return;
     if (transactionPin.length !== 6) {
-      setError('Transaction PIN must be 6 digits');
+      setError("Transaction PIN must be 6 digits");
+      return;
+    }
+
+    if (fundBal < selectedPlan.amount) {
+      setError(`Insufficient fund balance ($${fundBal.toFixed(2)} USDT). Please recharge first.`);
       return;
     }
 
     setLoading(true);
-    setError('');
-    setSuccess('');
+    setError("");
+    setSuccess("");
 
     try {
-      const res = await fetch('/api/packages/activate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const res = await fetch("/api/packages/activate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          packageType: 'BASIC_SAVING',
+          packageType: "BASIC_SAVING",
           amountInUsdt: selectedPlan.amount,
           amount: selectedPlan.amount,
-          transactionPin
+          transactionPin,
         }),
       });
 
       const data = await res.json();
       if (!res.ok) {
-        throw new Error(data.error || 'Failed to purchase package');
+        throw new Error(data.error || "Failed to purchase package");
       }
 
-      setSuccess(`Successfully purchased ${selectedPlan.name} package!`);
+      setSuccess(`Successfully activated ${selectedPlan.name} package for $${selectedPlan.amount} USDT!`);
       setSelectedPlan(null);
-      setTransactionPin('');
+      setTransactionPin("");
       if (onRefresh) onRefresh();
       if (onRefreshUser) onRefreshUser();
     } catch (err: any) {
-      setError(err.message);
+      setError(err.message || "Something went wrong. Please try again.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-[#070e20] p-6 rounded-2xl border border-[#152238]">
+    <div className="space-y-6 animate-in fade-in duration-300">
+      {/* Header & Breadcrumb */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
         <div>
-          <h2 className="text-2xl font-bold text-white mb-1">Basic Packages</h2>
-          <p className="text-slate-400">Fixed {dailyRoiRate}% daily ROI for {tenureDays} days</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-slate-100 tracking-tight">
+            Basic Daily ROI Package
+          </h1>
+          <p className="text-sm font-semibold text-slate-300 mt-1">
+            Available Fund Balance :{" "}
+            <span className="text-emerald-400 font-bold font-mono">
+              ${fundBal.toFixed(2)} USDT
+            </span>
+          </p>
         </div>
-        <div className="bg-[#0a1229] p-4 rounded-xl border border-[#152238] flex items-center gap-4">
-          <div className="p-3 bg-purple-500/20 rounded-lg text-purple-400">
-            <Package size={24} />
+        <div className="text-xs text-slate-400 font-medium flex items-center gap-1.5">
+          <span>🏠 Package</span>
+          <span>/</span>
+          <span className="text-slate-200 font-semibold">Basic Package</span>
+        </div>
+      </div>
+
+      {/* Overview Banner */}
+      <div className="bg-[#091124] border border-[#17274a] rounded-2xl p-4 sm:p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-lg">
+        <div>
+          <h2 className="text-lg sm:text-xl font-bold text-slate-100 mb-1">
+            Daily Growth Packages
+          </h2>
+          <p className="text-xs sm:text-sm text-slate-400">
+            Earn fixed <strong className="text-amber-400">{dailyRoiRate}% daily ROI</strong> for{" "}
+            <strong className="text-cyan-400">{tenureDays} days</strong> (Total {((dailyRoiRate * tenureDays)).toFixed(0)}% Return)
+          </p>
+        </div>
+        <div className="bg-[#0c1836] py-2.5 px-4 rounded-xl border border-[#1d3360] flex items-center gap-3">
+          <div className="p-2 bg-amber-500/20 border border-amber-500/30 rounded-lg text-amber-400">
+            <Package className="w-5 h-5" />
           </div>
           <div>
-            <p className="text-sm text-slate-400">Available Fund Balance</p>
-            <p className="text-xl font-bold text-white">${user?.fundBalance?.toFixed(2) || '0.00'} USDT</p>
+            <p className="text-[11px] text-slate-400 font-medium">Recharge Wallet</p>
+            <p className="text-base font-extrabold text-emerald-400 font-mono">
+              ${fundBal.toFixed(2)} USDT
+            </p>
           </div>
         </div>
       </div>
 
+      {/* Success Notification */}
       {success && (
-        <div className="p-4 bg-green-500/10 border border-green-500/20 rounded-xl text-green-400 flex items-center gap-2">
-          <Check size={20} />
-          {success}
+        <div className="p-4 bg-emerald-500/10 border border-emerald-500/30 rounded-xl text-emerald-400 text-sm flex items-center gap-2">
+          <Check className="w-5 h-5 shrink-0" />
+          <span>{success}</span>
         </div>
       )}
 
+      {/* Error Notification */}
       {error && (
-        <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 flex items-center gap-2">
-          <X size={20} />
-          {error}
+        <div className="p-4 bg-rose-500/10 border border-rose-500/30 rounded-xl text-rose-400 text-sm flex items-center gap-2">
+          <AlertCircle className="w-5 h-5 shrink-0" />
+          <span>{error}</span>
         </div>
       )}
 
+      {/* Packages Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {dynamicPackages.map((plan) => (
-          <div key={plan.id} className="bg-[#070e20] rounded-2xl border border-[#152238] overflow-hidden flex flex-col hover:border-purple-500/50 transition-colors">
-            <div className="p-6 border-b border-[#152238] bg-gradient-to-br from-purple-500/5 to-transparent relative">
-              <div className="absolute top-4 right-4 bg-purple-500/20 text-purple-400 text-xs font-bold px-2 py-1 rounded-full">
+          <div
+            key={plan.id}
+            className="bg-[#091124] border border-[#17274a] rounded-2xl p-5 shadow-lg flex flex-col justify-between hover:border-amber-500/40 transition-all group relative overflow-hidden"
+          >
+            {/* Top Tag */}
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-xs font-bold text-slate-300 uppercase tracking-wider">
+                {plan.name}
+              </span>
+              <span className="px-2.5 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-300 text-[10px] font-bold">
                 {dailyRoiRate}% Daily
-              </div>
-              <h3 className="text-xl font-bold text-white mb-2">{plan.name}</h3>
-              <div className="flex items-baseline gap-1">
-                <span className="text-3xl font-bold text-white">${plan.amount}</span>
-                <span className="text-slate-400">USDT</span>
-              </div>
+              </span>
             </div>
-            
-            <div className="p-6 flex-1 flex flex-col gap-4">
-              <div className="space-y-3 flex-1">
-                <div className="flex justify-between items-center text-sm">
-                  <span className="text-slate-400">Daily ROI</span>
-                  <span className="text-white font-medium">${plan.dailyRoi.toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between items-center text-sm">
-                  <span className="text-slate-400">Duration</span>
-                  <span className="text-white font-medium">{plan.days} Days</span>
-                </div>
-                <div className="flex justify-between items-center text-sm">
-                  <span className="text-slate-400">Total Return</span>
-                  <span className="text-green-400 font-bold">${plan.totalReturn.toFixed(2)}</span>
-                </div>
-              </div>
 
-              <button
-                onClick={() => setSelectedPlan(plan)}
-                className="w-full py-3 px-4 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-medium transition-colors mt-auto"
-              >
-                Buy Now
-              </button>
+            {/* Price Header */}
+            <div className="mb-4 pb-3 border-b border-[#17274a]">
+              <div className="flex items-baseline gap-1">
+                <span className="text-2xl sm:text-3xl font-extrabold text-slate-100 font-mono">
+                  ${plan.amount.toLocaleString()}
+                </span>
+                <span className="text-xs font-bold text-amber-400 font-mono">USDT</span>
+              </div>
             </div>
+
+            {/* Details Rows */}
+            <div className="space-y-2 mb-5 text-xs">
+              <div className="flex justify-between items-center py-1">
+                <span className="text-slate-400">Daily Return:</span>
+                <span className="text-emerald-400 font-bold font-mono">
+                  +${plan.dailyRoi.toFixed(2)} USDT
+                </span>
+              </div>
+              <div className="flex justify-between items-center py-1">
+                <span className="text-slate-400">Duration:</span>
+                <span className="text-slate-200 font-semibold">{plan.days} Days</span>
+              </div>
+              <div className="flex justify-between items-center py-1">
+                <span className="text-slate-400">Total Return:</span>
+                <span className="text-cyan-400 font-bold font-mono">
+                  ${plan.totalReturn.toFixed(2)} USDT
+                </span>
+              </div>
+            </div>
+
+            {/* Activation Button */}
+            <button
+              type="button"
+              onClick={() => {
+                setSelectedPlan(plan);
+                setTransactionPin("");
+                setError("");
+              }}
+              className="w-full py-2.5 px-4 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-extrabold rounded-xl transition-all shadow-md text-xs sm:text-sm tracking-wide"
+            >
+              Activate Package
+            </button>
           </div>
         ))}
       </div>
 
+      {/* Confirmation Purchase Modal */}
       {selectedPlan && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-[#070e20] rounded-2xl border border-[#152238] w-full max-w-md overflow-hidden">
-            <div className="p-6 border-b border-[#152238] flex justify-between items-center">
-              <h3 className="text-xl font-bold text-white flex items-center gap-2">
-                <ShieldCheck className="text-purple-400" />
-                Confirm Purchase
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
+          <div className="bg-[#091124] border border-[#1e3460] rounded-2xl w-full max-w-md overflow-hidden shadow-2xl">
+            {/* Modal Header */}
+            <div className="p-5 border-b border-[#17274a] flex justify-between items-center">
+              <h3 className="text-lg font-bold text-slate-100 flex items-center gap-2">
+                <ShieldCheck className="w-5 h-5 text-amber-400" />
+                Confirm Package Activation
               </h3>
               <button
+                type="button"
                 onClick={() => {
                   setSelectedPlan(null);
-                  setTransactionPin('');
-                  setError('');
+                  setTransactionPin("");
+                  setError("");
                 }}
                 className="text-slate-400 hover:text-white transition-colors"
               >
-                <X size={24} />
+                <X className="w-5 h-5" />
               </button>
             </div>
-            
-            <div className="p-6 space-y-6">
-              <div className="bg-[#0a1229] p-4 rounded-xl border border-[#152238]">
-                <div className="flex justify-between items-center mb-2">
-                  <span className="text-slate-400">Package</span>
-                  <span className="text-white font-medium">{selectedPlan.name}</span>
+
+            {/* Modal Body */}
+            <div className="p-5 space-y-4">
+              <div className="bg-[#060c1c] p-4 rounded-xl border border-[#17274a] space-y-2 text-xs">
+                <div className="flex justify-between items-center">
+                  <span className="text-slate-400">Selected Package:</span>
+                  <span className="text-slate-100 font-bold">{selectedPlan.name}</span>
                 </div>
-                <div className="flex justify-between items-center mb-2">
-                  <span className="text-slate-400">Amount</span>
-                  <span className="text-white font-bold">${selectedPlan.amount} USDT</span>
+                <div className="flex justify-between items-center">
+                  <span className="text-slate-400">Package Amount:</span>
+                  <span className="text-amber-400 font-bold font-mono">
+                    ${selectedPlan.amount} USDT
+                  </span>
                 </div>
-                <div className="flex justify-between items-center pt-2 border-t border-[#152238]">
-                  <span className="text-slate-400">Daily Return</span>
-                  <span className="text-green-400 font-medium">${selectedPlan.dailyRoi.toFixed(2)} / day</span>
+                <div className="flex justify-between items-center">
+                  <span className="text-slate-400">Daily Return:</span>
+                  <span className="text-emerald-400 font-bold font-mono">
+                    +${selectedPlan.dailyRoi.toFixed(2)} USDT / day
+                  </span>
+                </div>
+                <div className="flex justify-between items-center pt-2 border-t border-[#17274a]">
+                  <span className="text-slate-400">Total Return ({selectedPlan.days} Days):</span>
+                  <span className="text-cyan-400 font-bold font-mono">
+                    ${selectedPlan.totalReturn.toFixed(2)} USDT
+                  </span>
                 </div>
               </div>
 
+              {error && (
+                <div className="p-3 bg-rose-500/10 border border-rose-500/25 rounded-lg text-rose-400 text-xs flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 shrink-0" />
+                  <span>{error}</span>
+                </div>
+              )}
+
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-2">
-                  Transaction PIN
+                <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                  Enter 6-Digit Transaction PIN
                 </label>
                 <input
                   type="password"
                   maxLength={6}
                   value={transactionPin}
-                  onChange={(e) => setTransactionPin(e.target.value.replace(/\D/g, ''))}
-                  placeholder="Enter 6-digit PIN"
-                  className="w-full bg-[#0a1229] border border-[#152238] text-white rounded-xl px-4 py-3 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500"
+                  onChange={(e) => setTransactionPin(e.target.value.replace(/\D/g, ""))}
+                  placeholder="••••••"
+                  className="w-full bg-[#060c1c] border border-[#17274a] text-white rounded-xl px-4 py-2.5 focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 text-sm font-mono tracking-widest text-center"
                 />
               </div>
 
               <div className="flex gap-3 pt-2">
                 <button
+                  type="button"
                   onClick={() => {
                     setSelectedPlan(null);
-                    setTransactionPin('');
-                    setError('');
+                    setTransactionPin("");
+                    setError("");
                   }}
-                  className="flex-1 py-3 px-4 bg-[#0a1229] hover:bg-[#152238] border border-[#152238] text-white rounded-xl font-medium transition-colors"
+                  className="flex-1 py-2.5 px-4 bg-[#0c1836] hover:bg-[#12234e] border border-[#17274a] text-slate-300 rounded-xl font-semibold transition-colors text-xs"
                   disabled={loading}
                 >
                   Cancel
                 </button>
                 <button
+                  type="button"
                   onClick={handlePurchase}
                   disabled={loading || transactionPin.length !== 6}
-                  className="flex-1 py-3 px-4 bg-purple-600 hover:bg-purple-700 disabled:opacity-50 disabled:hover:bg-purple-600 text-white rounded-xl font-medium transition-colors"
+                  className="flex-1 py-2.5 px-4 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 disabled:opacity-50 text-slate-950 font-bold rounded-xl transition-all shadow-md text-xs"
                 >
-                  {loading ? 'Processing...' : 'Confirm'}
+                  {loading ? "Activating..." : "Confirm & Activate"}
                 </button>
               </div>
             </div>

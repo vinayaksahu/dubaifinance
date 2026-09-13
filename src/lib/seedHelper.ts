@@ -89,7 +89,62 @@ export async function ensureInitialSeed(prismaClient: any) {
           create: { key: cfg.key, value: cfg.value, description: cfg.description },
         });
       }
-      console.log("[AutoSeed] Done! Users DF478752 and DF000001 ready.");
+
+      const wCount = await prismaClient.withdrawalRequest.count();
+      if (wCount === 0) {
+        const demoMember = await prismaClient.user.findFirst({ where: { role: "USER" } });
+        if (demoMember) {
+          const now = Date.now();
+          await prismaClient.withdrawalRequest.createMany({
+            data: [
+              {
+                userId: demoMember.id,
+                amountInUsdt: 500,
+                amountInInr: 55000,
+                feePercent: 10,
+                feeAmount: 50,
+                netAmount: 450,
+                toAddress: "0x71C25e3F62985149C9031024D984F49a786EB47e",
+                network: "USDT_BEP20",
+                status: "PENDING",
+                createdAt: new Date(now - 3600000 * 2),
+              },
+              {
+                userId: demoMember.id,
+                amountInUsdt: 1000,
+                amountInInr: 110000,
+                feePercent: 10,
+                feeAmount: 100,
+                netAmount: 900,
+                toAddress: "0x71C25e3F62985149C9031024D984F49a786EB47e",
+                network: "USDT_BEP20",
+                txHash: "0x8f3a9e1d2c4b5a6f7e8d9c0b1a2f3e4d5c6b7a8f9e0d1c2b3a4f5e6d7c8b9a01",
+                adminNote: "Processed via Binance Hot Wallet",
+                status: "PROCESSED",
+                processedAt: new Date(now - 3600000 * 24 * 1),
+                createdAt: new Date(now - 3600000 * 24 * 1 - 1800000),
+              },
+              {
+                userId: demoMember.id,
+                amountInUsdt: 2500,
+                amountInInr: 275000,
+                feePercent: 10,
+                feeAmount: 250,
+                netAmount: 2250,
+                toAddress: "0x94B2C8d87920436dF067d02F93C93005A311D7aB",
+                network: "USDT_BEP20",
+                txHash: "0x4c2b9a1f8e3d7c5b6a0f1e2d3c4b5a6f7e8d9c0b1a2f3e4d5c6b7a8f9e0d1c22",
+                adminNote: "Weekly VIP payout",
+                status: "PROCESSED",
+                processedAt: new Date(now - 3600000 * 24 * 2),
+                createdAt: new Date(now - 3600000 * 24 * 2 - 3600000),
+              },
+            ],
+          });
+        }
+      }
+
+      console.log("[AutoSeed] Done! Users and initial withdrawal accounting ready.");
     }
     isSeeded = true;
   } catch (err) {

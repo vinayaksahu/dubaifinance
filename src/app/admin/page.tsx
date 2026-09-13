@@ -141,6 +141,10 @@ export default function AdminPage() {
             <AdminWithdrawalsView onRefresh={loadData} />
           )}
 
+          {activeTab === "admin-income" && (
+            <AdminIncomeView onRefresh={loadData} />
+          )}
+
           {activeTab === "users" && (
             <AdminUsersView onRefresh={loadData} />
           )}
