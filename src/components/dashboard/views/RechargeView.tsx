@@ -157,7 +157,7 @@ export function RechargeView({ user, onRefresh }: RechargeViewProps) {
                     <td className="py-3 px-4 font-mono truncate max-w-[120px]">{dep.depositAddress || APP_CONFIG.depositAddress}</td>
                     <td className="py-3 px-4 font-mono text-blue-400 truncate max-w-[140px]">{dep.txHash}</td>
                     <td className="py-3 px-4 font-bold text-slate-100">
-                      ${Number(dep.amountUsdt).toFixed(2)} USDT
+                      ${Number(dep.amountInUsdt ?? dep.amountUsdt ?? (dep.amountInInr ? Number(dep.amountInInr) / 110 : 0)).toFixed(2)} USDT
                     </td>
                     <td className="py-3 px-4">
                       <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${

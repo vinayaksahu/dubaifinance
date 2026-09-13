@@ -173,8 +173,16 @@ export async function GET() {
       directs: formattedDirects,
       teamList: teamList,
       contracts: user.contracts,
-      deposits: user.deposits,
-      withdrawals: user.withdrawals,
+      deposits: user.deposits.map((d) => ({
+        ...d,
+        amountUsdt: Number(d.amountInUsdt != null ? d.amountInUsdt.toString() : (Number(d.amountInInr) / 110)),
+        amountInUsdt: Number(d.amountInUsdt != null ? d.amountInUsdt.toString() : (Number(d.amountInInr) / 110)),
+      })),
+      withdrawals: user.withdrawals.map((w) => ({
+        ...w,
+        amountUsdt: Number(w.amountInUsdt != null ? w.amountInUsdt.toString() : (Number(w.amountInInr) / 110)),
+        amountInUsdt: Number(w.amountInUsdt != null ? w.amountInUsdt.toString() : (Number(w.amountInInr) / 110)),
+      })),
       ledgerEntries: user.ledgers,
     },
   });
