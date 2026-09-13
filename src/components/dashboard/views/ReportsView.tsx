@@ -107,7 +107,7 @@ export function ReportsView({ user, reportType }: ReportsViewProps) {
                       <td className="py-3 px-4 font-mono">{idx + 1}</td>
                       <td className="py-3 px-4">{new Date(c.createdAt).toISOString().split("T")[0]}</td>
                       <td className="py-3 px-4 font-bold text-slate-100">{c.packageType === "BASIC_SAVING" ? "Basic Saving" : "Fix Deposit"}</td>
-                      <td className="py-3 px-4 font-bold text-slate-200">${Number(c.amountInUsdt || c.amountInInr / 110).toFixed(2)} USDT</td>
+                      <td className="py-3 px-4 font-bold text-slate-200">${Number(c.amountInUsdt != null ? c.amountInUsdt : (Number(c.amountInInr || 0) > 5000 ? Number(c.amountInInr) / 110 : Number(c.amountInInr || 0))).toFixed(2)} USDT</td>
                       <td className="py-3 px-4 font-semibold text-emerald-400">{Number(c.dailyRoiRate)}% Daily</td>
                       <td className="py-3 px-4 text-slate-300">{c.daysPaid} / {c.tenureDays} Days</td>
                       <td className="py-3 px-4">

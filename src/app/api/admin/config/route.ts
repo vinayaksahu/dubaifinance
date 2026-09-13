@@ -14,14 +14,21 @@ export async function GET() {
     const dbConfigs = await db.systemConfig.findMany();
     const configMap: Record<string, { value: string; description: string; category: string; updatedAt?: Date }> = {};
 
+    // Prune deprecated keys from database automatically
+    const deprecatedKeys = dbConfigs.filter((item) => !DEFAULT_SYSTEM_CONFIGS[item.key]).map((item) => item.key);
+    if (deprecatedKeys.length > 0) {
+      await db.systemConfig.deleteMany({ where: { key: { in: deprecatedKeys } } }).catch(() => {});
+    }
+
     // Populate with defaults
     for (const [key, item] of Object.entries(DEFAULT_SYSTEM_CONFIGS)) {
       configMap[key] = { ...item };
     }
 
-    // Override with DB values
+    // Override with DB values for defined keys only
     for (const item of dbConfigs) {
       const def = DEFAULT_SYSTEM_CONFIGS[item.key];
+      if (!def) continue; // Skip deprecated configs like USDT_TO_INR_RATE
       configMap[item.key] = {
         value: item.value,
         description: item.description || def?.description || "",

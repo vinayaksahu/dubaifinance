@@ -6,9 +6,10 @@ import { Users, Search } from "lucide-react";
 interface DownlineViewProps {
   user: any;
   mode: "direct" | "team";
+  onNavigateTab?: (tab: string) => void;
 }
 
-export function DownlineView({ user, mode }: DownlineViewProps) {
+export function DownlineView({ user, mode, onNavigateTab }: DownlineViewProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const title = mode === "direct" ? "Direct Team" : "Team List";
   const rawList = mode === "direct" ? (user.directs || []) : (user.teamList || []);
@@ -24,15 +25,50 @@ export function DownlineView({ user, mode }: DownlineViewProps) {
 
   return (
     <div className="space-y-6">
-      {/* Header & Breadcrumb */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-        <h1 className="text-2xl sm:text-3xl font-bold text-slate-100 tracking-tight">
-          {title}
-        </h1>
-        <div className="text-xs text-slate-400 font-medium flex items-center gap-1.5">
-          <span>🏠 Downline</span>
-          <span>/</span>
-          <span className="text-slate-200 font-semibold">{title}</span>
+      {/* Header & Breadcrumb / Tab Switcher */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-bold text-slate-100 tracking-tight">
+            {title}
+          </h1>
+          <div className="text-xs text-slate-400 font-medium flex items-center gap-1.5 mt-1">
+            <span>🏠 Downline</span>
+            <span>/</span>
+            <span className="text-slate-200 font-semibold">{title}</span>
+          </div>
+        </div>
+
+        {/* Tab Pills */}
+        <div className="flex items-center gap-2 bg-[#091124] border border-[#17274a] p-1.5 rounded-xl">
+          <button
+            type="button"
+            onClick={() => onNavigateTab && onNavigateTab("downline-direct")}
+            className={`px-3 py-1 text-xs font-medium rounded-lg transition-colors ${
+              mode === "direct"
+                ? "bg-blue-600 text-white font-bold shadow-md shadow-blue-600/30"
+                : "text-slate-400 hover:text-slate-200"
+            }`}
+          >
+            Direct Team
+          </button>
+          <button
+            type="button"
+            onClick={() => onNavigateTab && onNavigateTab("downline-team")}
+            className={`px-3 py-1 text-xs font-medium rounded-lg transition-colors ${
+              mode === "team"
+                ? "bg-blue-600 text-white font-bold shadow-md shadow-blue-600/30"
+                : "text-slate-400 hover:text-slate-200"
+            }`}
+          >
+            Team List
+          </button>
+          <button
+            type="button"
+            onClick={() => onNavigateTab && onNavigateTab("downline-tree")}
+            className="px-3 py-1 text-xs font-medium rounded-lg text-slate-400 hover:text-slate-200 transition-colors"
+          >
+            Tree View
+          </button>
         </div>
       </div>
 

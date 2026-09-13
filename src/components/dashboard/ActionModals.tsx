@@ -229,7 +229,7 @@ export function ActionModals({ user, onRefresh }: { user: any; onRefresh: () => 
             <Coins className="w-5 h-5" />
           </div>
           <span className="text-xs font-black text-emerald-300">Activate Basic</span>
-          <span className="text-[10px] text-slate-400">5% Daily &bull; 25 Days</span>
+          <span className="text-[10px] text-slate-400">5% Daily &bull; 28 Days</span>
         </button>
 
         <button
@@ -273,7 +273,7 @@ export function ActionModals({ user, onRefresh }: { user: any; onRefresh: () => 
             <ArrowDownToLine className="w-5 h-5" />
           </div>
           <span className="text-xs font-black text-red-300">Withdrawal</span>
-          <span className="text-[10px] text-slate-400">10 AM - 2 PM (0% Fee)</span>
+          <span className="text-[10px] text-slate-400">10 AM - 2 PM (10% Fee)</span>
         </button>
       </div>
 
@@ -325,7 +325,7 @@ export function ActionModals({ user, onRefresh }: { user: any; onRefresh: () => 
                 <div className="space-y-3">
                   <div>
                     <label className="block text-[11px] font-bold text-slate-300 mb-1">
-                      Amount in USDT (1 USDT = ₹{APP_CONFIG.usdtToInrRate})
+                      Amount in USDT
                     </label>
                     <input
                       type="number"
@@ -338,7 +338,7 @@ export function ActionModals({ user, onRefresh }: { user: any; onRefresh: () => 
                     />
                     {depositAmount && (
                       <span className="text-[11px] text-amber-300 mt-1 block">
-                        Equivalent INR: ₹{(Number(depositAmount) * APP_CONFIG.usdtToInrRate).toFixed(2)}
+                        Deposit: ${Number(depositAmount).toFixed(2)} USDT
                       </span>
                     )}
                   </div>
@@ -378,26 +378,25 @@ export function ActionModals({ user, onRefresh }: { user: any; onRefresh: () => 
               >
                 <h3 className="text-lg font-black text-white mb-1">Activate Basic Saving Package</h3>
                 <p className="text-xs text-slate-400 mb-4">
-                  Daily 5% ROI for 25 Days (1% Profit + 4% Principal = 125% Total Return).
+                  Daily 5% ROI for 28 Days (Gross 140% Total Return, 40% Net Profit).
                 </p>
 
                 <div className="space-y-3">
                   <div>
                     <label className="block text-[11px] font-bold text-slate-300 mb-1">
-                      Amount in INR (₹200 to ₹5,00,000)
+                      Amount in USDT ($5 to $5,000)
                     </label>
                     <input
                       type="number"
-                      min="200"
-                      max="500000"
+                      min="5"
+                      max="5000"
                       required
                       value={basicAmount}
                       onChange={(e) => setBasicAmount(e.target.value)}
                       className="w-full px-3.5 py-2.5 rounded-xl bg-black/50 border border-slate-700 text-white text-sm outline-none"
                     />
                     <span className="text-[11px] text-emerald-400 mt-1 block">
-                      Daily 5% ROI: ₹{(Number(basicAmount) * 0.05).toFixed(2)} &bull; Cost: $
-                      {(Number(basicAmount) / APP_CONFIG.usdtToInrRate).toFixed(4)} USDT
+                      Daily 5% ROI: ${(Number(basicAmount) * 0.05).toFixed(2)} USDT &bull; Total 140% Return: ${(Number(basicAmount) * 1.40).toFixed(2)} USDT
                     </span>
                   </div>
 
@@ -463,11 +462,12 @@ export function ActionModals({ user, onRefresh }: { user: any; onRefresh: () => 
                       onChange={(e) => setFdTier(e.target.value)}
                       className="w-full px-3.5 py-2.5 rounded-xl bg-black/50 border border-slate-700 text-white text-sm outline-none"
                     >
-                      <option value="1000">Package 1 - ₹1,000</option>
-                      <option value="10000">Package 2 - ₹10,000</option>
-                      <option value="50000">Package 3 (Popular) - ₹50,000</option>
-                      <option value="100000">Package 4 - ₹1,00,000</option>
-                      <option value="500000">Package 5 (VIP) - ₹5,00,000</option>
+                      <option value="50">Package 1 - $50 USDT</option>
+                      <option value="100">Package 2 - $100 USDT</option>
+                      <option value="500">Package 3 - $500 USDT</option>
+                      <option value="1000">Package 4 (Popular) - $1,000 USDT</option>
+                      <option value="2000">Package 5 - $2,000 USDT</option>
+                      <option value="5000">Package 6 (VIP) - $5,000 USDT</option>
                     </select>
                   </div>
 
@@ -565,14 +565,14 @@ export function ActionModals({ user, onRefresh }: { user: any; onRefresh: () => 
 
                   <div>
                     <label className="block text-[11px] font-bold text-slate-300 mb-1">
-                      Amount in INR
+                      Amount in USDT (Min $1)
                     </label>
                     <input
                       type="number"
                       required
                       value={p2pAmount}
                       onChange={(e) => setP2pAmount(e.target.value)}
-                      placeholder="e.g. 500"
+                      placeholder="e.g. 50"
                       className="w-full px-3.5 py-2.5 rounded-xl bg-black/50 border border-slate-700 text-white text-sm outline-none"
                     />
                   </div>
@@ -614,14 +614,14 @@ export function ActionModals({ user, onRefresh }: { user: any; onRefresh: () => 
                 <div className="space-y-3">
                   <div>
                     <label className="block text-[11px] font-bold text-slate-300 mb-1">
-                      Amount in INR to Swipe
+                      Amount in USDT to Swipe
                     </label>
                     <input
                       type="number"
                       required
                       value={swipeAmount}
                       onChange={(e) => setSwipeAmount(e.target.value)}
-                      placeholder="e.g. 500"
+                      placeholder="e.g. 50"
                       className="w-full px-3.5 py-2.5 rounded-xl bg-black/50 border border-slate-700 text-white text-sm outline-none"
                     />
                   </div>
@@ -657,7 +657,7 @@ export function ActionModals({ user, onRefresh }: { user: any; onRefresh: () => 
               <form onSubmit={handleWithdraw}>
                 <h3 className="text-lg font-black text-white mb-1">Withdraw to USDT (BEP-20)</h3>
                 <p className="text-xs text-slate-400 mb-4">
-                  0% Admin Charges, Zero TDS. 100% Payout.
+                  Flat {adminFeePercent}% Admin Charge. Net payout credited directly to your BEP-20 address.
                 </p>
 
                 {!windowOpen && (
@@ -670,17 +670,19 @@ export function ActionModals({ user, onRefresh }: { user: any; onRefresh: () => 
                 <div className="space-y-3">
                   <div>
                     <label className="block text-[11px] font-bold text-slate-300 mb-1">
-                      Amount in INR (Min ₹{minWithdrawInr.toLocaleString()}, Max ₹{maxWithdrawInr.toLocaleString()})
+                      Amount in USDT (Min ${minWithdrawUsdt}, Max ${maxWithdrawUsdt.toLocaleString()} USDT)
                     </label>
                     <input
                       type="number"
+                      min={minWithdrawUsdt}
+                      max={maxWithdrawUsdt}
                       required
                       value={withdrawAmount}
                       onChange={(e) => setWithdrawAmount(e.target.value)}
                       className="w-full px-3.5 py-2.5 rounded-xl bg-black/50 border border-slate-700 text-white text-sm outline-none"
                     />
                     <span className="text-[11px] text-emerald-400 mt-1 block">
-                      You will receive: ${(Number(withdrawAmount) / usdtToInrRate).toFixed(4)} USDT (${minWithdrawUsdt} - ${maxWithdrawUsdt} USDT limit)
+                      Admin Fee ({adminFeePercent}%): ${(Number(withdrawAmount) * (adminFeePercent / 100)).toFixed(2)} USDT &bull; Net Payout: ${(Number(withdrawAmount) * (1 - adminFeePercent / 100)).toFixed(2)} USDT
                     </span>
                   </div>
 

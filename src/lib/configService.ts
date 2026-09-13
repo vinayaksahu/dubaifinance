@@ -226,7 +226,7 @@ export async function getAllSystemConfigs(): Promise<Record<string, string>> {
   try {
     const dbRows = await db.systemConfig.findMany();
     for (const row of dbRows) {
-      if (row.value != null && row.value !== "") {
+      if (DEFAULT_SYSTEM_CONFIGS[row.key] && row.value != null && row.value !== "") {
         result[row.key] = row.value;
       }
     }

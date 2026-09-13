@@ -275,6 +275,17 @@ export function MemberSidebar({
                 >
                   • Team List
                 </button>
+                <button
+                  type="button"
+                  onClick={() => handleSelectTab("downline-tree")}
+                  className={`w-full text-left py-2 px-3 rounded-lg text-xs font-medium transition-all ${
+                    activeTab === "downline-tree"
+                      ? "text-amber-300 bg-amber-500/15 font-bold border-l-2 border-amber-400"
+                      : "text-slate-400 hover:text-amber-200 hover:bg-amber-500/5"
+                  }`}
+                >
+                  • Tree View
+                </button>
               </div>
             )}
           </div>

@@ -9,6 +9,7 @@ import { RechargeView } from "@/components/dashboard/views/RechargeView";
 import { BasicPackageView } from "@/components/dashboard/views/BasicPackageView";
 import { FdPackageView } from "@/components/dashboard/views/FdPackageView";
 import { DownlineView } from "@/components/dashboard/views/DownlineView";
+import { GenealogyTreeView } from "@/components/dashboard/views/GenealogyTreeView";
 import { TransactionalView } from "@/components/dashboard/views/TransactionalView";
 import { IncomeView } from "@/components/dashboard/views/IncomeView";
 import { ReportsView } from "@/components/dashboard/views/ReportsView";
@@ -108,11 +109,15 @@ export default function MemberDashboardPage() {
           )}
 
           {activeTab === "downline-direct" && (
-            <DownlineView user={user} mode="direct" />
+            <DownlineView user={user} mode="direct" onNavigateTab={setActiveTab} />
           )}
 
           {activeTab === "downline-team" && (
-            <DownlineView user={user} mode="team" />
+            <DownlineView user={user} mode="team" onNavigateTab={setActiveTab} />
+          )}
+
+          {activeTab === "downline-tree" && (
+            <GenealogyTreeView user={user} onNavigateTab={setActiveTab} />
           )}
 
           {activeTab === "income-roi" && (

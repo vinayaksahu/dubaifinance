@@ -8,8 +8,7 @@ export const APP_CONFIG = {
   depositAddress: "0x39a0B29A5c66e927598Fa4eCE9bFf84a44bA8812", // Company USDT BEP-20
   depositNetwork: "USDT BEP-20 (Binance Smart Chain)",
   signupBonusUsdt: 0.50, // Dark PDF Slide 21: $0.50 Signup Bonus
-  signupBonusInr: 50,
-  usdtToInrRate: 110,
+  usdtToInrRate: 1, // 1:1 Pure USDT throughout
   directReferralPercent: 10.0, // Dark PDF Slide 1, 10, 15: 10% INSTANT DIRECT
   minWithdrawalUsdt: 2, // Dark PDF Slide 21: Min $2 USDT
   maxWithdrawalUsdt: 5000, // Dark PDF Slide 21: Max $5,000 USDT
@@ -36,7 +35,6 @@ export const APP_CONFIG = {
       id: "pkg-1",
       tier: "STARTER FD",
       amountUsdt: 50,
-      amountInr: 5500,
       plans: [
         { days: 180, rate: 10.0, dailyUsdt: 5, profitUsdt: 900, multiple: "18X" },
         { days: 210, rate: 15.0, dailyUsdt: 7.5, profitUsdt: 1575, multiple: "31.5X" },
@@ -46,7 +44,6 @@ export const APP_CONFIG = {
       id: "pkg-2",
       tier: "GROWTH FD",
       amountUsdt: 100,
-      amountInr: 11000,
       plans: [
         { days: 180, rate: 10.0, dailyUsdt: 10, profitUsdt: 1800, multiple: "18X" },
         { days: 210, rate: 15.0, dailyUsdt: 15, profitUsdt: 3150, multiple: "31.5X" },
@@ -57,7 +54,6 @@ export const APP_CONFIG = {
       tier: "POPULAR FD",
       featured: true,
       amountUsdt: 500,
-      amountInr: 55000,
       plans: [
         { days: 180, rate: 10.0, dailyUsdt: 50, profitUsdt: 9000, multiple: "18X" },
         { days: 210, rate: 15.0, dailyUsdt: 75, profitUsdt: 15750, multiple: "31.5X" },
@@ -67,7 +63,6 @@ export const APP_CONFIG = {
       id: "pkg-4",
       tier: "VIP PLATINUM FD",
       amountUsdt: 1000,
-      amountInr: 110000,
       plans: [
         { days: 180, rate: 10.0, dailyUsdt: 100, profitUsdt: 18000, multiple: "18X" },
         { days: 210, rate: 15.0, dailyUsdt: 150, profitUsdt: 31500, multiple: "31.5X" },
@@ -77,7 +72,6 @@ export const APP_CONFIG = {
       id: "pkg-5",
       tier: "VIP DIAMOND FD",
       amountUsdt: 2000,
-      amountInr: 220000,
       plans: [
         { days: 180, rate: 10.0, dailyUsdt: 200, profitUsdt: 36000, multiple: "18X" },
         { days: 210, rate: 15.0, dailyUsdt: 300, profitUsdt: 63000, multiple: "31.5X" },
@@ -88,7 +82,6 @@ export const APP_CONFIG = {
       tier: "ROYAL CROWN VIP FD",
       featured: true,
       amountUsdt: 5000,
-      amountInr: 550000,
       plans: [
         { days: 180, rate: 10.0, dailyUsdt: 500, profitUsdt: 90000, multiple: "18X" },
         { days: 210, rate: 15.0, dailyUsdt: 750, profitUsdt: 157500, multiple: "31.5X" },

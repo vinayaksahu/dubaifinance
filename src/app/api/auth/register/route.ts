@@ -56,8 +56,8 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    // Credit $5 Signup Welcome Bonus to Income balance
-    const bonusUsdt = new Decimal(APP_CONFIG.signupBonusInr).dividedBy(APP_CONFIG.usdtToInrRate);
+    // Credit Signup Welcome Bonus directly in USDT ($0.50 USDT per Dark PDF Slide 21)
+    const bonusUsdt = new Decimal(APP_CONFIG.signupBonusUsdt);
     await executeLedgerTransaction({
       userId: newUser.id,
       type: "SIGNUP_BONUS",

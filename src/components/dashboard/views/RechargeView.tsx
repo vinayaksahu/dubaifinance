@@ -19,17 +19,12 @@ export function RechargeView({ user, onRefresh }: RechargeViewProps) {
 
   const cfg = user?.systemConfig || {};
   const companyAddress = cfg.COMPANY_USDT_ADDRESS || APP_CONFIG.depositAddress;
-  const usdtToInrRate = cfg.USDT_TO_INR_RATE !== undefined ? Number(cfg.USDT_TO_INR_RATE) : APP_CONFIG.usdtToInrRate;
 
   const copyAddress = () => {
     navigator.clipboard.writeText(companyAddress);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
-
-  const calculatedInr = usdtAmount && !isNaN(Number(usdtAmount))
-    ? Number(usdtAmount) * usdtToInrRate
-    : 0;
 
   const handleSubmitDeposit = async (e: React.FormEvent) => {
     e.preventDefault();

@@ -51,7 +51,7 @@ export async function POST(req: NextRequest) {
       parsedUsdt = Number(amountInInr) / 110;
     }
     const amountUsdtDec = new Decimal(parsedUsdt.toString());
-    const amountInrDec = amountUsdtDec.mul(APP_CONFIG.usdtToInrRate);
+    const amountInrDec = amountUsdtDec; // 1:1 Pure USDT throughout
 
     // Validate Package Limits
     let dailyRoiRate: Decimal;

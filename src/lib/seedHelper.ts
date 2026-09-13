@@ -70,12 +70,15 @@ export async function ensureInitialSeed(prismaClient: any) {
 
       // System configs
       const configs = [
-        { key: "USDT_TO_INR_RATE", value: "110", description: "Fixed peg for 1 USDT in INR" },
         { key: "WITHDRAWAL_START_HOUR", value: "10", description: "Withdrawal window open hour (IST)" },
         { key: "WITHDRAWAL_END_HOUR", value: "14", description: "Withdrawal window close hour (IST)" },
-        { key: "MIN_WITHDRAWAL_INR", value: "150", description: "Minimum single withdrawal in INR" },
-        { key: "MAX_WITHDRAWAL_INR", value: "500000", description: "Maximum single withdrawal in INR" },
-        { key: "SIGNUP_BONUS_INR", value: "50", description: "Welcome bonus upon registration" },
+        { key: "MIN_WITHDRAWAL_USDT", value: "2.00", description: "Minimum single withdrawal in USDT" },
+        { key: "MAX_WITHDRAWAL_USDT", value: "5000.00", description: "Maximum single withdrawal in USDT" },
+        { key: "SIGNUP_BONUS_USDT", value: "0.50", description: "Welcome bonus upon registration (USDT)" },
+        { key: "WITHDRAWAL_ADMIN_FEE_PERCENT", value: "10.0", description: "Admin deduction fee on withdrawal (%)" },
+        { key: "BASIC_PLAN_DAILY_ROI", value: "5.0", description: "Basic saving daily ROI (%)" },
+        { key: "BASIC_PLAN_TENURE_DAYS", value: "28", description: "Basic saving contract tenure (days)" },
+        { key: "DIRECT_REFERRAL_REWARD_PERCENT", value: "10.0", description: "Instant direct sponsor reward (%)" },
         { key: "COMPANY_USDT_ADDRESS", value: "0x39a0B29A5c66e927598Fa4eCE9bFf84a44bA8812", description: "USDT BEP-20 Official Receiving Address" },
       ];
 

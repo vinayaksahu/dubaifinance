@@ -275,7 +275,7 @@ export function TransactionalView({ user, mode, onRefresh }: TransactionalViewPr
             </div>
             <div className="flex justify-between">
               <span className="text-slate-400">Deduction / Admin Charge:</span>
-              <span className="text-emerald-400 font-bold">0% (Zero Admin Charge, 0% Fee)</span>
+              <span className="text-amber-400 font-bold">10% Admin Charge</span>
             </div>
             <div className="flex justify-between">
               <span className="text-slate-400">Min / Max Limit:</span>
@@ -363,7 +363,7 @@ export function TransactionalView({ user, mode, onRefresh }: TransactionalViewPr
                     <tr key={w.id || idx} className="hover:bg-[#0c1630] transition-colors">
                       <td className="py-3 px-4 font-mono">{idx + 1}</td>
                       <td className="py-3 px-4">{new Date(w.createdAt).toISOString().split("T")[0]}</td>
-                      <td className="py-3 px-4 font-bold text-cyan-400">${Number(w.amountInUsdt ?? w.amountUsdt ?? (w.amountInInr ? Number(w.amountInInr) / APP_CONFIG.usdtToInrRate : 0)).toFixed(2)} USDT</td>
+                      <td className="py-3 px-4 font-bold text-cyan-400">${Number(w.amountInUsdt ?? w.amountUsdt ?? (Number(w.amountInInr || 0) > 5000 ? Number(w.amountInInr) / 110 : Number(w.amountInInr || 0))).toFixed(2)} USDT</td>
                       <td className="py-3 px-4 font-mono truncate max-w-[140px] text-slate-400">{w.toAddress || w.targetAddress}</td>
                       <td className="py-3 px-4">
                         <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${

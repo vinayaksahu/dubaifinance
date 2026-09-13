@@ -39,7 +39,7 @@ export async function GET() {
           createdAt: true,
           contracts: {
             where: { status: "ACTIVE" },
-            select: { amountInInr: true },
+            select: { amountInUsdt: true, amountInInr: true },
           },
         },
         orderBy: { createdAt: "desc" },
@@ -67,16 +67,19 @@ export async function GET() {
     return NextResponse.json({ error: "User not found" }, { status: 404 });
   }
 
-  // Calculate Basic & FD Package investments
+  // Calculate Basic & FD Package investments in pure USDT
   let basicPackageTotal = new Decimal(0);
   let fdPackageTotal = new Decimal(0);
 
   for (const contract of user.contracts) {
     if (contract.status === "ACTIVE") {
+      const contractUsdt = contract.amountInUsdt
+        ? new Decimal(contract.amountInUsdt.toString())
+        : (contract.amountInInr ? new Decimal(contract.amountInInr.toString()) : new Decimal(0));
       if (contract.packageType === "BASIC_SAVING") {
-        basicPackageTotal = basicPackageTotal.plus(contract.amountInInr.toString());
+        basicPackageTotal = basicPackageTotal.plus(contractUsdt);
       } else {
-        fdPackageTotal = fdPackageTotal.plus(contract.amountInInr.toString());
+        fdPackageTotal = fdPackageTotal.plus(contractUsdt);
       }
     }
   }
@@ -86,8 +89,8 @@ export async function GET() {
 
   // Format Directs for Direct Team View
   const formattedDirects = user.directs.map((d, index) => {
-    const totalActiveInr = d.contracts.reduce(
-      (acc, c) => acc + Number(c.amountInInr.toString()),
+    const totalActiveUsdt = d.contracts.reduce(
+      (acc, c) => acc + Number(c.amountInUsdt ?? c.amountInInr ?? 0),
       0
     );
     return {
@@ -97,9 +100,9 @@ export async function GET() {
       referralId: user.customId,
       level: 1,
       date: new Date(d.createdAt).toISOString().split("T")[0],
-      doa: totalActiveInr > 0 ? new Date(d.createdAt).toISOString().split("T")[0] : "-",
-      activation: totalActiveInr > 0 ? "Active" : d.status === "ACTIVE" ? "Active" : "Inactive",
-      amount: totalActiveInr,
+      doa: totalActiveUsdt > 0 ? new Date(d.createdAt).toISOString().split("T")[0] : "-",
+      activation: totalActiveUsdt > 0 ? "Active" : d.status === "ACTIVE" ? "Active" : "Inactive",
+      amount: totalActiveUsdt,
     };
   });
 
@@ -121,7 +124,7 @@ export async function GET() {
         sponsor: { select: { customId: true } },
         contracts: {
           where: { status: "ACTIVE" },
-          select: { amountInInr: true },
+          select: { amountInUsdt: true, amountInInr: true },
         },
       },
     });
@@ -129,8 +132,8 @@ export async function GET() {
     if (nextLevelUsers.length === 0) break;
 
     for (const u of nextLevelUsers) {
-      const totalActiveInr = u.contracts.reduce(
-        (acc, c) => acc + Number(c.amountInInr.toString()),
+      const totalActiveUsdt = u.contracts.reduce(
+        (acc, c) => acc + Number(c.amountInUsdt ?? c.amountInInr ?? 0),
         0
       );
       teamList.push({
@@ -140,9 +143,9 @@ export async function GET() {
         referralId: u.sponsor?.customId || "-",
         level: level,
         date: new Date(u.createdAt).toISOString().split("T")[0],
-        doa: totalActiveInr > 0 ? new Date(u.createdAt).toISOString().split("T")[0] : "-",
-        activation: totalActiveInr > 0 ? "Active" : u.status === "ACTIVE" ? "Active" : "Inactive",
-        amount: totalActiveInr,
+        doa: totalActiveUsdt > 0 ? new Date(u.createdAt).toISOString().split("T")[0] : "-",
+        activation: totalActiveUsdt > 0 ? "Active" : u.status === "ACTIVE" ? "Active" : "Inactive",
+        amount: totalActiveUsdt,
       });
     }
 
@@ -177,16 +180,22 @@ export async function GET() {
       directs: formattedDirects,
       teamList: teamList,
       contracts: user.contracts,
-      deposits: user.deposits.map((d) => ({
-        ...d,
-        amountUsdt: Number(d.amountInUsdt != null ? d.amountInUsdt.toString() : (Number(d.amountInInr) / 110)),
-        amountInUsdt: Number(d.amountInUsdt != null ? d.amountInUsdt.toString() : (Number(d.amountInInr) / 110)),
-      })),
-      withdrawals: user.withdrawals.map((w) => ({
-        ...w,
-        amountUsdt: Number(w.amountInUsdt != null ? w.amountInUsdt.toString() : (Number(w.amountInInr) / 110)),
-        amountInUsdt: Number(w.amountInUsdt != null ? w.amountInUsdt.toString() : (Number(w.amountInInr) / 110)),
-      })),
+      deposits: user.deposits.map((d) => {
+        const usdtVal = d.amountInUsdt != null ? Number(d.amountInUsdt.toString()) : (Number(d.amountInInr || 0) > 5000 ? Number(d.amountInInr) / 110 : Number(d.amountInInr || 0));
+        return {
+          ...d,
+          amountUsdt: usdtVal,
+          amountInUsdt: usdtVal,
+        };
+      }),
+      withdrawals: user.withdrawals.map((w) => {
+        const usdtVal = w.amountInUsdt != null ? Number(w.amountInUsdt.toString()) : (Number(w.amountInInr || 0) > 5000 ? Number(w.amountInInr) / 110 : Number(w.amountInInr || 0));
+        return {
+          ...w,
+          amountUsdt: usdtVal,
+          amountInUsdt: usdtVal,
+        };
+      }),
       ledgerEntries: user.ledgers,
       systemConfig,
     },

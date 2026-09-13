@@ -39,8 +39,7 @@ export function BasicPackageView({ user, onRefresh, onRefreshUser }: BasicPackag
   // Dynamic system configurations set by Admin
   const cfg = user?.systemConfig || {};
   const dailyRoiRate = cfg.BASIC_PLAN_DAILY_ROI !== undefined ? Number(cfg.BASIC_PLAN_DAILY_ROI) : 5.0;
-  const tenureDays = cfg.BASIC_PLAN_TENURE_DAYS !== undefined ? Number(cfg.BASIC_PLAN_TENURE_DAYS) : 30;
-  const usdtToInrRate = cfg.USDT_TO_INR_RATE !== undefined ? Number(cfg.USDT_TO_INR_RATE) : 110;
+  const tenureDays = cfg.BASIC_PLAN_TENURE_DAYS !== undefined ? Number(cfg.BASIC_PLAN_TENURE_DAYS) : 28;
 
   const dynamicPackages = PACKAGE_TEMPLATES.map((tmpl) => {
     const dailyRoi = (tmpl.amount * dailyRoiRate) / 100;
@@ -70,7 +69,8 @@ export function BasicPackageView({ user, onRefresh, onRefreshUser }: BasicPackag
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           packageType: 'BASIC_SAVING',
-          amountInInr: selectedPlan.amount * usdtToInrRate,
+          amountInUsdt: selectedPlan.amount,
+          amount: selectedPlan.amount,
           transactionPin
         }),
       });
