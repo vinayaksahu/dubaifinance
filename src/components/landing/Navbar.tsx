@@ -5,9 +5,18 @@ import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight, Menu, X, Download, ShieldCheck, ChevronRight } from "lucide-react";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
+import { useTheme } from "@/components/theme/ThemeProvider";
 
 export function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { resolvedTheme } = useTheme();
+
+  const isLight = resolvedTheme === "light";
+  const pdfHref = isLight ? "/Dubai_Finance_Presentation_Light.pdf" : "/Dubai_Finance_Presentation_Dark.pdf";
+  const pdfPillLabel = isLight ? "Light PDF" : "Dark PDF";
+  const pdfDrawerLabel = isLight
+    ? "Download Light Presentation PDF (23 Slides)"
+    : "Download Dark Presentation PDF (23 Slides)";
 
   // Lock body scroll when mobile menu is open
   useEffect(() => {
@@ -80,15 +89,15 @@ export function Navbar() {
           {/* Compact Theme Dropdown (Only 36px wide!) */}
           <ThemeToggle variant="compact" />
 
-          {/* Download Dark PDF Deck */}
+          {/* Dynamic Theme PDF Deck Download */}
           <a
-            href="/Dubai_Finance_Presentation_Dark.pdf"
+            href={pdfHref}
             download
             className="hidden sm:inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-amber-500/30 text-amber-500 dark:text-amber-300 hover:bg-amber-400/10 text-xs font-bold transition whitespace-nowrap"
-            title="Download Dark Presentation Deck (23 Slides)"
+            title={`Download ${isLight ? "Light" : "Dark"} Presentation Deck (23 Slides)`}
           >
             <Download className="w-3.5 h-3.5" />
-            <span>PDF Deck</span>
+            <span>{pdfPillLabel}</span>
           </a>
 
           {/* Sign In */}
@@ -146,15 +155,15 @@ export function Navbar() {
               ))}
             </nav>
 
-            {/* Download Dark PDF Button in Drawer */}
+            {/* Dynamic Theme PDF Download Button in Drawer */}
             <a
-              href="/Dubai_Finance_Presentation_Dark.pdf"
+              href={pdfHref}
               download
               onClick={() => setMobileMenuOpen(false)}
               className="w-full py-3.5 px-4 rounded-xl border border-amber-500/40 text-amber-500 dark:text-amber-300 font-bold flex items-center justify-center gap-2 text-xs sm:text-sm bg-amber-400/5 hover:bg-amber-400/10 transition shadow-sm"
             >
               <Download className="w-4 h-4 text-amber-500" />
-              Download Dark Presentation PDF (23 Slides)
+              {pdfDrawerLabel}
             </a>
 
             {/* Auth Buttons */}

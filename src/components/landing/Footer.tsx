@@ -1,10 +1,19 @@
+"use client";
+
 import Link from "next/link";
 import Image from "next/image";
 import { Download, ShieldCheck, Mail, MapPin, Sparkles } from "lucide-react";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
+import { useTheme } from "@/components/theme/ThemeProvider";
 import { APP_CONFIG } from "@/lib/constants";
 
 export function Footer() {
+  const { resolvedTheme } = useTheme();
+  const isLight = resolvedTheme === "light";
+  const pdfHref = isLight ? "/Dubai_Finance_Presentation_Light.pdf" : "/Dubai_Finance_Presentation_Dark.pdf";
+  const pdfLabel = isLight
+    ? "Dubai Finance Presentation (Light PDF)"
+    : "Dubai Finance Presentation (Dark PDF)";
   return (
     <footer className="relative z-10 border-t border-[var(--border-subtle)] bg-[var(--bg-main)] transition-colors duration-200 pt-16 pb-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -90,13 +99,13 @@ export function Footer() {
             </h4>
 
             <a
-              href="/Dubai_Finance_Presentation_Dark.pdf"
+              href={pdfHref}
               download
               className="w-full py-3 px-4 rounded-xl border border-amber-500/30 bg-[var(--bg-card)] hover:border-amber-400 text-[var(--text-main)] text-xs font-bold transition flex items-center justify-between shadow-sm"
             >
               <span className="flex items-center gap-2">
                 <Download className="w-4 h-4 text-amber-500" />
-                Dubai Finance Presentation (Dark PDF)
+                {pdfLabel}
               </span>
               <span className="text-[10px] px-2 py-0.5 rounded bg-amber-500/15 text-amber-600 dark:text-amber-300">
                 23 Slides

@@ -1,8 +1,18 @@
+"use client";
+
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight, Download, ShieldCheck, Sparkles, TrendingUp, Award, Building2 } from "lucide-react";
+import { useTheme } from "@/components/theme/ThemeProvider";
 
 export function Hero() {
+  const { resolvedTheme } = useTheme();
+  const isLight = resolvedTheme === "light";
+  const pdfHref = isLight ? "/Dubai_Finance_Presentation_Light.pdf" : "/Dubai_Finance_Presentation_Dark.pdf";
+  const pdfTitle = isLight
+    ? "Download Light PDF Deck (23 Slides)"
+    : "Download Dark PDF Deck (23 Slides)";
+
   return (
     <section className="relative z-10 pt-10 sm:pt-16 pb-20 sm:pb-28 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto overflow-hidden">
       {/* Background Skyline with Theme-Aware Gradient Masks */}
@@ -48,13 +58,14 @@ export function Hero() {
             Start with $5 USDT <ArrowRight className="w-5 h-5" />
           </Link>
 
+          {/* Theme-Aware Dynamic PDF Download Button */}
           <a
-            href="/Dubai_Finance_Presentation_Dark.pdf"
+            href={pdfHref}
             download
             className="w-full sm:w-auto px-6 py-4 rounded-2xl border border-amber-500/30 bg-[var(--bg-card)] hover:border-amber-400 text-[var(--text-main)] text-base font-semibold transition flex items-center justify-center gap-2 shadow-sm"
           >
             <Download className="w-5 h-5 text-amber-500" />
-            Download Dark PDF Deck (23 Slides)
+            {pdfTitle}
           </a>
 
           <a
