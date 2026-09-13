@@ -9,6 +9,7 @@ import AdminDepositsView from "@/components/admin/views/AdminDepositsView";
 import AdminWithdrawalsView from "@/components/admin/views/AdminWithdrawalsView";
 import { AdminUsersView } from "@/components/admin/views/AdminUsersView";
 import { AdminTicketsView } from "@/components/admin/views/AdminTicketsView";
+import { AdminConfigView } from "@/components/admin/views/AdminConfigView";
 
 export default function AdminPage() {
   const router = useRouter();
@@ -140,44 +141,7 @@ export default function AdminPage() {
           )}
 
           {activeTab === "config" && (
-            <div className="bg-slate-900/50 backdrop-blur border border-slate-800/50 rounded-3xl p-8">
-              <h2 className="text-xl font-bold text-white mb-4">⚙️ System Configuration</h2>
-              <p className="text-slate-400 text-sm">
-                System configuration editor will be available in Phase 3.
-                <br />
-                Currently, all settings are managed via <code className="text-purple-400 bg-purple-950/40 px-2 py-0.5 rounded">src/lib/constants.ts</code>
-              </p>
-              <div className="mt-6 space-y-3">
-                <div className="flex justify-between items-center p-3 rounded-xl bg-slate-800/50 border border-slate-700/50">
-                  <span className="text-sm text-slate-300">Direct Referral %</span>
-                  <span className="text-sm font-bold text-emerald-400">15%</span>
-                </div>
-                <div className="flex justify-between items-center p-3 rounded-xl bg-slate-800/50 border border-slate-700/50">
-                  <span className="text-sm text-slate-300">Basic Plan Tenure</span>
-                  <span className="text-sm font-bold text-amber-400">30 Days</span>
-                </div>
-                <div className="flex justify-between items-center p-3 rounded-xl bg-slate-800/50 border border-slate-700/50">
-                  <span className="text-sm text-slate-300">Basic Plan Daily ROI</span>
-                  <span className="text-sm font-bold text-cyan-400">5%</span>
-                </div>
-                <div className="flex justify-between items-center p-3 rounded-xl bg-slate-800/50 border border-slate-700/50">
-                  <span className="text-sm text-slate-300">Base Currency</span>
-                  <span className="text-sm font-bold text-white">USDT (BEP-20)</span>
-                </div>
-                <div className="flex justify-between items-center p-3 rounded-xl bg-slate-800/50 border border-slate-700/50">
-                  <span className="text-sm text-slate-300">Withdrawal Window</span>
-                  <span className="text-sm font-bold text-amber-400">10 AM - 2 PM IST</span>
-                </div>
-                <div className="flex justify-between items-center p-3 rounded-xl bg-slate-800/50 border border-slate-700/50">
-                  <span className="text-sm text-slate-300">Min Withdrawal</span>
-                  <span className="text-sm font-bold text-white">$2 USDT</span>
-                </div>
-                <div className="flex justify-between items-center p-3 rounded-xl bg-slate-800/50 border border-slate-700/50">
-                  <span className="text-sm text-slate-300">Max Withdrawal</span>
-                  <span className="text-sm font-bold text-white">$5,000 USDT</span>
-                </div>
-              </div>
-            </div>
+            <AdminConfigView />
           )}
         </main>
       </div>
