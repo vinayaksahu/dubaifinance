@@ -13,17 +13,21 @@ type WithdrawalStatus = 'PENDING' | 'PROCESSED' | 'REJECTED';
 interface Withdrawal {
   id: string;
   userId: string;
-  user: {
-    name: string;
-    customId: string;
+  user?: {
+    name?: string;
+    fullName?: string;
+    customId?: string;
+    email?: string;
   };
-  amountInr: number;
-  amountUsdt: number;
-  payoutAddress: string;
+  amountInr?: number;
+  amountUsdt?: number;
+  amountInUsdt?: number;
+  payoutAddress?: string;
+  toAddress?: string;
   status: WithdrawalStatus;
   createdAt: string;
-  adminNote?: string;
   txHash?: string;
+  adminNote?: string;
 }
 
 export default function AdminWithdrawalsView({ onRefresh }: AdminWithdrawalsViewProps) {
@@ -42,9 +46,11 @@ export default function AdminWithdrawalsView({ onRefresh }: AdminWithdrawalsView
       const res = await fetch('/api/admin/withdrawals');
       if (!res.ok) throw new Error('Failed to fetch withdrawals');
       const data = await res.json();
-      setWithdrawals(data);
+      const list = Array.isArray(data) ? data : (data?.withdrawals || []);
+      setWithdrawals(list);
     } catch (error) {
-      console.error(error);
+      console.error("fetchWithdrawals error:", error);
+      setWithdrawals([]);
     } finally {
       setLoading(false);
     }
@@ -58,7 +64,7 @@ export default function AdminWithdrawalsView({ onRefresh }: AdminWithdrawalsView
     const txHash = prompt('Enter the transaction hash (TxHash) for this payout:');
     if (txHash === null) return; // Cancelled
     if (!txHash.trim()) {
-      alert('Transaction hash is required to dispatch payout.');
+      alert('TxHash is required to dispatch payout');
       return;
     }
 
@@ -110,18 +116,23 @@ export default function AdminWithdrawalsView({ onRefresh }: AdminWithdrawalsView
   };
 
   const filteredWithdrawals = useMemo(() => {
+    if (!Array.isArray(withdrawals)) return [];
     return withdrawals.filter(w => {
+      if (!w) return false;
       const matchesFilter = filter === 'ALL' || w.status === filter;
       const searchLower = search.toLowerCase();
+      const userName = (w.user?.fullName || w.user?.name || '').toLowerCase();
+      const customId = (w.user?.customId || '').toLowerCase();
+      const address = (w.payoutAddress || w.toAddress || '').toLowerCase();
       const matchesSearch = search === '' || 
-        w.user.name.toLowerCase().includes(searchLower) || 
-        w.user.customId.toLowerCase().includes(searchLower) ||
-        w.payoutAddress.toLowerCase().includes(searchLower);
+        userName.includes(searchLower) || 
+        customId.includes(searchLower) ||
+        address.includes(searchLower);
       return matchesFilter && matchesSearch;
     });
   }, [withdrawals, filter, search]);
 
-  const totalPages = Math.ceil(filteredWithdrawals.length / itemsPerPage);
+  const totalPages = Math.max(1, Math.ceil(filteredWithdrawals.length / itemsPerPage));
   const paginatedWithdrawals = filteredWithdrawals.slice((page - 1) * itemsPerPage, page * itemsPerPage);
 
   const getStatusColor = (status: WithdrawalStatus) => {
@@ -188,69 +199,77 @@ export default function AdminWithdrawalsView({ onRefresh }: AdminWithdrawalsView
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800/60">
-              {paginatedWithdrawals.map((withdrawal, index) => (
-                <tr key={withdrawal.id} className="text-sm">
-                  <td className="py-4 text-slate-400">
-                    {(page - 1) * itemsPerPage + index + 1}
-                  </td>
-                  <td className="py-4">
-                    <div className="flex flex-col">
-                      <span className="text-slate-200">{withdrawal.user.name}</span>
-                      <span className="text-xs text-slate-500">{withdrawal.user.customId}</span>
-                    </div>
-                  </td>
-                  <td className="py-4 text-amber-400 font-medium">
-                    {formatUsdt(withdrawal.amountUsdt)}
-                  </td>
-                  <td className="py-4">
-                    <div className="flex items-center gap-2">
-                      <span className="text-slate-400 font-mono text-xs">
-                        {withdrawal.payoutAddress.slice(0, 8)}...{withdrawal.payoutAddress.slice(-6)}
-                      </span>
-                      <button 
-                        onClick={() => copyToClipboard(withdrawal.payoutAddress)}
-                        className="text-slate-500 hover:text-slate-300 transition-colors"
-                      >
-                        {copiedAddress === withdrawal.payoutAddress ? (
-                          <Check className="w-3 h-3 text-emerald-500" />
-                        ) : (
-                          <Copy className="w-3 h-3" />
-                        )}
-                      </button>
-                    </div>
-                  </td>
-                  <td className="py-4">
-                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border ${getStatusColor(withdrawal.status)}`}>
-                      {withdrawal.status}
-                    </span>
-                  </td>
-                  <td className="py-4 text-slate-400">
-                    {new Date(withdrawal.createdAt).toLocaleDateString()}
-                  </td>
-                  <td className="py-4">
-                    <div className="flex justify-end gap-2">
-                      {withdrawal.status === 'PENDING' && (
-                        <>
-                          <button
-                            onClick={() => handleDispatch(withdrawal.id)}
-                            className="p-2 rounded-lg bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20 transition-colors border border-emerald-500/20"
-                            title="Dispatch Payout"
+              {paginatedWithdrawals.map((withdrawal, index) => {
+                const amount = withdrawal.amountInUsdt ?? withdrawal.amountUsdt ?? 0;
+                const address = withdrawal.payoutAddress || withdrawal.toAddress || '';
+                return (
+                  <tr key={withdrawal.id} className="text-sm">
+                    <td className="py-4 text-slate-400">
+                      {(page - 1) * itemsPerPage + index + 1}
+                    </td>
+                    <td className="py-4">
+                      <div className="flex flex-col">
+                        <span className="text-slate-200">{withdrawal.user?.fullName || withdrawal.user?.name || "Member"}</span>
+                        <span className="text-xs text-slate-500">{withdrawal.user?.customId || "N/A"}</span>
+                      </div>
+                    </td>
+                    <td className="py-4 text-amber-400 font-medium">
+                      {formatUsdt(amount)}
+                    </td>
+                    <td className="py-4">
+                      {address ? (
+                        <div className="flex items-center gap-2">
+                          <span className="text-slate-400 font-mono text-xs">
+                            {address.length > 14 ? `${address.slice(0, 8)}...${address.slice(-6)}` : address}
+                          </span>
+                          <button 
+                            onClick={() => copyToClipboard(address)}
+                            className="text-slate-500 hover:text-slate-300 transition-colors"
                           >
-                            <Send className="w-4 h-4" />
+                            {copiedAddress === address ? (
+                              <Check className="w-3 h-3 text-emerald-500" />
+                            ) : (
+                              <Copy className="w-3 h-3" />
+                            )}
                           </button>
-                          <button
-                            onClick={() => handleReject(withdrawal.id)}
-                            className="p-2 rounded-lg bg-red-500/10 text-red-500 hover:bg-red-500/20 transition-colors border border-red-500/20"
-                            title="Reject & Refund"
-                          >
-                            <XCircle className="w-4 h-4" />
-                          </button>
-                        </>
+                        </div>
+                      ) : (
+                        <span className="text-slate-500 text-xs">N/A</span>
                       )}
-                    </div>
-                  </td>
-                </tr>
-              ))}
+                    </td>
+                    <td className="py-4">
+                      <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border ${getStatusColor(withdrawal.status)}`}>
+                        {withdrawal.status}
+                      </span>
+                    </td>
+                    <td className="py-4 text-slate-400">
+                      {new Date(withdrawal.createdAt).toLocaleDateString()}
+                    </td>
+                    <td className="py-4">
+                      <div className="flex justify-end gap-2">
+                        {withdrawal.status === 'PENDING' && (
+                          <>
+                            <button
+                              onClick={() => handleDispatch(withdrawal.id)}
+                              className="p-2 rounded-lg bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20 transition-colors border border-emerald-500/20"
+                              title="Dispatch Payout"
+                            >
+                              <Send className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={() => handleReject(withdrawal.id)}
+                              className="p-2 rounded-lg bg-red-500/10 text-red-500 hover:bg-red-500/20 transition-colors border border-red-500/20"
+                              title="Reject & Refund"
+                            >
+                              <XCircle className="w-4 h-4" />
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         )}

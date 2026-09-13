@@ -10,12 +10,30 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
   }
 
-  const deposits = await db.depositRequest.findMany({
+  const rawDeposits = await db.depositRequest.findMany({
     orderBy: { createdAt: "desc" },
     include: {
       user: { select: { customId: true, fullName: true, email: true } },
     },
   });
+
+  const deposits = rawDeposits.map((d) => ({
+    id: d.id,
+    userId: d.userId,
+    user: {
+      name: d.user?.fullName || "Member",
+      fullName: d.user?.fullName || "Member",
+      customId: d.user?.customId || "N/A",
+      email: d.user?.email || "N/A",
+    },
+    amountUsdt: Number(d.amountInUsdt),
+    amountInUsdt: Number(d.amountInUsdt),
+    amountInr: Number(d.amountInInr),
+    txHash: d.txHash || "",
+    status: d.status,
+    adminNote: d.adminNote,
+    createdAt: d.createdAt,
+  }));
 
   return NextResponse.json({ deposits });
 }

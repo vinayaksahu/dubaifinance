@@ -13,13 +13,16 @@ type DepositStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
 interface Deposit {
   id: string;
   userId: string;
-  user: {
-    name: string;
-    customId: string;
+  user?: {
+    name?: string;
+    fullName?: string;
+    customId?: string;
+    email?: string;
   };
-  amountUsdt: number;
-  amountInr: number;
-  txHash: string;
+  amountUsdt?: number;
+  amountInUsdt?: number;
+  amountInr?: number;
+  txHash?: string;
   status: DepositStatus;
   createdAt: string;
   adminNote?: string;
@@ -41,9 +44,11 @@ export default function AdminDepositsView({ onRefresh }: AdminDepositsViewProps)
       const res = await fetch('/api/admin/deposits');
       if (!res.ok) throw new Error('Failed to fetch deposits');
       const data = await res.json();
-      setDeposits(data);
+      const list = Array.isArray(data) ? data : (data?.deposits || []);
+      setDeposits(list);
     } catch (error) {
-      console.error(error);
+      console.error("fetchDeposits error:", error);
+      setDeposits([]);
     } finally {
       setLoading(false);
     }
@@ -81,18 +86,23 @@ export default function AdminDepositsView({ onRefresh }: AdminDepositsViewProps)
   };
 
   const filteredDeposits = useMemo(() => {
+    if (!Array.isArray(deposits)) return [];
     return deposits.filter(d => {
+      if (!d) return false;
       const matchesFilter = filter === 'ALL' || d.status === filter;
       const searchLower = search.toLowerCase();
+      const userName = (d.user?.fullName || d.user?.name || '').toLowerCase();
+      const customId = (d.user?.customId || '').toLowerCase();
+      const txHash = (d.txHash || '').toLowerCase();
       const matchesSearch = search === '' || 
-        d.user.name.toLowerCase().includes(searchLower) || 
-        d.user.customId.toLowerCase().includes(searchLower) ||
-        d.txHash.toLowerCase().includes(searchLower);
+        userName.includes(searchLower) || 
+        customId.includes(searchLower) ||
+        txHash.includes(searchLower);
       return matchesFilter && matchesSearch;
     });
   }, [deposits, filter, search]);
 
-  const totalPages = Math.ceil(filteredDeposits.length / itemsPerPage);
+  const totalPages = Math.max(1, Math.ceil(filteredDeposits.length / itemsPerPage));
   const paginatedDeposits = filteredDeposits.slice((page - 1) * itemsPerPage, page * itemsPerPage);
 
   const getStatusColor = (status: DepositStatus) => {
@@ -159,69 +169,77 @@ export default function AdminDepositsView({ onRefresh }: AdminDepositsViewProps)
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800/60">
-              {paginatedDeposits.map((deposit, index) => (
-                <tr key={deposit.id} className="text-sm">
-                  <td className="py-4 text-slate-400">
-                    {(page - 1) * itemsPerPage + index + 1}
-                  </td>
-                  <td className="py-4">
-                    <div className="flex flex-col">
-                      <span className="text-slate-200">{deposit.user.name}</span>
-                      <span className="text-xs text-slate-500">{deposit.user.customId}</span>
-                    </div>
-                  </td>
-                  <td className="py-4 text-emerald-400 font-medium">
-                    {formatUsdt(deposit.amountUsdt)}
-                  </td>
-                  <td className="py-4">
-                    <div className="flex items-center gap-2">
-                      <span className="text-slate-400 font-mono text-xs">
-                        {deposit.txHash.slice(0, 6)}...{deposit.txHash.slice(-4)}
-                      </span>
-                      <button 
-                        onClick={() => copyToClipboard(deposit.txHash)}
-                        className="text-slate-500 hover:text-slate-300 transition-colors"
-                      >
-                        {copiedHash === deposit.txHash ? (
-                          <Check className="w-3 h-3 text-emerald-500" />
-                        ) : (
-                          <Copy className="w-3 h-3" />
-                        )}
-                      </button>
-                    </div>
-                  </td>
-                  <td className="py-4">
-                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border ${getStatusColor(deposit.status)}`}>
-                      {deposit.status}
-                    </span>
-                  </td>
-                  <td className="py-4 text-slate-400">
-                    {new Date(deposit.createdAt).toLocaleDateString()}
-                  </td>
-                  <td className="py-4">
-                    <div className="flex justify-end gap-2">
-                      {deposit.status === 'PENDING' && (
-                        <>
-                          <button
-                            onClick={() => handleAction(deposit.id, 'APPROVE')}
-                            className="p-2 rounded-lg bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20 transition-colors border border-emerald-500/20"
-                            title="Approve"
+              {paginatedDeposits.map((deposit, index) => {
+                const amount = deposit.amountInUsdt ?? deposit.amountUsdt ?? 0;
+                const tx = deposit.txHash || '';
+                return (
+                  <tr key={deposit.id} className="text-sm">
+                    <td className="py-4 text-slate-400">
+                      {(page - 1) * itemsPerPage + index + 1}
+                    </td>
+                    <td className="py-4">
+                      <div className="flex flex-col">
+                        <span className="text-slate-200">{deposit.user?.fullName || deposit.user?.name || "Member"}</span>
+                        <span className="text-xs text-slate-500">{deposit.user?.customId || "N/A"}</span>
+                      </div>
+                    </td>
+                    <td className="py-4 text-emerald-400 font-medium">
+                      {formatUsdt(amount)}
+                    </td>
+                    <td className="py-4">
+                      {tx ? (
+                        <div className="flex items-center gap-2">
+                          <span className="text-slate-400 font-mono text-xs">
+                            {tx.length > 10 ? `${tx.slice(0, 6)}...${tx.slice(-4)}` : tx}
+                          </span>
+                          <button 
+                            onClick={() => copyToClipboard(tx)}
+                            className="text-slate-500 hover:text-slate-300 transition-colors"
                           >
-                            <CheckCircle className="w-4 h-4" />
+                            {copiedHash === tx ? (
+                              <Check className="w-3 h-3 text-emerald-500" />
+                            ) : (
+                              <Copy className="w-3 h-3" />
+                            )}
                           </button>
-                          <button
-                            onClick={() => handleAction(deposit.id, 'REJECT')}
-                            className="p-2 rounded-lg bg-red-500/10 text-red-500 hover:bg-red-500/20 transition-colors border border-red-500/20"
-                            title="Reject"
-                          >
-                            <XCircle className="w-4 h-4" />
-                          </button>
-                        </>
+                        </div>
+                      ) : (
+                        <span className="text-slate-500 text-xs">Direct/Manual</span>
                       )}
-                    </div>
-                  </td>
-                </tr>
-              ))}
+                    </td>
+                    <td className="py-4">
+                      <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border ${getStatusColor(deposit.status)}`}>
+                        {deposit.status}
+                      </span>
+                    </td>
+                    <td className="py-4 text-slate-400">
+                      {new Date(deposit.createdAt).toLocaleDateString()}
+                    </td>
+                    <td className="py-4">
+                      <div className="flex justify-end gap-2">
+                        {deposit.status === 'PENDING' && (
+                          <>
+                            <button
+                              onClick={() => handleAction(deposit.id, 'APPROVE')}
+                              className="p-2 rounded-lg bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20 transition-colors border border-emerald-500/20"
+                              title="Approve"
+                            >
+                              <CheckCircle className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={() => handleAction(deposit.id, 'REJECT')}
+                              className="p-2 rounded-lg bg-red-500/10 text-red-500 hover:bg-red-500/20 transition-colors border border-red-500/20"
+                              title="Reject"
+                            >
+                              <XCircle className="w-4 h-4" />
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         )}

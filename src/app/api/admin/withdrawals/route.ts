@@ -10,12 +10,32 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
   }
 
-  const withdrawals = await db.withdrawalRequest.findMany({
+  const rawWithdrawals = await db.withdrawalRequest.findMany({
     orderBy: { createdAt: "desc" },
     include: {
       user: { select: { customId: true, fullName: true, email: true } },
     },
   });
+
+  const withdrawals = rawWithdrawals.map((w) => ({
+    id: w.id,
+    userId: w.userId,
+    user: {
+      name: w.user?.fullName || "Member",
+      fullName: w.user?.fullName || "Member",
+      customId: w.user?.customId || "N/A",
+      email: w.user?.email || "N/A",
+    },
+    amountUsdt: Number(w.amountInUsdt),
+    amountInUsdt: Number(w.amountInUsdt),
+    amountInr: Number(w.amountInInr),
+    payoutAddress: w.toAddress || "",
+    toAddress: w.toAddress || "",
+    txHash: w.txHash || "",
+    adminNote: w.adminNote,
+    status: w.status,
+    createdAt: w.createdAt,
+  }));
 
   return NextResponse.json({ withdrawals });
 }
@@ -38,50 +58,35 @@ export async function POST(req: NextRequest) {
   }
 
   if (action === "APPROVE") {
+    if (!txHash) {
+      return NextResponse.json({ error: "Transaction hash is required." }, { status: 400 });
+    }
+
     await db.withdrawalRequest.update({
       where: { id: withdrawalId },
-      data: {
-        status: "PROCESSED",
-        txHash: txHash || "MANUAL_DISPATCH",
-        adminNote,
-        processedAt: new Date(),
-      },
-    });
-
-    // Update totalWithdrawn on User
-    const currentWithdrawn = new Decimal(withdrawal.user.totalWithdrawn.toString());
-    const amountUsdtDec = new Decimal(withdrawal.amountInUsdt.toString());
-    await db.user.update({
-      where: { id: withdrawal.userId },
-      data: {
-        totalWithdrawn: currentWithdrawn.plus(amountUsdtDec).toFixed(8),
-      },
+      data: { status: "PROCESSED", txHash, adminNote, processedAt: new Date() },
     });
 
     return NextResponse.json({ success: true, message: "Withdrawal marked as processed." });
   } else if (action === "REJECT") {
+    // Refund Income Balance
     const amountUsdtDec = new Decimal(withdrawal.amountInUsdt.toString());
 
     await db.withdrawalRequest.update({
       where: { id: withdrawalId },
-      data: {
-        status: "REJECTED",
-        adminNote,
-        processedAt: new Date(),
-      },
+      data: { status: "REJECTED", adminNote, processedAt: new Date() },
     });
 
-    // Refund back to user's Income Wallet
     await executeLedgerTransaction({
       userId: withdrawal.userId,
-      type: "WITHDRAWAL_REFUND",
+      type: "WITHDRAWAL",
       wallet: "INCOME",
       amount: amountUsdtDec,
-      referenceKey: `REFUND_WITHDRAWAL_${withdrawal.id}`,
-      description: `Refund of Rejected Withdrawal #${withdrawal.id}: ${adminNote || "Rejected by administrator"}`,
+      referenceKey: `WITHDRAWAL_REFUND_${withdrawal.id}`,
+      description: `Refund for rejected withdrawal: ${adminNote || "Admin rejection"}`,
     });
 
-    return NextResponse.json({ success: true, message: "Withdrawal rejected and funds refunded to user." });
+    return NextResponse.json({ success: true, message: "Withdrawal rejected and funds refunded to Income Wallet." });
   }
 
   return NextResponse.json({ error: "Invalid action." }, { status: 400 });
