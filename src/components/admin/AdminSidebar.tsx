@@ -71,17 +71,15 @@ export default function AdminSidebar({
       )}
 
       {/* Sidebar Container */}
-      <aside 
-        className={`fixed top-0 left-0 h-full bg-[#080c14] border-r border-amber-500/20 flex flex-col z-50 transition-all duration-300 ease-in-out ${
-          // Desktop Width: 80px when collapsed, 260px when expanded
+      <aside
+        className={`fixed top-0 left-0 bottom-0 z-50 bg-[var(--bg-secondary)] border-r border-amber-500/20 flex flex-col transition-all duration-300 ease-in-out ${
           isCollapsed ? "lg:w-20" : "lg:w-64"
         } ${
-          // Mobile: slide in/out from left
           isOpen ? "translate-x-0 w-72" : "-translate-x-full lg:translate-x-0"
-        } shadow-2xl shadow-black/60`}
+        } shadow-2xl`}
       >
         {/* Brand Header */}
-        <div className="h-20 bg-[#0c1322] border-b border-amber-500/20 flex items-center justify-between px-4 shrink-0 relative overflow-hidden">
+        <div className="h-20 bg-[var(--bg-main)] border-b border-amber-500/20 flex items-center justify-between px-4 shrink-0 relative overflow-hidden">
           {/* Subtle gold gradient glow in header */}
           <div className="absolute inset-0 bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent pointer-events-none" />
 
@@ -104,35 +102,20 @@ export default function AdminSidebar({
             <div className={`flex flex-col transition-opacity duration-200 ${
               isCollapsed ? "lg:hidden" : "block"
             }`}>
-              <div className="font-display font-black text-base tracking-wider text-amber-400 uppercase whitespace-nowrap leading-none">
+              <div className="font-display font-black text-base tracking-wider text-amber-600 dark:text-amber-400 uppercase whitespace-nowrap leading-none">
                 DUBAI FINANCE
               </div>
-              <div className="text-[9px] font-bold tracking-[0.2em] text-amber-500/70 uppercase mt-1 whitespace-nowrap flex items-center gap-1 leading-none">
-                <ShieldCheck className="w-3 h-3 text-emerald-400" />
+              <div className="text-[9px] font-bold tracking-[0.2em] text-amber-600/80 dark:text-amber-500/70 uppercase mt-1 whitespace-nowrap flex items-center gap-1 leading-none">
+                <ShieldCheck className="w-3 h-3 text-emerald-500 dark:text-emerald-400" />
                 ADMIN CONSOLE
               </div>
             </div>
           </div>
 
-          {/* Desktop Collapse / Slide Toggle Button */}
-          <button 
-            type="button"
-            onClick={() => setIsCollapsed(!isCollapsed)}
-            className="hidden lg:flex p-1.5 rounded-lg border border-amber-500/30 text-amber-400 hover:bg-amber-400/10 hover:border-amber-400 transition-all relative z-10"
-            title={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
-            aria-label="Toggle Sidebar Collapse"
-          >
-            {isCollapsed ? (
-              <ChevronRight className="w-4 h-4 text-amber-400" />
-            ) : (
-              <ChevronLeft className="w-4 h-4 text-amber-400" />
-            )}
-          </button>
-
           {/* Mobile Close Button */}
           <button 
             type="button"
-            className="lg:hidden p-2 rounded-lg border border-amber-500/30 text-amber-400 hover:bg-amber-400/10 relative z-10"
+            className="lg:hidden p-2 rounded-lg border border-amber-500/30 text-amber-500 dark:text-amber-400 hover:bg-amber-500/10 relative z-10"
             onClick={() => setIsOpen(false)}
             aria-label="Close Mobile Sidebar"
           >
@@ -159,18 +142,18 @@ export default function AdminSidebar({
                   isCollapsed ? "lg:justify-center lg:px-2" : "justify-between px-3.5"
                 } py-3 rounded-xl font-semibold text-xs transition-all duration-200 group relative overflow-hidden ${
                   isActive 
-                    ? "bg-gradient-to-r from-amber-500/20 via-amber-500/10 to-transparent text-amber-300 border border-amber-500/40 shadow-md shadow-amber-500/10" 
-                    : "text-slate-400 hover:text-amber-200 hover:bg-amber-500/5 border border-transparent"
+                    ? "bg-gradient-to-r from-amber-500/20 via-amber-500/10 to-transparent text-amber-600 dark:text-amber-300 border border-amber-500/40 shadow-sm font-bold" 
+                    : "text-slate-600 dark:text-slate-400 hover:text-amber-600 dark:hover:text-amber-200 hover:bg-amber-500/10 border border-transparent"
                 }`}
               >
                 {/* Active Left Indicator Bar */}
                 {isActive && (
-                  <div className="absolute left-0 top-0 bottom-0 w-1 bg-amber-400 shadow-[0_0_10px_rgba(245,158,11,0.9)]" />
+                  <div className="absolute left-0 top-0 bottom-0 w-1 bg-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.9)]" />
                 )}
                 
                 <div className="flex items-center gap-3 min-w-0">
                   <item.icon className={`w-5 h-5 shrink-0 transition-colors ${
-                    isActive ? "text-amber-400" : "text-slate-400 group-hover:text-amber-300"
+                    isActive ? "text-amber-500 dark:text-amber-400" : "text-slate-500 dark:text-slate-400 group-hover:text-amber-500"
                   }`} />
                   
                   {/* Label (Hidden when collapsed on desktop) */}
@@ -199,10 +182,10 @@ export default function AdminSidebar({
             title={isCollapsed ? "Member View" : undefined}
             className={`w-full flex items-center ${
               isCollapsed ? "lg:justify-center lg:px-2" : "px-3.5"
-            } py-3 rounded-xl font-semibold text-xs text-slate-400 hover:text-amber-300 hover:bg-amber-500/5 border border-transparent hover:border-amber-500/30 transition-all duration-200 group`}
+            } py-3 rounded-xl font-semibold text-xs text-slate-600 dark:text-slate-400 hover:text-amber-600 dark:hover:text-amber-300 hover:bg-amber-500/10 border border-transparent hover:border-amber-500/30 transition-all duration-200 group`}
           >
             <div className="flex items-center gap-3">
-              <ExternalLink className="w-5 h-5 shrink-0 text-slate-400 group-hover:text-amber-400 transition-colors" />
+              <ExternalLink className="w-5 h-5 shrink-0 text-slate-500 dark:text-slate-400 group-hover:text-amber-500 transition-colors" />
               <span className={isCollapsed ? "lg:hidden" : "block"}>
                 Member View
               </span>
@@ -211,13 +194,13 @@ export default function AdminSidebar({
         </div>
 
         {/* Footer / Quick Collapse Indicator & Logout */}
-        <div className="p-3 bg-[#0c1322] border-t border-amber-500/20 shrink-0 space-y-2">
+        <div className="p-3 bg-[var(--bg-main)] border-t border-amber-500/20 shrink-0 space-y-2">
           {/* Collapse status hint (desktop only) */}
-          <div className={`hidden lg:flex items-center justify-between text-[10px] text-slate-400 px-2 font-medium ${
+          <div className={`hidden lg:flex items-center justify-between text-[10px] text-slate-500 dark:text-slate-400 px-2 font-medium ${
             isCollapsed ? "lg:hidden" : "flex"
           }`}>
             <span>Console Status</span>
-            <span className="flex items-center gap-1.5 text-emerald-400 font-bold">
+            <span className="flex items-center gap-1.5 text-emerald-500 dark:text-emerald-400 font-bold">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
               ONLINE
             </span>
@@ -229,7 +212,7 @@ export default function AdminSidebar({
             title={isCollapsed ? "Logout" : undefined}
             className={`w-full flex items-center ${
               isCollapsed ? "lg:justify-center lg:px-2" : "justify-center gap-2 px-3"
-            } py-2.5 rounded-xl font-bold text-xs text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 border border-rose-500/20 hover:border-rose-500/40 transition-all duration-200`}
+            } py-2.5 rounded-xl font-bold text-xs text-rose-500 hover:text-rose-600 hover:bg-rose-500/10 border border-rose-500/20 hover:border-rose-500/40 transition-all duration-200`}
           >
             <LogOut className="w-4 h-4 shrink-0" />
             <span className={isCollapsed ? "lg:hidden" : "inline"}>

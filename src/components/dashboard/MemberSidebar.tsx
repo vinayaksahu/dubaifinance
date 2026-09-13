@@ -82,14 +82,14 @@ export function MemberSidebar({
 
       {/* Sidebar Container */}
       <aside
-        className={`fixed top-0 left-0 bottom-0 z-50 bg-[#080c14] border-r border-amber-500/20 flex flex-col transition-all duration-300 ease-in-out ${
+        className={`fixed top-0 left-0 bottom-0 z-50 bg-[var(--bg-secondary)] border-r border-amber-500/20 flex flex-col transition-all duration-300 ease-in-out ${
           isCollapsed ? "lg:w-20" : "lg:w-64"
         } ${
           isOpen ? "translate-x-0 w-72" : "-translate-x-full lg:translate-x-0"
-        } shadow-2xl shadow-black/60`}
+        } shadow-2xl`}
       >
         {/* Brand Logo Header */}
-        <div className="h-16 flex items-center justify-between px-4 border-b border-amber-500/20 bg-[#0c1322] shrink-0">
+        <div className="h-16 flex items-center justify-between px-4 border-b border-amber-500/20 bg-[var(--bg-main)] shrink-0">
           <div className="flex items-center gap-3 overflow-hidden">
             <div className="w-9 h-9 rounded-xl overflow-hidden bg-gradient-to-br from-amber-400 to-amber-600 p-0.5 shadow-md shadow-amber-500/20 shrink-0">
               <div className="w-full h-full rounded-[10px] bg-slate-950 flex items-center justify-center overflow-hidden">
@@ -104,32 +104,21 @@ export function MemberSidebar({
               </div>
             </div>
             <div className={`flex flex-col ${isCollapsed ? "lg:hidden" : "block"}`}>
-              <span className="text-amber-400 font-display font-black tracking-wider text-sm uppercase leading-tight whitespace-nowrap">
+              <span className="text-amber-600 dark:text-amber-400 font-display font-black tracking-wider text-sm uppercase leading-tight whitespace-nowrap">
                 DUBAI FINANCE
               </span>
-              <span className="text-[9px] text-amber-500/70 font-semibold tracking-wide uppercase whitespace-nowrap">
+              <span className="text-[9px] text-amber-600/80 dark:text-amber-500/70 font-semibold tracking-wide uppercase whitespace-nowrap">
                 MEMBER PORTAL
               </span>
             </div>
           </div>
 
-          {/* Desktop Collapse Toggle */}
-          {setIsCollapsed && (
-            <button
-              type="button"
-              onClick={() => setIsCollapsed(!isCollapsed)}
-              className="hidden lg:flex p-1.5 rounded-lg border border-amber-500/30 text-amber-400 hover:bg-amber-400/10 transition-colors"
-              title={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
-            >
-              {isCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
-            </button>
-          )}
-
           {/* Mobile Close Button */}
           <button
             type="button"
             onClick={() => setIsOpen(false)}
-            className="lg:hidden p-1.5 rounded-lg border border-amber-500/30 text-amber-400 hover:bg-amber-400/10"
+            className="lg:hidden p-1.5 rounded-lg border border-amber-500/30 text-amber-500 dark:text-amber-400 hover:bg-amber-500/10"
+            aria-label="Close Sidebar"
           >
             <X className="w-4 h-4" />
           </button>
@@ -146,11 +135,11 @@ export function MemberSidebar({
               isCollapsed ? "lg:justify-center lg:px-2" : "gap-3.5 px-3.5"
             } py-2.5 rounded-xl font-medium text-sm transition-all text-left ${
               activeTab === "dashboard"
-                ? "bg-gradient-to-r from-amber-500/20 via-amber-500/10 to-transparent text-amber-300 border border-amber-500/40 shadow-md shadow-amber-500/10 font-bold"
-                : "text-slate-400 hover:text-amber-200 hover:bg-amber-500/5"
+                ? "bg-gradient-to-r from-amber-500/20 via-amber-500/10 to-transparent text-amber-600 dark:text-amber-300 border border-amber-500/40 shadow-md shadow-amber-500/10 font-bold"
+                : "text-slate-600 dark:text-slate-400 hover:text-amber-600 dark:hover:text-amber-200 hover:bg-amber-500/10"
             }`}
           >
-            <Gauge className="w-5 h-5 text-amber-400 shrink-0" />
+            <Gauge className="w-5 h-5 text-amber-500 dark:text-amber-400 shrink-0" />
             <span className={isCollapsed ? "lg:hidden" : "inline"}>Dashboard</span>
           </button>
 
@@ -164,7 +153,7 @@ export function MemberSidebar({
             } py-2.5 rounded-xl font-medium text-sm transition-all text-left ${
               activeTab === "recharge"
                 ? "bg-gradient-to-r from-amber-500/20 via-amber-500/10 to-transparent text-amber-300 border border-amber-500/40 shadow-md shadow-amber-500/10 font-bold"
-                : "text-slate-400 hover:text-amber-200 hover:bg-amber-500/5"
+                : "text-slate-600 dark:text-slate-400 hover:text-amber-600 dark:hover:text-amber-200 hover:bg-amber-500/10"
             }`}
           >
             <Briefcase className="w-5 h-5 text-emerald-400 shrink-0" />
@@ -182,7 +171,7 @@ export function MemberSidebar({
               } py-2.5 rounded-xl font-medium text-sm transition-all text-left ${
                 activeTab.startsWith("package-")
                   ? "bg-gradient-to-r from-amber-500/20 via-amber-500/10 to-transparent text-amber-300 border border-amber-500/40 shadow-md shadow-amber-500/10 font-bold"
-                  : "text-slate-400 hover:text-amber-200 hover:bg-amber-500/5"
+                  : "text-slate-600 dark:text-slate-400 hover:text-amber-600 dark:hover:text-amber-200 hover:bg-amber-500/10"
               }`}
             >
               <div className="flex items-center gap-3.5">
@@ -205,7 +194,7 @@ export function MemberSidebar({
                   className={`w-full text-left py-2 px-3 rounded-lg text-xs font-medium transition-all ${
                     activeTab === "package-base"
                       ? "text-amber-300 bg-amber-500/15 font-bold border-l-2 border-amber-400"
-                      : "text-slate-400 hover:text-amber-200 hover:bg-amber-500/5"
+                      : "text-slate-600 dark:text-slate-400 hover:text-amber-600 dark:hover:text-amber-200 hover:bg-amber-500/10"
                   }`}
                 >
                   • Basic Package
@@ -216,7 +205,7 @@ export function MemberSidebar({
                   className={`w-full text-left py-2 px-3 rounded-lg text-xs font-medium transition-all ${
                     activeTab === "package-fd"
                       ? "text-amber-300 bg-amber-500/15 font-bold border-l-2 border-amber-400"
-                      : "text-slate-400 hover:text-amber-200 hover:bg-amber-500/5"
+                      : "text-slate-600 dark:text-slate-400 hover:text-amber-600 dark:hover:text-amber-200 hover:bg-amber-500/10"
                   }`}
                 >
                   • FD Package
@@ -236,7 +225,7 @@ export function MemberSidebar({
               } py-2.5 rounded-xl font-medium text-sm transition-all text-left ${
                 activeTab.startsWith("downline-")
                   ? "bg-gradient-to-r from-amber-500/20 via-amber-500/10 to-transparent text-amber-300 border border-amber-500/40 shadow-md shadow-amber-500/10 font-bold"
-                  : "text-slate-400 hover:text-amber-200 hover:bg-amber-500/5"
+                  : "text-slate-600 dark:text-slate-400 hover:text-amber-600 dark:hover:text-amber-200 hover:bg-amber-500/10"
               }`}
             >
               <div className="flex items-center gap-3.5">
@@ -259,7 +248,7 @@ export function MemberSidebar({
                   className={`w-full text-left py-2 px-3 rounded-lg text-xs font-medium transition-all ${
                     activeTab === "downline-direct"
                       ? "text-amber-300 bg-amber-500/15 font-bold border-l-2 border-amber-400"
-                      : "text-slate-400 hover:text-amber-200 hover:bg-amber-500/5"
+                      : "text-slate-600 dark:text-slate-400 hover:text-amber-600 dark:hover:text-amber-200 hover:bg-amber-500/10"
                   }`}
                 >
                   • Direct Team
@@ -270,7 +259,7 @@ export function MemberSidebar({
                   className={`w-full text-left py-2 px-3 rounded-lg text-xs font-medium transition-all ${
                     activeTab === "downline-team"
                       ? "text-amber-300 bg-amber-500/15 font-bold border-l-2 border-amber-400"
-                      : "text-slate-400 hover:text-amber-200 hover:bg-amber-500/5"
+                      : "text-slate-600 dark:text-slate-400 hover:text-amber-600 dark:hover:text-amber-200 hover:bg-amber-500/10"
                   }`}
                 >
                   • Team List
@@ -281,7 +270,7 @@ export function MemberSidebar({
                   className={`w-full text-left py-2 px-3 rounded-lg text-xs font-medium transition-all ${
                     activeTab === "downline-tree"
                       ? "text-amber-300 bg-amber-500/15 font-bold border-l-2 border-amber-400"
-                      : "text-slate-400 hover:text-amber-200 hover:bg-amber-500/5"
+                      : "text-slate-600 dark:text-slate-400 hover:text-amber-600 dark:hover:text-amber-200 hover:bg-amber-500/10"
                   }`}
                 >
                   • Tree View
@@ -301,7 +290,7 @@ export function MemberSidebar({
               } py-2.5 rounded-xl font-medium text-sm transition-all text-left ${
                 activeTab.startsWith("income-")
                   ? "bg-gradient-to-r from-amber-500/20 via-amber-500/10 to-transparent text-amber-300 border border-amber-500/40 shadow-md shadow-amber-500/10 font-bold"
-                  : "text-slate-400 hover:text-amber-200 hover:bg-amber-500/5"
+                  : "text-slate-600 dark:text-slate-400 hover:text-amber-600 dark:hover:text-amber-200 hover:bg-amber-500/10"
               }`}
             >
               <div className="flex items-center gap-3.5">
@@ -324,7 +313,7 @@ export function MemberSidebar({
                   className={`w-full text-left py-2 px-3 rounded-lg text-xs font-medium transition-all ${
                     activeTab === "income-roi"
                       ? "text-amber-300 bg-amber-500/15 font-bold border-l-2 border-amber-400"
-                      : "text-slate-400 hover:text-amber-200 hover:bg-amber-500/5"
+                      : "text-slate-600 dark:text-slate-400 hover:text-amber-600 dark:hover:text-amber-200 hover:bg-amber-500/10"
                   }`}
                 >
                   • Daily ROI Income
@@ -335,7 +324,7 @@ export function MemberSidebar({
                   className={`w-full text-left py-2 px-3 rounded-lg text-xs font-medium transition-all ${
                     activeTab === "income-fd"
                       ? "text-amber-300 bg-amber-500/15 font-bold border-l-2 border-amber-400"
-                      : "text-slate-400 hover:text-amber-200 hover:bg-amber-500/5"
+                      : "text-slate-600 dark:text-slate-400 hover:text-amber-600 dark:hover:text-amber-200 hover:bg-amber-500/10"
                   }`}
                 >
                   • FD ROI Income
@@ -346,7 +335,7 @@ export function MemberSidebar({
                   className={`w-full text-left py-2 px-3 rounded-lg text-xs font-medium transition-all ${
                     activeTab === "income-referral"
                       ? "text-amber-300 bg-amber-500/15 font-bold border-l-2 border-amber-400"
-                      : "text-slate-400 hover:text-amber-200 hover:bg-amber-500/5"
+                      : "text-slate-600 dark:text-slate-400 hover:text-amber-600 dark:hover:text-amber-200 hover:bg-amber-500/10"
                   }`}
                 >
                   • Direct Referral Income
@@ -357,7 +346,7 @@ export function MemberSidebar({
                   className={`w-full text-left py-2 px-3 rounded-lg text-xs font-medium transition-all ${
                     activeTab === "income-level"
                       ? "text-amber-300 bg-amber-500/15 font-bold border-l-2 border-amber-400"
-                      : "text-slate-400 hover:text-amber-200 hover:bg-amber-500/5"
+                      : "text-slate-600 dark:text-slate-400 hover:text-amber-600 dark:hover:text-amber-200 hover:bg-amber-500/10"
                   }`}
                 >
                   • Level ROI Income
@@ -377,7 +366,7 @@ export function MemberSidebar({
               } py-2.5 rounded-xl font-medium text-sm transition-all text-left ${
                 activeTab.startsWith("tx-")
                   ? "bg-gradient-to-r from-amber-500/20 via-amber-500/10 to-transparent text-amber-300 border border-amber-500/40 shadow-md shadow-amber-500/10 font-bold"
-                  : "text-slate-400 hover:text-amber-200 hover:bg-amber-500/5"
+                  : "text-slate-600 dark:text-slate-400 hover:text-amber-600 dark:hover:text-amber-200 hover:bg-amber-500/10"
               }`}
             >
               <div className="flex items-center gap-3.5">
@@ -400,7 +389,7 @@ export function MemberSidebar({
                   className={`w-full text-left py-2 px-3 rounded-lg text-xs font-medium transition-all ${
                     activeTab === "tx-transfer"
                       ? "text-amber-300 bg-amber-500/15 font-bold border-l-2 border-amber-400"
-                      : "text-slate-400 hover:text-amber-200 hover:bg-amber-500/5"
+                      : "text-slate-600 dark:text-slate-400 hover:text-amber-600 dark:hover:text-amber-200 hover:bg-amber-500/10"
                   }`}
                 >
                   • Fund Transfer (P2P)
@@ -411,7 +400,7 @@ export function MemberSidebar({
                   className={`w-full text-left py-2 px-3 rounded-lg text-xs font-medium transition-all ${
                     activeTab === "tx-swipe"
                       ? "text-amber-300 bg-amber-500/15 font-bold border-l-2 border-amber-400"
-                      : "text-slate-400 hover:text-amber-200 hover:bg-amber-500/5"
+                      : "text-slate-600 dark:text-slate-400 hover:text-amber-600 dark:hover:text-amber-200 hover:bg-amber-500/10"
                   }`}
                 >
                   • Swipe (0% Fee)
@@ -422,7 +411,7 @@ export function MemberSidebar({
                   className={`w-full text-left py-2 px-3 rounded-lg text-xs font-medium transition-all ${
                     activeTab === "tx-withdraw"
                       ? "text-amber-300 bg-amber-500/15 font-bold border-l-2 border-amber-400"
-                      : "text-slate-400 hover:text-amber-200 hover:bg-amber-500/5"
+                      : "text-slate-600 dark:text-slate-400 hover:text-amber-600 dark:hover:text-amber-200 hover:bg-amber-500/10"
                   }`}
                 >
                   • Withdrawal
@@ -433,7 +422,7 @@ export function MemberSidebar({
                   className={`w-full text-left py-2 px-3 rounded-lg text-xs font-medium transition-all ${
                     activeTab === "tx-withdraw-report"
                       ? "text-amber-300 bg-amber-500/15 font-bold border-l-2 border-amber-400"
-                      : "text-slate-400 hover:text-amber-200 hover:bg-amber-500/5"
+                      : "text-slate-600 dark:text-slate-400 hover:text-amber-600 dark:hover:text-amber-200 hover:bg-amber-500/10"
                   }`}
                 >
                   • Withdrawal Report
@@ -453,7 +442,7 @@ export function MemberSidebar({
               } py-2.5 rounded-xl font-medium text-sm transition-all text-left ${
                 activeTab.startsWith("report-")
                   ? "bg-gradient-to-r from-amber-500/20 via-amber-500/10 to-transparent text-amber-300 border border-amber-500/40 shadow-md shadow-amber-500/10 font-bold"
-                  : "text-slate-400 hover:text-amber-200 hover:bg-amber-500/5"
+                  : "text-slate-600 dark:text-slate-400 hover:text-amber-600 dark:hover:text-amber-200 hover:bg-amber-500/10"
               }`}
             >
               <div className="flex items-center gap-3.5">
@@ -476,7 +465,7 @@ export function MemberSidebar({
                   className={`w-full text-left py-2 px-3 rounded-lg text-xs font-medium transition-all ${
                     activeTab === "report-statement"
                       ? "text-amber-300 bg-amber-500/15 font-bold border-l-2 border-amber-400"
-                      : "text-slate-400 hover:text-amber-200 hover:bg-amber-500/5"
+                      : "text-slate-600 dark:text-slate-400 hover:text-amber-600 dark:hover:text-amber-200 hover:bg-amber-500/10"
                   }`}
                 >
                   • Account Statement
@@ -487,7 +476,7 @@ export function MemberSidebar({
                   className={`w-full text-left py-2 px-3 rounded-lg text-xs font-medium transition-all ${
                     activeTab === "report-packages"
                       ? "text-amber-300 bg-amber-500/15 font-bold border-l-2 border-amber-400"
-                      : "text-slate-400 hover:text-amber-200 hover:bg-amber-500/5"
+                      : "text-slate-600 dark:text-slate-400 hover:text-amber-600 dark:hover:text-amber-200 hover:bg-amber-500/10"
                   }`}
                 >
                   • Package History
@@ -506,7 +495,7 @@ export function MemberSidebar({
             } py-2.5 rounded-xl font-medium text-sm transition-all text-left ${
               activeTab === "support"
                 ? "bg-gradient-to-r from-amber-500/20 via-amber-500/10 to-transparent text-amber-300 border border-amber-500/40 shadow-md shadow-amber-500/10 font-bold"
-                : "text-slate-400 hover:text-amber-200 hover:bg-amber-500/5"
+                : "text-slate-600 dark:text-slate-400 hover:text-amber-600 dark:hover:text-amber-200 hover:bg-amber-500/10"
             }`}
           >
             <Headphones className="w-5 h-5 text-cyan-400 shrink-0" />
@@ -529,14 +518,14 @@ export function MemberSidebar({
         </div>
 
         {/* Logout at Bottom */}
-        <div className="p-3 border-t border-amber-500/20 bg-[#0c1322] shrink-0">
+        <div className="p-3 border-t border-amber-500/20 bg-[var(--bg-main)] shrink-0">
           <button
             type="button"
             onClick={handleLogout}
             title={isCollapsed ? "Logout" : undefined}
             className={`w-full flex items-center ${
               isCollapsed ? "lg:justify-center lg:px-2" : "justify-center gap-2 px-3"
-            } py-2.5 rounded-xl font-bold text-xs text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 border border-rose-500/20 hover:border-rose-500/40 transition-all`}
+            } py-2.5 rounded-xl font-bold text-xs text-rose-500 hover:text-rose-600 hover:bg-rose-500/10 border border-rose-500/20 hover:border-rose-500/40 transition-all`}
           >
             <LogOut className="w-4 h-4 shrink-0" />
             <span className={isCollapsed ? "lg:hidden" : "inline"}>Logout</span>

@@ -177,3 +177,96 @@ html.dark .gold-gradient {
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(245, 192, 66, 0.6);
 }
+
+/* =========================================================
+   LIGHT THEME OVERRIDES (DASHBOARDS, PANELS & CARDS)
+   Ensures seamless, elegant luxury ivory light mode
+   ========================================================= */
+html.light,
+:root[data-theme="light"] {
+  color-scheme: light;
+}
+
+html.light .text-slate-100 {
+  color: #0F172A !important;
+}
+
+html.light .text-slate-200 {
+  color: #1E293B !important;
+}
+
+html.light .text-slate-300 {
+  color: #334155 !important;
+}
+
+html.light .text-slate-400 {
+  color: #64748B !important;
+}
+
+/* Card & Container Backgrounds */
+html.light .bg-\[\#091124\],
+html.light .bg-\[\#0c1322\],
+html.light .bg-\[\#070e20\],
+html.light .bg-\[\#0a1229\],
+html.light .bg-\[\#0d1a36\],
+html.light .bg-\[\#080c14\],
+html.light .bg-\[\#050b18\],
+html.light .bg-\[\#0a1226\],
+html.light .bg-\[\#0b1429\] {
+  background-color: #FFFFFF !important;
+  color: #0F172A;
+  border-color: rgba(217, 119, 6, 0.2) !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04) !important;
+}
+
+html.light .bg-\[\#080e1e\],
+html.light .bg-\[\#0d1833\] {
+  background-color: #F8FAFC !important;
+  color: #0F172A !important;
+  border-color: rgba(203, 213, 225, 0.8) !important;
+}
+
+/* Borders */
+html.light .border-\[\#17274a\],
+html.light .border-\[\#152238\],
+html.light .border-\[\#1a2d52\],
+html.light .border-\[\#162544\],
+html.light .border-\[\#1e3460\],
+html.light .border-\[\#132042\],
+html.light .border-\[\#152342\],
+html.light .border-\[\#1e335e\],
+html.light .border-slate-800,
+html.light .border-slate-800\/80 {
+  border-color: rgba(226, 232, 240, 0.9) !important;
+}
+
+/* Form Controls */
+html.light input.bg-\[\#070e20\],
+html.light input.bg-\[\#0a1229\],
+html.light select.bg-\[\#070e20\],
+html.light select.bg-\[\#0a1229\],
+html.light textarea.bg-\[\#070e20\] {
+  background-color: #FFFFFF !important;
+  color: #0F172A !important;
+  border-color: #CBD5E1 !important;
+}
+
+html.light input::placeholder,
+html.light textarea::placeholder {
+  color: #94A3B8 !important;
+}
+
+/* Table styling in Light Mode */
+html.light thead.bg-\[\#070e20\] {
+  background-color: #F8FAFC !important;
+  color: #475569 !important;
+  border-bottom-color: #E2E8F0 !important;
+}
+
+html.light tr.hover\:bg-\[\#0c1630\]:hover {
+  background-color: #F1F5F9 !important;
+}
+
+html.light td {
+  border-color: #F1F5F9 !important;
+}

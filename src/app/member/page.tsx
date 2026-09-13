@@ -53,10 +53,10 @@ export default function MemberDashboardPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#080c14] flex items-center justify-center">
+      <div className="min-h-screen bg-[var(--bg-main)] flex items-center justify-center">
         <div className="flex flex-col items-center gap-3">
           <div className="w-12 h-12 rounded-full border-4 border-amber-500 border-t-transparent animate-spin" />
-          <p className="text-amber-400 font-extrabold tracking-widest text-sm uppercase">
+          <p className="text-amber-500 dark:text-amber-400 font-extrabold tracking-widest text-sm uppercase">
             Loading Dubai Finance Portal...
           </p>
         </div>
@@ -67,7 +67,7 @@ export default function MemberDashboardPage() {
   if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-[#080c14] text-slate-100 flex flex-col antialiased">
+    <div className="min-h-screen bg-[var(--bg-main)] text-[var(--text-main)] flex flex-col antialiased transition-colors duration-200">
       {/* Sidebar */}
       <MemberSidebar
         activeTab={activeTab}

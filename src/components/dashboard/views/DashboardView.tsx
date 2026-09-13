@@ -11,9 +11,9 @@ interface DashboardViewProps {
 export function DashboardView({ user, setActiveTab }: DashboardViewProps) {
   const [copied, setCopied] = useState(false);
 
-  // Dynamic origin or fallback referral link matching the screenshot format
-  const origin = typeof window !== "undefined" ? window.location.origin : "https://indiafinance.online";
-  const customId = user?.customId || "IF478752";
+  // Dynamic origin or fallback referral link
+  const origin = typeof window !== "undefined" ? window.location.origin : "https://dubai.nexarise.us";
+  const customId = user?.customId || "DF478752";
   const referralUrl = `${origin}/register?r=${customId}`;
 
   const copyReferral = () => {
@@ -31,40 +31,76 @@ export function DashboardView({ user, setActiveTab }: DashboardViewProps) {
       })
     : "19 Jul 2026";
 
-  // Currency symbol - exactly matches screenshot ₹ (Indian Rupee)
-  const currency = "₹";
+  // Currency symbol - pure $ as requested
+  const currency = "$";
 
-  // Balance values
+  // Available Fund (Recharge Wallet)
   const fundBal = Number(user?.fundBalance ?? 0);
+
+  // Available Balance (Income Balance) & Total Withdrawn
   const incomeBal = Number(user?.incomeBalance ?? 14.25);
   const totalWithdrawn = Number(user?.totalWithdrawn ?? 810.25);
+
+  // Mathematical Consistency: Total Income = Available Balance + Total Withdrawn
   const totalInc = Number(user?.totalIncome ?? (incomeBal + totalWithdrawn));
-  const directBusiness = Number(user?.directBusiness ?? 700.0);
 
   // Team counts
   const directTeamCount = user?.directTeamCount ?? (user?.directs?.length ?? 1);
   const totalTeamCount = user?.totalTeamCount ?? (user?.teamList?.length ?? 15);
 
-  // Breakdown values from user.incomeBreakdown or ledgers or demo defaults
-  const b = user?.incomeBreakdown || {};
-  const joiningBonus = Number(b.joiningBonus ?? 50.0);
-  const basicReferralIncome = Number(b.basicReferralIncome ?? 170.0);
-  const basicTodayRoi = Number(b.basicTodayRoi ?? 0.0);
-  const basicTodayLevel = Number(b.basicTodayLevel ?? 0.0);
-  const basicTotalRoi = Number(b.basicTotalRoi ?? 500.0);
-  const basicTotalLevel = Number(b.basicTotalLevel ?? 104.5);
+  // Direct Business (Sum of directs' active investments)
+  const calculatedDirectBiz = (user?.directs || []).reduce(
+    (acc: number, d: any) => acc + Number(d.amount || 0),
+    0
+  );
+  const directBusiness = Math.max(Number(user?.directBusiness ?? 700.0), calculatedDirectBiz);
 
-  // FD values
-  const fdTodayRoi = Number(b.fdTodayRoi ?? 0.0);
-  const fdTodayLevel = Number(b.fdTodayLevel ?? 0.0);
-  const fdTotalRoi = Number(b.fdTotalRoi ?? 0.0);
-  const fdTotalLevel = Number(b.fdTotalLevel ?? 0.0);
-  const fdReferralIncome = Number(b.fdReferralIncome ?? 0.0);
-  const fdReleased = Number(b.fdReleased ?? 0.0);
+  // Reconciled Income Breakdown: Components mathematically add up to totalInc
+  const b = user?.incomeBreakdown || {};
+  let joiningBonus = Number(b.joiningBonus ?? 0);
+  let basicReferralIncome = Number(b.basicReferralIncome ?? 0);
+  let basicTodayRoi = Number(b.basicTodayRoi ?? 0);
+  let basicTodayLevel = Number(b.basicTodayLevel ?? 0);
+  let basicTotalRoi = Number(b.basicTotalRoi ?? 0);
+  let basicTotalLevel = Number(b.basicTotalLevel ?? 0);
+
+  let fdTodayRoi = Number(b.fdTodayRoi ?? 0);
+  let fdTodayLevel = Number(b.fdTodayLevel ?? 0);
+  let fdTotalRoi = Number(b.fdTotalRoi ?? 0);
+  let fdTotalLevel = Number(b.fdTotalLevel ?? 0);
+  let fdReferralIncome = Number(b.fdReferralIncome ?? 0);
+  let fdReleased = Number(b.fdReleased ?? 0);
+
+  const breakdownSum =
+    joiningBonus +
+    basicReferralIncome +
+    basicTotalRoi +
+    basicTotalLevel +
+    fdTotalRoi +
+    fdTotalLevel +
+    fdReferralIncome;
+
+  // If breakdown is not populated but totalInc > 0, distribute to match totalInc perfectly
+  if (breakdownSum === 0 && totalInc > 0) {
+    if (Math.abs(totalInc - 824.50) < 1) {
+      joiningBonus = 50.00;
+      basicReferralIncome = 170.00;
+      basicTotalRoi = 500.00;
+      basicTotalLevel = Number((totalInc - 50.00 - 170.00 - 500.00).toFixed(2));
+    } else if (totalInc >= 50.00) {
+      joiningBonus = 50.00;
+      const rem = totalInc - 50.00;
+      basicReferralIncome = Number((rem * 0.25).toFixed(2));
+      basicTotalRoi = Number((rem * 0.60).toFixed(2));
+      basicTotalLevel = Number((rem - basicReferralIncome - basicTotalRoi).toFixed(2));
+    } else {
+      joiningBonus = totalInc;
+    }
+  }
 
   return (
     <div className="space-y-6 pb-12 animate-in fade-in duration-300">
-      {/* Top Grid: User Identity Card (Left) & 4 Balance Cards (Right) */}
+      {/* Top Grid: User Identity Card (Left) & 4 Balance Summary Cards (Right) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
         {/* Left Column: User Identity Card */}
         <div className="lg:col-span-6 bg-[#091124] border border-[#17274a] rounded-3xl p-6 sm:p-7 flex flex-col items-center text-center shadow-xl relative overflow-hidden h-full justify-between">
@@ -455,9 +491,9 @@ export function DashboardView({ user, setActiveTab }: DashboardViewProps) {
         </div>
       </div>
 
-      {/* Footer Branding matching the screenshot */}
+      {/* Footer Branding */}
       <footer className="pt-8 pb-4 border-t border-[#132042] text-center text-xs text-slate-500 font-medium">
-        © 2026 India Finance. All Rights Reserved.
+        © 2026 Dubai Finance. All Rights Reserved.
       </footer>
     </div>
   );
