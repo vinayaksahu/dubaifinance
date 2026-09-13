@@ -14,15 +14,15 @@ export const DEFAULT_SYSTEM_CONFIGS: Record<string, { value: string; description
     category: "wallet",
   },
 
-  // 2. Basic Saving Package (PDF Page 4 & 5)
+  // 2. Basic Saving Package (Dark PDF Slide 5-9 & 11)
   BASIC_PLAN_DAILY_ROI: {
     value: String(APP_CONFIG.basicPlan.dailyRoiRate),
-    description: "Basic Saving plan daily return percentage (e.g. 5.0 for 5%)",
+    description: "Basic Saving plan daily return percentage (5.0 for 5% daily)",
     category: "plan",
   },
   BASIC_PLAN_TENURE_DAYS: {
     value: String(APP_CONFIG.basicPlan.tenureDays),
-    description: "Basic Saving contract duration in days (e.g. 30 days = 150% total)",
+    description: "Basic Saving contract duration in days (28 days = 140% total gross / 40% net profit)",
     category: "plan",
   },
   BASIC_PLAN_MIN_USDT: {
@@ -36,10 +36,10 @@ export const DEFAULT_SYSTEM_CONFIGS: Record<string, { value: string; description
     category: "plan",
   },
 
-  // 3. Fix Deposit (FD) Staking (PDF Page 6)
+  // 3. Fix Deposit (FD) Staking (Dark PDF Slide 12, 13, 14)
   FD_PLAN_180_DAILY_ROI: {
     value: "10.0",
-    description: "180-Day FD daily yield percentage (e.g. 10.0 for 10% daily)",
+    description: "180-Day FD daily yield percentage (10% daily = 1,800% / 18X total)",
     category: "plan",
   },
   FD_PLAN_180_DAYS: {
@@ -49,7 +49,7 @@ export const DEFAULT_SYSTEM_CONFIGS: Record<string, { value: string; description
   },
   FD_PLAN_210_DAILY_ROI: {
     value: "15.0",
-    description: "210-Day FD daily yield percentage (e.g. 15.0 for 15% daily)",
+    description: "210-Day FD daily yield percentage (15% daily = 3,150% / 31.5X total)",
     category: "plan",
   },
   FD_PLAN_210_DAYS: {
@@ -58,8 +58,8 @@ export const DEFAULT_SYSTEM_CONFIGS: Record<string, { value: string; description
     category: "plan",
   },
   FD_MIN_USDT: {
-    value: "10",
-    description: "Minimum investment in USDT for Fix Deposit ($10)",
+    value: "50",
+    description: "Minimum investment in USDT for Fix Deposit ($50)",
     category: "plan",
   },
   FD_MAX_USDT: {
@@ -68,26 +68,26 @@ export const DEFAULT_SYSTEM_CONFIGS: Record<string, { value: string; description
     category: "plan",
   },
 
-  // 4. Direct Referral Income (PDF Page 8)
+  // 4. Direct Referral Income (Dark PDF Slide 10 & 15: 10% Instant)
   DIRECT_REFERRAL_PERCENT: {
     value: String(APP_CONFIG.directReferralPercent),
-    description: "Instant direct sponsor commission percentage (e.g. 15 for 15%)",
+    description: "Instant direct sponsor commission percentage (10.0 for 10% instant)",
     category: "royalty",
   },
 
-  // 5. 12-Level Daily Royalty Income (PDF Page 9 - calculated on downline daily ROI)
+  // 5. 12-Level Daily Royalty Income (Dark PDF Slide 16 & 17 - calculated on downline daily ROI)
   LEVEL_1_PERCENT: {
-    value: "10.0",
+    value: "5.0",
     description: "Level 1 Royalty % (Requires 1 Active Direct Referral)",
     category: "royalty",
   },
   LEVEL_2_PERCENT: {
-    value: "5.0",
+    value: "3.0",
     description: "Level 2 Royalty % (Requires 2 Active Direct Referrals)",
     category: "royalty",
   },
   LEVEL_3_PERCENT: {
-    value: "3.0",
+    value: "2.0",
     description: "Level 3 Royalty % (Requires 3 Active Direct Referrals)",
     category: "royalty",
   },
@@ -137,7 +137,7 @@ export const DEFAULT_SYSTEM_CONFIGS: Record<string, { value: string; description
     category: "royalty",
   },
 
-  // 6. Withdrawal Rules & Timings (PDF Page 10)
+  // 6. Withdrawal Rules & Timings (Dark PDF Slide 21)
   WITHDRAWAL_START_HOUR: {
     value: String(APP_CONFIG.withdrawalWindow.startHour),
     description: "Daily withdrawal window start hour in 24h IST (e.g. 10 for 10:00 AM)",
@@ -159,8 +159,8 @@ export const DEFAULT_SYSTEM_CONFIGS: Record<string, { value: string; description
     category: "withdrawal",
   },
   WITHDRAWAL_FEE_PERCENT: {
-    value: "0.0",
-    description: "Withdrawal deduction fee percentage (0% as per PDF)",
+    value: String(APP_CONFIG.withdrawalAdminFeePercent),
+    description: "Withdrawal admin fee percentage (10% flat as per Dark PDF Slide 21)",
     category: "withdrawal",
   },
 

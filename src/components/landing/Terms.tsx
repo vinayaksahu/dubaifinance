@@ -1,61 +1,62 @@
-import { CreditCard, Clock, ShieldCheck, Unlock, ArrowRightLeft, Coins, Sparkles, AlertCircle } from "lucide-react";
+import { CreditCard, Clock, ShieldCheck, Unlock, ArrowRightLeft, Coins, Sparkles, Percent } from "lucide-react";
 
 export function Terms() {
+  // Exact Transparency Protocol from Dubai_Finance_Presentation_Dark.pdf Slide 20 & 21
   const termsList = [
     {
       icon: CreditCard,
       title: "Withdrawal Limits",
-      desc: "Minimum withdrawal is $1.36 / $2.00 USDT (₹150). Maximum single transaction limit is $5,000 USDT (₹5 Lakh).",
-      tag: "Flexible Limits",
+      desc: "Minimum Withdrawal is $2 USDT. Maximum single transaction limit is $5,000 USDT.",
+      tag: "Slide 21 Rule",
       color: "text-amber-500",
     },
     {
-      icon: Clock,
-      title: "Daily Withdrawal Window",
-      desc: "Withdrawal requests are processed daily between 10:00 AM To 02:00 PM (IST) for automated blockchain dispatch.",
-      tag: "Strict Timing",
-      color: "text-cyan-500",
-    },
-    {
-      icon: ShieldCheck,
-      title: "100% Zero Deductions",
-      desc: "Zero Admin Charge, Zero TDS, Zero Withdrawal Fees. You receive 100% of your earnings straight to your wallet.",
-      tag: "100% Net Payout",
-      color: "text-emerald-500",
-    },
-    {
-      icon: Unlock,
-      title: "No Direct Sponsor Condition",
-      desc: "No mandatory direct referrals required to withdraw your Basic Saving earnings. Full financial freedom.",
-      tag: "Unconditional",
-      color: "text-amber-500",
-    },
-    {
-      icon: ArrowRightLeft,
-      title: "Free P2P Fund Transfers",
-      desc: "Instantly transfer funds between member wallets with zero transaction fees. Activate accounts directly from income.",
-      tag: "Zero Fee P2P",
-      color: "text-purple-500",
-    },
-    {
-      icon: Coins,
-      title: "USDT BEP-20 Standard",
-      desc: "All deposits and withdrawals operate exclusively on BNB Smart Chain (BEP-20) in dollar-pegged USDT.",
-      tag: "Stable Currency",
+      icon: Percent,
+      title: "10% Admin Charge",
+      desc: "A flat 10% Admin Charge applies on withdrawals to maintain liquidity reserve pools and blockchain infrastructure.",
+      tag: "Liquidity Reserve",
       color: "text-cyan-500",
     },
     {
       icon: Sparkles,
-      title: "Free $1.00 Airdrop Bonus",
-      desc: "New registrations receive a free $1.00 USDT bounty upon sign-up. Usable towards packages upon $20+ activation.",
-      tag: "Welcome Bounty",
+      title: "$0.50 Signup & Level Bonus",
+      desc: "$0.50 Signup Bonus + $0.50/12-Level Bonus ($1 total distributed across 12 levels; usable on $20+ active IDs).",
+      tag: "Community Bounty",
       color: "text-amber-500",
     },
     {
+      icon: Unlock,
+      title: "No Withdrawal Conditions",
+      desc: "Zero mandatory direct referrals required to withdraw your daily basic ROI income. Full financial freedom.",
+      tag: "Zero Forced Directs",
+      color: "text-emerald-500",
+    },
+    {
       icon: Clock,
-      title: "FD Staking Maturity",
-      desc: "Fix Deposit principal and accumulated high-yield profits unlock upon maturity tenure completion (180 or 210 Days).",
-      tag: "Guaranteed Lock",
+      title: "28-Day Contract Tenure",
+      desc: "Basic ROI plans run on disciplined 28-day contracts delivering 140% gross payout. Re-topup available anytime.",
+      tag: "28 Days Fixed",
+      color: "text-cyan-500",
+    },
+    {
+      icon: Coins,
+      title: "USDT (BEP-20) Standard",
+      desc: "Operates strictly on the Binance Smart Chain (BEP-20) standard for lightning speed and minimal network gas fees.",
+      tag: "Binance Smart Chain",
+      color: "text-amber-500",
+    },
+    {
+      icon: ArrowRightLeft,
+      title: "Zero-Fee P2P Transfer",
+      desc: "Transfer internal wallet balance instantly to other members with 0% fee to activate new downline accounts.",
+      tag: "Slide 20 Ecosystem",
+      color: "text-purple-500",
+    },
+    {
+      icon: ShieldCheck,
+      title: "7 Days Active Yield",
+      desc: "Daily 5% Basic ROI is credited Monday through Sunday with zero non-trading days via automated quantitative bots.",
+      tag: "Mon - Sun Cashflow",
       color: "text-emerald-500",
     },
   ];
@@ -66,13 +67,13 @@ export function Terms() {
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-16">
           <span className="text-amber-500 dark:text-amber-400 text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/25">
-            TRANSPARENCY &amp; PROTOCOLS
+            TRANSPARENCY PROTOCOL &bull; SLIDES 20 &amp; 21
           </span>
           <h2 className="font-display text-3xl sm:text-5xl font-black text-[var(--text-main)] mt-3">
-            Official Terms &amp; Rules
+            Official Terms &amp; Conditions
           </h2>
           <p className="text-[var(--text-muted)] text-base sm:text-lg mt-3 font-medium">
-            Clear, automated, zero-deduction guidelines for global investors (Slides 10, 27, 35 &amp; 37).
+            Clear, member-first guidelines ensuring seamless daily operation and guaranteed payout protection.
           </p>
         </div>
 

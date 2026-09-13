@@ -18,24 +18,25 @@ export function Hero() {
       </div>
 
       <div className="max-w-4xl mx-auto text-center">
-        {/* Official Brand Badge */}
+        {/* Official Brand Badge from Slide 1 */}
         <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-600 dark:text-amber-300 text-xs sm:text-sm font-bold uppercase tracking-wider mb-6 shadow-sm">
           <Sparkles className="w-4 h-4 text-amber-500 animate-pulse" />
-          <span>DUBAI FINANCE &bull; OFFICIAL PRESENTATION &bull; LAUNCHED DEC 15, 2023</span>
+          <span>DUBAI FINANCE &bull; PRE-LAUNCHING PHASE &bull; POWERED BY USDT (BEP-20)</span>
         </div>
 
         {/* High-Impact Headline */}
         <h1 className="font-display text-4xl sm:text-6xl lg:text-7xl font-black tracking-tight leading-[1.1] mb-6 text-[var(--text-main)]">
-          Institutional Crypto Trading, <br />
-          <span className="gold-gradient">Guaranteed Daily Yields.</span>
+          Decentralized High-Yield <br />
+          <span className="gold-gradient">Wealth Ecosystem.</span>
         </h1>
 
-        {/* Subtitle & Value Proposition from PDF */}
+        {/* Subtitle & Value Proposition strictly from Dubai_Finance_Presentation_Dark.pdf Slide 1 & 2 */}
         <p className="text-base sm:text-xl text-[var(--text-muted)] leading-relaxed mb-8 max-w-3xl mx-auto font-medium">
-          Automated wealth generation powered by <strong>25+ Years</strong> of real-world business legacy and{" "}
-          <strong>7+ Years</strong> of elite crypto proprietary trading. Earn{" "}
-          <span className="text-amber-500 dark:text-amber-300 font-bold">5% to 15% Daily ROI</span> settled in{" "}
-          <strong className="text-emerald-500 dark:text-emerald-400">USDT BEP-20</strong> with zero deductions.
+          Join with as low as <strong className="text-amber-500 dark:text-amber-300 font-bold">$5 USDT</strong>.
+          Backed by <strong>30+ Years</strong> of cross-industry mastery and <strong>10+ Years</strong> of crypto market leadership ($25+ Million generated). Earn{" "}
+          <span className="text-amber-500 dark:text-amber-300 font-bold">5% Daily Basic ROI for 28 Days (140% Return)</span>,{" "}
+          <span className="text-emerald-500 dark:text-emerald-400 font-bold">10% &amp; 15% Fix Deposit (FD)</span>, and{" "}
+          <span className="text-cyan-500 dark:text-cyan-400 font-bold">10% Instant Direct Commission</span>.
         </p>
 
         {/* Action Buttons */}
@@ -44,81 +45,81 @@ export function Hero() {
             href="/register"
             className="w-full sm:w-auto gold-btn px-8 py-4 rounded-2xl text-base font-bold flex items-center justify-center gap-2.5 shadow-xl shadow-amber-500/20"
           >
-            Claim Free $1.00 USDT Airdrop <ArrowRight className="w-5 h-5" />
+            Start with $5 USDT <ArrowRight className="w-5 h-5" />
           </Link>
 
           <a
-            href="/Dubai_Finance_Presentation.pdf"
+            href="/Dubai_Finance_Presentation_Dark.pdf"
             download
             className="w-full sm:w-auto px-6 py-4 rounded-2xl border border-amber-500/30 bg-[var(--bg-card)] hover:border-amber-400 text-[var(--text-main)] text-base font-semibold transition flex items-center justify-center gap-2 shadow-sm"
           >
             <Download className="w-5 h-5 text-amber-500" />
-            Download PDF Deck (40+ Slides)
+            Download Dark PDF Deck (23 Slides)
           </a>
 
           <a
             href="#packages"
             className="w-full sm:w-auto px-6 py-4 rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-card)] hover:border-amber-500/40 text-[var(--text-muted)] text-base font-semibold transition flex items-center justify-center gap-2"
           >
-            Explore Packages
+            View Packages ($5 - $5,000)
           </a>
         </div>
 
-        {/* Live Trust Bar */}
+        {/* Live Trust Bar from Slide 1 & 3 */}
         <div className="flex flex-wrap items-center justify-center gap-y-2 gap-x-6 text-xs sm:text-sm text-[var(--text-subtle)] mb-12 font-medium">
           <span className="flex items-center gap-1.5">
-            <ShieldCheck className="w-4 h-4 text-emerald-500" />
-            Zero Admin Charge &bull; Zero TDS
+            <Building2 className="w-4 h-4 text-amber-500" />
+            Latifa Tower, Sheikh Zayed Road, Dubai
           </span>
           <span className="flex items-center gap-1.5">
-            <Building2 className="w-4 h-4 text-amber-500" />
-            Al Tayer Building, S.Z Road, Dubai
+            <ShieldCheck className="w-4 h-4 text-emerald-500" />
+            100% USDT (BEP-20) Binance Smart Chain
           </span>
           <span className="flex items-center gap-1.5">
             <Award className="w-4 h-4 text-cyan-500" />
-            100+ Crore $ Crypto Volume
+            $25+ Million Institutional Liquidity
           </span>
         </div>
       </div>
 
-      {/* 4 Core Pillars Metric Cards from PDF */}
+      {/* 4 Core Pillars Metric Cards strictly from Dubai_Finance_Presentation_Dark.pdf */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 max-w-5xl mx-auto">
-        {/* Card 1: Daily ROI */}
+        {/* Card 1: Daily Basic ROI */}
         <div className="glass-card p-5 rounded-2xl text-center group hover:-translate-y-1 transition duration-200">
           <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-500 mx-auto mb-3">
             <TrendingUp className="w-5 h-5" />
           </div>
           <div className="font-display text-2xl sm:text-3xl font-black text-amber-500 dark:text-amber-300 mb-1">
-            5% - 15%
+            5% Daily
           </div>
           <div className="text-xs font-bold text-[var(--text-main)] uppercase tracking-wider">
-            Daily ROI Packages
+            Basic ROI (28 Days)
           </div>
           <div className="text-[11px] text-[var(--text-subtle)] mt-1">
-            Basic 5% &bull; FD 10%-15%
+            140% Total Gross Payout
           </div>
         </div>
 
-        {/* Card 2: Currency */}
+        {/* Card 2: Fix Deposit (FD) */}
         <div className="glass-card p-5 rounded-2xl text-center group hover:-translate-y-1 transition duration-200">
           <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-500 mx-auto mb-3">
-            💵
+            🏦
           </div>
           <div className="font-display text-2xl sm:text-3xl font-black text-emerald-500 dark:text-emerald-400 mb-1">
-            USDT BEP-20
+            10% &amp; 15%
           </div>
           <div className="text-xs font-bold text-[var(--text-main)] uppercase tracking-wider">
-            Stable Dollar Settlement
+            Fix Deposit (FD) ROI
           </div>
           <div className="text-[11px] text-[var(--text-subtle)] mt-1">
-            Instant on-chain speed
+            18X &amp; 31.5X Total Return
           </div>
         </div>
 
         {/* Card 3: Direct Referral */}
         <div className="glass-card p-5 rounded-2xl text-center group hover:-translate-y-1 transition duration-200">
           <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-500 mx-auto mb-3">
-            🎁
+            ⚡
           </div>
           <div className="font-display text-2xl sm:text-3xl font-black text-amber-500 dark:text-amber-300 mb-1">
             10% Instant
@@ -127,23 +128,23 @@ export function Hero() {
             Direct Referral Bonus
           </div>
           <div className="text-[11px] text-[var(--text-subtle)] mt-1">
-            Every deposit &amp; re-topup
+            Every sponsor ($5 - $5,000)
           </div>
         </div>
 
         {/* Card 4: Team Royalties */}
         <div className="glass-card p-5 rounded-2xl text-center group hover:-translate-y-1 transition duration-200">
           <div className="w-10 h-10 rounded-xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-500 mx-auto mb-3">
-            👑
+            👥
           </div>
           <div className="font-display text-2xl sm:text-3xl font-black text-cyan-500 dark:text-cyan-400 mb-1">
-            12 Levels Deep
+            12 Levels
           </div>
           <div className="text-xs font-bold text-[var(--text-main)] uppercase tracking-wider">
-            Daily Team Royalties
+            Daily Team Royalty
           </div>
           <div className="text-[11px] text-[var(--text-subtle)] mt-1">
-            Calculated on team ROI
+            5% - 3% - 2% - 1% Matrix
           </div>
         </div>
       </div>

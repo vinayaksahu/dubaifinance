@@ -9,7 +9,7 @@ export function Footer() {
     <footer className="relative z-10 border-t border-[var(--border-subtle)] bg-[var(--bg-main)] transition-colors duration-200 pt-16 pb-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-8 pb-12 border-b border-[var(--border-subtle)]">
-          {/* Brand & Address (5 Cols) */}
+          {/* Brand & Address (5 Cols) from Slide 03 & 22 */}
           <div className="lg:col-span-5 space-y-4">
             <Link href="/" className="flex items-center gap-3">
               <div className="w-11 h-11 rounded-xl overflow-hidden bg-gradient-to-br from-amber-400 via-amber-500 to-amber-700 p-0.5 shadow-md shadow-amber-500/20">
@@ -28,13 +28,13 @@ export function Footer() {
                   DUBAI FINANCE
                 </span>
                 <span className="block text-[10px] text-[var(--text-subtle)] tracking-widest uppercase font-medium">
-                  Official Investment Portal &bull; Est. 2023
+                  Pre-Launching Phase &bull; USDT (BEP-20)
                 </span>
               </div>
             </Link>
 
             <p className="text-sm text-[var(--text-muted)] leading-relaxed max-w-md font-medium">
-              Institutional crypto trading protocol delivering sustainable 5% to 15% Daily ROI in USDT BEP-20. Backed by 25+ years of business excellence and verified Dubai headquarters.
+              Decentralized High-Yield Wealth Ecosystem powered by USDT on Binance Smart Chain. Backed by 30+ years of proven track record and headquartered in Dubai&apos;s financial district.
             </p>
 
             <div className="space-y-2 text-xs text-[var(--text-subtle)] pt-1">
@@ -60,22 +60,22 @@ export function Footer() {
             </h4>
             <ul className="space-y-2 text-xs font-semibold text-[var(--text-muted)]">
               <li>
-                <a href="#about" className="hover:text-amber-500 transition">About &amp; Leadership</a>
+                <a href="#about" className="hover:text-amber-500 transition">About &amp; Leadership (Slide 02)</a>
               </li>
               <li>
-                <a href="#packages" className="hover:text-amber-500 transition">Basic &amp; Fix Deposit (FD)</a>
+                <a href="#packages" className="hover:text-amber-500 transition">Joining Packages ($5 - $5,000)</a>
               </li>
               <li>
-                <a href="#calculator" className="hover:text-amber-500 transition">Compounding Multiplier</a>
+                <a href="#packages" className="hover:text-amber-500 transition">Fix Deposit (FD 180D &bull; 210D)</a>
               </li>
               <li>
-                <a href="#referrals" className="hover:text-amber-500 transition">12-Level Team Royalties</a>
+                <a href="#referrals" className="hover:text-amber-500 transition">10% Direct &amp; 12-Level Royalty</a>
               </li>
               <li>
-                <a href="#ranks" className="hover:text-amber-500 transition">Milestone Executive Rewards</a>
+                <a href="#ranks" className="hover:text-amber-500 transition">Milestone Rewards (Slide 19)</a>
               </li>
               <li>
-                <a href="#terms" className="hover:text-amber-500 transition">Official Rules &amp; Zero Deductions</a>
+                <a href="#terms" className="hover:text-amber-500 transition">Transparency Terms (Slide 21)</a>
               </li>
               <li>
                 <a href="#faq" className="hover:text-amber-500 transition">Frequently Asked Questions</a>
@@ -90,16 +90,16 @@ export function Footer() {
             </h4>
 
             <a
-              href="/Dubai_Finance_Presentation.pdf"
+              href="/Dubai_Finance_Presentation_Dark.pdf"
               download
               className="w-full py-3 px-4 rounded-xl border border-amber-500/30 bg-[var(--bg-card)] hover:border-amber-400 text-[var(--text-main)] text-xs font-bold transition flex items-center justify-between shadow-sm"
             >
               <span className="flex items-center gap-2">
                 <Download className="w-4 h-4 text-amber-500" />
-                Download PDF Presentation Deck
+                Dubai Finance Presentation (Dark PDF)
               </span>
               <span className="text-[10px] px-2 py-0.5 rounded bg-amber-500/15 text-amber-600 dark:text-amber-300">
-                40+ Slides
+                23 Slides
               </span>
             </a>
 
@@ -114,7 +114,7 @@ export function Footer() {
                 href="/register"
                 className="gold-btn py-2.5 px-3 rounded-xl text-center text-xs font-bold"
               >
-                Register &amp; Bonus
+                Join with $5 USDT
               </Link>
             </div>
 
@@ -129,15 +129,15 @@ export function Footer() {
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[var(--text-subtle)]">
           <div className="flex items-center gap-2">
             <ShieldCheck className="w-4 h-4 text-emerald-500" />
-            <span>&copy; 2023 - 2026 Dubai Finance. Official Investment Portal. All Rights Reserved.</span>
+            <span>&copy; Dubai Finance &bull; Latifa Tower, Sheikh Zayed Road, Dubai, UAE. All Rights Reserved.</span>
           </div>
 
           <div className="flex items-center gap-4 text-[11px]">
-            <span>USDT BEP-20 Standard</span>
+            <span>100% USDT (BEP-20)</span>
             <span>&bull;</span>
-            <span>Zero TDS / Zero Admin Fees</span>
+            <span>28-Day Disciplined Tenure</span>
             <span>&bull;</span>
-            <span>P2P Enabled</span>
+            <span>Zero-Fee P2P</span>
           </div>
         </div>
       </div>

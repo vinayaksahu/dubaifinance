@@ -9,13 +9,13 @@ export function About() {
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-16">
           <span className="text-amber-500 dark:text-amber-400 text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/25">
-            CORPORATE PROFILE &amp; LEADERSHIP
+            CORPORATE PROFILE &amp; EXECUTIVE MANAGEMENT
           </span>
           <h2 className="font-display text-3xl sm:text-5xl font-black text-[var(--text-main)] mt-3">
             About Dubai Finance
           </h2>
           <p className="text-[var(--text-muted)] text-base sm:text-lg mt-3 font-medium">
-            25+ Years of Business Legacy &amp; 7+ Years of Crypto Market Mastery
+            30+ Years of Cross-Industry Mastery &amp; 10+ Years of Crypto Market Leadership (Slides 02-04)
           </p>
         </div>
 
@@ -30,10 +30,10 @@ export function About() {
                   <Building className="w-6 h-6" />
                 </div>
                 <h4 className="font-display text-lg font-bold text-[var(--text-main)] mb-2">
-                  25+ Years Experience
+                  30+ Years Proven Track Record
                 </h4>
                 <p className="text-sm text-[var(--text-muted)] leading-relaxed">
-                  Proven multi-decade track record in prime Real Estate development, luxury Hospitality, Wholesale trade, and global Tour &amp; Travel operations.
+                  Deep-rooted experience in Prime Real Estate development, Five-Star Hospitality, Wholesale Trade, and Global Tourism &amp; Travel networks.
                 </p>
               </div>
               <div className="mt-4 pt-3 border-t border-[var(--border-subtle)] text-xs text-amber-500 font-semibold flex items-center gap-1.5">
@@ -48,10 +48,10 @@ export function About() {
                   <TrendingUp className="w-6 h-6" />
                 </div>
                 <h4 className="font-display text-lg font-bold text-[var(--text-main)] mb-2">
-                  7+ Years Crypto Trading
+                  10+ Years Crypto Leadership
                 </h4>
                 <p className="text-sm text-[var(--text-muted)] leading-relaxed">
-                  Institutional quantitative desk specializing in Futures, Options hedging, Forex trading, and High-Frequency Cross-Exchange Arbitrage.
+                  Proprietary quantitative arbitrage, crypto derivatives trading, automated high-frequency bot liquidity, and risk-hedged futures strategies.
                 </p>
               </div>
               <div className="mt-4 pt-3 border-t border-[var(--border-subtle)] text-xs text-emerald-500 font-semibold flex items-center gap-1.5">
@@ -66,14 +66,14 @@ export function About() {
                   <DollarSign className="w-6 h-6" />
                 </div>
                 <h4 className="font-display text-lg font-bold text-[var(--text-main)] mb-2">
-                  100+ Crore $ Generated
+                  $25+ Million Generated
                 </h4>
                 <p className="text-sm text-[var(--text-muted)] leading-relaxed">
-                  Documented historical profit generation exceeding 100 Crore $ with rigorous delta-neutral risk mitigation and multi-sig vaults.
+                  Substantial multi-million dollar liquidity reserves enabling guaranteed, sustainable daily returns to community members worldwide.
                 </p>
               </div>
               <div className="mt-4 pt-3 border-t border-[var(--border-subtle)] text-xs text-amber-500 font-semibold flex items-center gap-1.5">
-                <CheckCircle2 className="w-4 h-4" /> High Capital Reserves
+                <CheckCircle2 className="w-4 h-4" /> Deep Liquidity Reserves
               </div>
             </div>
 
@@ -84,21 +84,21 @@ export function About() {
                   <Globe className="w-6 h-6" />
                 </div>
                 <h4 className="font-display text-lg font-bold text-[var(--text-main)] mb-2">
-                  Global Investor Mission
+                  100% Capital Transparency
                 </h4>
                 <p className="text-sm text-[var(--text-muted)] leading-relaxed">
-                  Tailored for individuals without time or trading expertise. We manage the markets and distribute consistent daily dividends to your wallet.
+                  100% USDT (BEP-20) standard on Binance Smart Chain. Automated smart execution, zero currency volatility, and verifiable audit trails.
                 </p>
               </div>
               <div className="mt-4 pt-3 border-t border-[var(--border-subtle)] text-xs text-cyan-500 font-semibold flex items-center gap-1.5">
-                <CheckCircle2 className="w-4 h-4" /> Community First Economy
+                <CheckCircle2 className="w-4 h-4" /> Zero Forced Directs to Withdraw
               </div>
             </div>
           </div>
 
-          {/* Right Leadership & HQ Card (5 Cols) */}
+          {/* Right Leadership & HQ Card (5 Cols) from Slide 03 */}
           <div className="lg:col-span-5 glass-card-gold p-8 rounded-3xl flex flex-col justify-between relative overflow-hidden">
-            {/* Background luxury office subtle preview */}
+            {/* Background luxury office preview */}
             <div className="absolute top-0 right-0 w-48 h-48 opacity-10 pointer-events-none rounded-bl-full overflow-hidden">
               <Image
                 src="/assets/office_building.jpg"
@@ -112,7 +112,7 @@ export function About() {
               {/* CMD Profile Header */}
               <div className="flex items-center gap-4 pb-6 border-b border-amber-500/30 mb-6">
                 <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-400 via-amber-500 to-amber-700 flex items-center justify-center text-2xl font-black text-slate-950 shadow-lg shadow-amber-500/30 shrink-0">
-                  AV
+                  TM
                 </div>
                 <div>
                   <h3 className="font-display text-2xl font-black text-[var(--text-main)]">
@@ -124,13 +124,18 @@ export function About() {
                 </div>
               </div>
 
-              {/* Verified Details from PDF */}
-              <div className="space-y-4 text-sm">
+              {/* Vision Quote from Slide 03 */}
+              <div className="mb-6 p-3.5 rounded-2xl bg-inner-panel text-xs italic text-[var(--text-muted)] leading-relaxed border-l-2 border-amber-500">
+                &ldquo;Our mission is to democratize high-frequency institutional finance, ensuring every individual enjoys steady, transparent, and profitable daily returns powered by next-gen blockchain automation.&rdquo;
+              </div>
+
+              {/* Verified Details from Slide 03 & 22 */}
+              <div className="space-y-3.5 text-sm">
                 <div className="flex items-start gap-3.5 p-3 rounded-2xl bg-inner-panel">
                   <MapPin className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
                   <div>
                     <div className="font-bold text-[var(--text-subtle)] text-xs uppercase tracking-wider">
-                      Dubai Corporate Headquarters
+                      Physical Corporate Headquarters
                     </div>
                     <div className="text-[var(--text-main)] font-semibold mt-0.5 leading-snug">
                       {APP_CONFIG.headquarters}
@@ -142,10 +147,10 @@ export function About() {
                   <Calendar className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
                   <div>
                     <div className="font-bold text-[var(--text-subtle)] text-xs uppercase tracking-wider">
-                      Official Protocol Launch
+                      Operational Status
                     </div>
                     <div className="text-[var(--text-main)] font-semibold mt-0.5">
-                      15th December 2023 &bull; Global Operations
+                      Pre-Launching Phase &bull; Global Operations
                     </div>
                   </div>
                 </div>
@@ -157,7 +162,7 @@ export function About() {
                       Corporate Communications
                     </div>
                     <div className="text-[var(--text-main)] font-semibold mt-0.5">
-                      {APP_CONFIG.officialEmail}
+                      {APP_CONFIG.officialEmail} &bull; {APP_CONFIG.domain}
                     </div>
                   </div>
                 </div>
@@ -166,10 +171,10 @@ export function About() {
                   <Shield className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" />
                   <div>
                     <div className="font-bold text-[var(--text-subtle)] text-xs uppercase tracking-wider">
-                      Security &amp; Compliance
+                      Network &amp; Security
                     </div>
                     <div className="text-[var(--text-main)] font-semibold mt-0.5">
-                      Cold Storage Multi-Sig Vaults &bull; Regular Audits
+                      USDT BEP-20 &bull; Multi-Sig Liquidity Pools
                     </div>
                   </div>
                 </div>
@@ -178,9 +183,9 @@ export function About() {
 
             {/* Bottom Entity Badge */}
             <div className="mt-8 pt-6 border-t border-amber-500/25 flex items-center justify-between text-xs text-amber-700 dark:text-amber-200">
-              <span className="font-medium">Registered Dubai Commercial Entity</span>
+              <span className="font-medium">Dubai Financial District Presence</span>
               <span className="font-black px-2 py-0.5 rounded bg-amber-500/15 border border-amber-500/30">
-                Al Tayer Tower #147/2A
+                Latifa Tower #3802
               </span>
             </div>
           </div>

@@ -1,71 +1,89 @@
-import { Trophy, Award, Plane, Watch, Car, Crown, Sparkles, CheckCircle2 } from "lucide-react";
+import { Trophy, Award, Plane, Watch, Car, Crown, Smartphone, Laptop, Sparkles, CheckCircle2 } from "lucide-react";
 
 export function Ranks() {
+  // Exact 8 Milestone Ranks from Dubai_Finance_Presentation_Dark.pdf Slide 19
   const milestoneRanks = [
     {
-      rank: "Star Executive",
-      target: "$1,000 Team",
-      reward: "$50 USDT Instant Bonus",
-      icon: Trophy,
-      badge: "Tier 1",
+      rank: "Star Leader",
+      strong: "$500 USDT",
+      weak: "$500 USDT",
+      total: "$1,000 USDT",
+      reward: "Premium Smart Watch",
+      cash: "$50 USDT",
+      icon: Watch,
       color: "from-amber-400 to-amber-600",
     },
     {
-      rank: "Silver Director",
-      target: "$2,500 Team",
-      reward: "$150 USDT Instant Bonus",
-      icon: Award,
-      badge: "Tier 2",
+      rank: "Silver Leader",
+      strong: "$1,250 USDT",
+      weak: "$1,250 USDT",
+      total: "$2,500 USDT",
+      reward: "5G Android Smartphone",
+      cash: "$125 USDT",
+      icon: Smartphone,
       color: "from-slate-300 to-slate-500",
     },
     {
-      rank: "Gold Ambassador",
-      target: "$5,000 Team",
-      reward: "Dubai VIP Luxury Tour (3 Days)",
-      icon: Plane,
-      badge: "VIP Trip",
+      rank: "Gold Leader",
+      strong: "$2,500 USDT",
+      weak: "$2,500 USDT",
+      total: "$5,000 USDT",
+      reward: "Apple iPad / Business Laptop",
+      cash: "$250 USDT",
+      icon: Laptop,
       color: "from-amber-400 to-yellow-500",
       featured: true,
     },
     {
-      rank: "Ruby Regional",
-      target: "$15,000 Team",
-      reward: "International Luxury Holiday Trip",
+      rank: "Ruby Director",
+      strong: "$5,000 USDT",
+      weak: "$5,000 USDT",
+      total: "$10,000 USDT",
+      reward: "All-Expense Paid Dubai VIP Trip (3N/4D)",
+      cash: "$600 USDT",
       icon: Plane,
-      badge: "Global Tour",
       color: "from-rose-400 to-red-600",
+      featured: true,
     },
     {
-      rank: "Emerald President",
-      target: "$50,000 Team",
-      reward: "Exclusive Solid Gold Sovereign Kit",
+      rank: "Emerald Director",
+      strong: "$12,500 USDT",
+      weak: "$12,500 USDT",
+      total: "$25,000 USDT",
+      reward: "Luxury Gold Watch / iPhone Pro Max",
+      cash: "$1,500 USDT",
       icon: Sparkles,
-      badge: "Gold Award",
       color: "from-emerald-400 to-teal-600",
     },
     {
-      rank: "Diamond Legend",
-      target: "$100,000 Team",
-      reward: "Authentic Rolex Luxury Chronometer",
-      icon: Watch,
-      badge: "Rolex Watch",
+      rank: "Diamond Ambassador",
+      strong: "$25,000 USDT",
+      weak: "$25,000 USDT",
+      total: "$50,000 USDT",
+      reward: "International Luxury Holiday (Europe/Bali)",
+      cash: "$3,500 USDT",
+      icon: Plane,
       color: "from-cyan-400 to-blue-600",
       featured: true,
     },
     {
       rank: "Blue Diamond",
-      target: "$250,000 Team",
-      reward: "Mercedes-Benz Luxury Automobile",
+      strong: "$50,000 USDT",
+      weak: "$50,000 USDT",
+      total: "$100,000 USDT",
+      reward: "Sedan Car Fund / Royal Gold Bullion",
+      cash: "$8,000 USDT",
       icon: Car,
-      badge: "Luxury Sedan",
       color: "from-indigo-400 to-purple-600",
     },
     {
-      rank: "Crown King",
-      target: "$500,000+ Team",
-      reward: "Dubai Supercar & Lifetime Royalty",
+      rank: "Crown King President",
+      strong: "$125,000 USDT",
+      weak: "$125,000 USDT",
+      total: "$250,000 USDT",
+      reward: "Luxury Sports Car (BMW / Mercedes / Porsche)",
+      cash: "$25,000 USDT",
       icon: Crown,
-      badge: "Supercar",
       color: "from-amber-400 to-amber-600",
       featured: true,
     },
@@ -77,33 +95,33 @@ export function Ranks() {
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-16">
           <span className="text-amber-500 dark:text-amber-400 text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/25">
-            EXECUTIVE LEADERSHIP HONORS
+            INCOME STREAM #5 &bull; SLIDES 18 &amp; 19
           </span>
           <h2 className="font-display text-3xl sm:text-5xl font-black text-[var(--text-main)] mt-3">
-            Milestone Rank Rewards
+            Mega Milestone Rewards Structure
           </h2>
           <p className="text-[var(--text-muted)] text-base sm:text-lg mt-3 font-medium">
-            From instant cash bonuses and Dubai VIP tours to Rolex watches and luxury supercars (Slides 29-34).
+            Cumulative team volume unlocks elite luxury assets or 100% instant USDT cash equivalent!
           </p>
         </div>
 
-        {/* 50:50 Balanced Ratio Banner */}
-        <div className="max-w-4xl mx-auto mb-12 p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
+        {/* 50:50 Balanced Ratio Banner from Slide 19 */}
+        <div className="max-w-4xl mx-auto mb-12 p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left shadow-sm">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-amber-500/20 flex items-center justify-center text-amber-500 shrink-0">
               ⚖️
             </div>
             <div>
               <div className="font-bold text-sm text-[var(--text-main)]">
-                Balanced 50:50 Team Leg Ratio Rule
+                TEAM BUSINESS RATIO: 50% STRONG LEG / 50% WEAK LEG
               </div>
               <div className="text-xs text-[var(--text-muted)]">
-                Team business volume is evaluated across two legs (50% Stronger Leg : 50% All Other Legs).
+                Turnover counts cumulatively. Members can choose between physical reward delivery or instant USDT wallet credit.
               </div>
             </div>
           </div>
           <span className="px-3 py-1 rounded-full bg-amber-400 text-slate-950 text-xs font-black shrink-0">
-            Slide 34 Criteria
+            Slide 19 Schedule
           </span>
         </div>
 
@@ -134,30 +152,33 @@ export function Ranks() {
                       <Icon className="w-6 h-6" />
                     </div>
                     <span className="text-[10px] font-black px-2.5 py-1 rounded-full bg-inner-panel text-amber-500 border border-amber-500/20 uppercase tracking-wider">
-                      {item.badge}
+                      Turnover: {item.total}
                     </span>
                   </div>
 
                   <h4 className="font-display text-xl font-bold text-[var(--text-main)] mb-1">
                     {item.rank}
                   </h4>
-                  <div className="text-xs font-bold text-amber-500">
-                    Team Target: {item.target}
+                  <div className="text-xs font-semibold text-[var(--text-subtle)]">
+                    Strong Leg: {item.strong} &bull; Weak: {item.weak}
                   </div>
 
-                  <div className="my-5 p-3.5 rounded-2xl bg-inner-panel">
+                  <div className="my-5 p-3.5 rounded-2xl bg-inner-panel space-y-1.5">
                     <div className="text-[10px] text-[var(--text-subtle)] uppercase font-bold tracking-wider">
-                      Award &amp; Reward
+                      Guaranteed Reward:
                     </div>
-                    <div className="text-sm font-black text-[var(--text-main)] mt-1 leading-snug">
+                    <div className="text-sm font-black text-[var(--text-main)] leading-snug">
                       {item.reward}
+                    </div>
+                    <div className="text-xs font-bold text-emerald-500 pt-1 border-t border-[var(--border-subtle)]">
+                      Cash Equivalent: {item.cash}
                     </div>
                   </div>
                 </div>
 
                 <div className="pt-3 border-t border-[var(--border-subtle)] text-[11px] text-[var(--text-subtle)] flex items-center gap-1.5">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
-                  Recognized at Dubai Annual Gala
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                  <span>Physical delivery or instant USDT payout</span>
                 </div>
               </div>
             );

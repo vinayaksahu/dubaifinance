@@ -93,13 +93,13 @@ export function Navbar() {
           <ThemeToggle variant="segmented" />
 
           <a
-            href="/Dubai_Finance_Presentation.pdf"
+            href="/Dubai_Finance_Presentation_Dark.pdf"
             download
             className="p-2 rounded-xl border border-amber-500/30 text-amber-600 dark:text-amber-300 hover:bg-amber-400/10 transition flex items-center gap-1.5 text-xs font-bold"
-            title="Download PDF Presentation Deck"
+            title="Download Dubai Finance Dark Presentation Deck (23 Slides)"
           >
             <Download className="w-4 h-4" />
-            <span className="hidden xl:inline">Deck PDF</span>
+            <span className="hidden xl:inline">Dark Deck PDF</span>
           </a>
 
           <Link
@@ -159,12 +159,12 @@ export function Navbar() {
 
             {/* PDF Presentation Deck Download */}
             <a
-              href="/Dubai_Finance_Presentation.pdf"
+              href="/Dubai_Finance_Presentation_Dark.pdf"
               download
               onClick={() => setMobileMenuOpen(false)}
               className="w-full py-3 px-4 rounded-xl border border-amber-500/40 text-amber-600 dark:text-amber-300 font-bold flex items-center justify-center gap-2 text-sm bg-amber-400/5 hover:bg-amber-400/10 transition"
             >
-              <Download className="w-4 h-4" /> Download Presentation PDF (40+ Slides)
+              <Download className="w-4 h-4" /> Download Dark Presentation PDF (23 Slides)
             </a>
 
             {/* Auth Buttons */}
