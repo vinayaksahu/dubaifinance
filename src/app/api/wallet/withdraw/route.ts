@@ -2,8 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSession, comparePin } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { executeLedgerTransaction } from "@/lib/ledger";
-import { getNumericConfig } from "@/lib/configService";
-import { APP_CONFIG } from "@/lib/constants";
+import { getNumericConfig, getAllSystemConfigs } from "@/lib/configService";
+import { APP_CONFIG, getWithdrawalWindowStatus } from "@/lib/constants";
 import Decimal from "decimal.js";
 
 export async function POST(req: NextRequest) {
@@ -13,28 +13,18 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Dynamic withdrawal window check
-    const startHour = await getNumericConfig("WITHDRAWAL_START_HOUR", APP_CONFIG.withdrawalWindow.startHour);
-    const endHour = await getNumericConfig("WITHDRAWAL_END_HOUR", APP_CONFIG.withdrawalWindow.endHour);
-    const minUsdt = await getNumericConfig("MIN_WITHDRAWAL_USDT", APP_CONFIG.minWithdrawalUsdt);
-    const maxUsdt = await getNumericConfig("MAX_WITHDRAWAL_USDT", APP_CONFIG.maxWithdrawalUsdt);
+    // Dynamic withdrawal window check using complete system configs
+    const configs = await getAllSystemConfigs();
+    const windowStatus = getWithdrawalWindowStatus(configs);
 
-    // Current IST Time calculation
-    const now = new Date();
-    const utcHours = now.getUTCHours();
-    const utcMinutes = now.getUTCMinutes();
-    let istHours = (utcHours + 5) % 24;
-    let istMinutes = utcMinutes + 30;
-    if (istMinutes >= 60) {
-      istHours = (istHours + 1) % 24;
-    }
-    const isWindowOpen = istHours >= startHour && istHours < endHour;
-
-    if (!isWindowOpen) {
+    if (!windowStatus.isOpen) {
       return NextResponse.json({
-        error: `Withdrawal window is closed. Withdrawals are processed daily between ${startHour}:00 and ${endHour}:00 IST.`,
+        error: `Withdrawal window is closed. Withdrawals are accepted during ${windowStatus.label}. (Current IST Time: ${windowStatus.currentIstTime})`,
       }, { status: 403 });
     }
+
+    const minUsdt = await getNumericConfig("MIN_WITHDRAWAL_USDT", APP_CONFIG.minWithdrawalUsdt);
+    const maxUsdt = await getNumericConfig("MAX_WITHDRAWAL_USDT", APP_CONFIG.maxWithdrawalUsdt);
 
     const { amountInUsdt, amount, amountInInr, toAddress, transactionPin } = await req.json();
     const rawAmount = amountInUsdt ?? amount ?? amountInInr;

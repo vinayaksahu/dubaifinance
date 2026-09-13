@@ -105,18 +105,102 @@ export const APP_CONFIG = {
   ],
 };
 
-export function isWithdrawalWindowOpen(): boolean {
-  const now = new Date();
-  const utcHours = now.getUTCHours();
-  const utcMinutes = now.getUTCMinutes();
-  // IST is UTC + 5:30
-  let istHours = (utcHours + 5) % 24;
-  let istMinutes = utcMinutes + 30;
-  if (istMinutes >= 60) {
-    istHours = (istHours + 1) % 24;
-    istMinutes -= 60;
+export interface WithdrawalWindowStatus {
+  isOpen: boolean;
+  is24h: boolean;
+  startTime: string;
+  endTime: string;
+  startFormatted: string;
+  endFormatted: string;
+  label: string;
+  currentIstTime: string;
+}
+
+export function getWithdrawalWindowStatus(config?: Record<string, any>): WithdrawalWindowStatus {
+  const is24hFlag =
+    config?.WITHDRAWAL_24H_OPEN === true ||
+    config?.WITHDRAWAL_24H_OPEN === "true" ||
+    config?.WITHDRAWAL_24H_OPEN === "1";
+
+  // Parse Start Time
+  let startTime = "10:00";
+  if (config?.WITHDRAWAL_START_TIME && String(config.WITHDRAWAL_START_TIME).includes(":")) {
+    startTime = String(config.WITHDRAWAL_START_TIME).trim();
+  } else if (config?.WITHDRAWAL_START_HOUR !== undefined && config?.WITHDRAWAL_START_HOUR !== "") {
+    const h = Number(config.WITHDRAWAL_START_HOUR);
+    startTime = `${String(isNaN(h) ? 10 : h).padStart(2, "0")}:00`;
   }
-  return istHours >= APP_CONFIG.withdrawalWindow.startHour && istHours < APP_CONFIG.withdrawalWindow.endHour;
+
+  // Parse End Time
+  let endTime = "14:00";
+  if (config?.WITHDRAWAL_END_TIME && String(config.WITHDRAWAL_END_TIME).includes(":")) {
+    endTime = String(config.WITHDRAWAL_END_TIME).trim();
+  } else if (config?.WITHDRAWAL_END_HOUR !== undefined && config?.WITHDRAWAL_END_HOUR !== "") {
+    const h = Number(config.WITHDRAWAL_END_HOUR);
+    if (h === 23 || h === 24 || h === 0) {
+      endTime = "23:59";
+    } else {
+      endTime = `${String(isNaN(h) ? 14 : h).padStart(2, "0")}:00`;
+    }
+  }
+
+  const [startHRaw, startMRaw = 0] = startTime.split(":").map(Number);
+  const [endHRaw, endMRaw = 0] = endTime.split(":").map(Number);
+  const startH = isNaN(startHRaw) ? 10 : Math.min(23, Math.max(0, startHRaw));
+  const startM = isNaN(startMRaw) ? 0 : Math.min(59, Math.max(0, startMRaw));
+  const endH = isNaN(endHRaw) ? 14 : Math.min(23, Math.max(0, endHRaw));
+  const endM = isNaN(endMRaw) ? 0 : Math.min(59, Math.max(0, endMRaw));
+
+  const startTotalMinutes = startH * 60 + startM;
+  const endTotalMinutes = endH * 60 + endM;
+
+  // Effectively 24h if flag is set or start is 00:00 and end is 23:59
+  const isEffectively24h = is24hFlag || (startTotalMinutes === 0 && endTotalMinutes >= 1439);
+
+  // Current IST Time (UTC + 5:30)
+  const now = new Date();
+  const utcMs = now.getTime() + now.getTimezoneOffset() * 60000;
+  const istDate = new Date(utcMs + 5.5 * 3600000);
+  const curH = istDate.getHours();
+  const curM = istDate.getMinutes();
+  const curTotalMinutes = curH * 60 + curM;
+
+  let isOpen = false;
+  if (isEffectively24h) {
+    isOpen = true;
+  } else if (startTotalMinutes <= endTotalMinutes) {
+    isOpen = curTotalMinutes >= startTotalMinutes && curTotalMinutes <= endTotalMinutes;
+  } else {
+    // Overnight window (e.g. 22:00 to 04:00)
+    isOpen = curTotalMinutes >= startTotalMinutes || curTotalMinutes <= endTotalMinutes;
+  }
+
+  const formatTime12h = (hours: number, minutes: number) => {
+    const period = hours >= 12 ? "PM" : "AM";
+    const h12 = hours % 12 === 0 ? 12 : hours % 12;
+    return `${String(h12).padStart(2, "0")}:${String(minutes).padStart(2, "0")} ${period}`;
+  };
+
+  const startFormatted = formatTime12h(startH, startM);
+  const endFormatted = formatTime12h(endH, endM);
+  const currentIstTime = formatTime12h(curH, curM);
+
+  const label = isEffectively24h ? "24/7 (Always Open)" : `${startFormatted} – ${endFormatted} IST`;
+
+  return {
+    isOpen,
+    is24h: isEffectively24h,
+    startTime: `${String(startH).padStart(2, "0")}:${String(startM).padStart(2, "0")}`,
+    endTime: `${String(endH).padStart(2, "0")}:${String(endM).padStart(2, "0")}`,
+    startFormatted,
+    endFormatted,
+    label,
+    currentIstTime,
+  };
+}
+
+export function isWithdrawalWindowOpen(config?: Record<string, any>): boolean {
+  return getWithdrawalWindowStatus(config).isOpen;
 }
 
 export function inrToUsdt(inrAmount: number): number {

@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { Repeat, ArrowRightLeft, Send, Clock, ShieldCheck, AlertCircle } from "lucide-react";
-import { APP_CONFIG, isWithdrawalWindowOpen } from "@/lib/constants";
+import { APP_CONFIG, getWithdrawalWindowStatus } from "@/lib/constants";
 
 interface TransactionalViewProps {
   user: any;
@@ -30,7 +30,21 @@ export function TransactionalView({ user, mode, onRefresh }: TransactionalViewPr
 
   const fundBal = Number(user.fundBalance || 0);
   const incomeBal = Number(user.incomeBalance || 0);
-  const windowOpen = isWithdrawalWindowOpen();
+  const cfg = user?.systemConfig || {};
+
+  const [windowStatus, setWindowStatus] = useState(() => getWithdrawalWindowStatus(cfg));
+
+  React.useEffect(() => {
+    setWindowStatus(getWithdrawalWindowStatus(cfg));
+    const interval = setInterval(() => {
+      setWindowStatus(getWithdrawalWindowStatus(cfg));
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [cfg]);
+
+  const minWithdraw = cfg.MIN_WITHDRAWAL_USDT !== undefined ? Number(cfg.MIN_WITHDRAWAL_USDT) : APP_CONFIG.minWithdrawalUsdt;
+  const maxWithdraw = cfg.MAX_WITHDRAWAL_USDT !== undefined ? Number(cfg.MAX_WITHDRAWAL_USDT) : APP_CONFIG.maxWithdrawalUsdt;
+  const adminFeePercent = cfg.WITHDRAWAL_FEE_PERCENT || cfg.WITHDRAWAL_ADMIN_FEE_PERCENT ? Number(cfg.WITHDRAWAL_FEE_PERCENT || cfg.WITHDRAWAL_ADMIN_FEE_PERCENT) : APP_CONFIG.withdrawalAdminFeePercent;
 
   const handleP2pTransfer = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -254,16 +268,31 @@ export function TransactionalView({ user, mode, onRefresh }: TransactionalViewPr
       {mode === "withdraw" && (
         <div className="max-w-xl bg-[#091124] border border-[#17274a] rounded-3xl p-6 sm:p-8 shadow-xl">
           {/* Timing Banner */}
-          <div className={`p-4 rounded-2xl text-xs font-semibold mb-5 flex items-center gap-3 ${
-            windowOpen
-              ? "bg-emerald-950/60 text-emerald-300 border border-emerald-500/40"
+          <div className={`p-4 rounded-2xl text-xs font-semibold mb-5 flex items-center gap-3 transition-all ${
+            windowStatus.isOpen
+              ? "bg-emerald-950/60 text-emerald-300 border border-emerald-500/40 shadow-lg shadow-emerald-500/10"
               : "bg-amber-950/60 text-amber-300 border border-amber-500/40"
           }`}>
-            <Clock className="w-5 h-5 flex-shrink-0" />
-            <div>
-              <p className="font-bold">Official Withdrawal Window: 10:00 AM – 02:00 PM IST</p>
-              <p className="text-[11px] opacity-80 mt-0.5">
-                {windowOpen ? "Window is currently OPEN! You can submit withdrawal requests." : "Window is currently CLOSED. Requests are accepted strictly between 10:00 AM & 2:00 PM IST."}
+            <Clock className={`w-5 h-5 flex-shrink-0 ${windowStatus.isOpen ? "text-emerald-400" : "text-amber-400"}`} />
+            <div className="flex-1">
+              <div className="flex items-center gap-2 flex-wrap">
+                <p className="font-bold text-sm">
+                  Official Withdrawal Window: {windowStatus.label}
+                </p>
+                <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider ${
+                  windowStatus.isOpen
+                    ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/40"
+                    : "bg-rose-500/20 text-rose-300 border border-rose-500/40"
+                }`}>
+                  {windowStatus.isOpen ? "OPEN NOW" : "CLOSED"}
+                </span>
+              </div>
+              <p className="text-[11px] opacity-80 mt-1">
+                {windowStatus.is24h
+                  ? "24/7 Instant Withdrawals Active! You can submit withdrawal requests anytime without time restrictions."
+                  : windowStatus.isOpen
+                  ? `Window is currently OPEN! You can submit withdrawal requests before ${windowStatus.endFormatted} IST.`
+                  : `Window is currently CLOSED. Requests are accepted daily during ${windowStatus.label}. (Current IST Time: ${windowStatus.currentIstTime})`}
               </p>
             </div>
           </div>
@@ -275,11 +304,11 @@ export function TransactionalView({ user, mode, onRefresh }: TransactionalViewPr
             </div>
             <div className="flex justify-between">
               <span className="text-slate-400">Deduction / Admin Charge:</span>
-              <span className="text-amber-400 font-bold">10% Admin Charge</span>
+              <span className="text-amber-400 font-bold">{adminFeePercent}% Admin Charge</span>
             </div>
             <div className="flex justify-between">
               <span className="text-slate-400">Min / Max Limit:</span>
-              <span className="text-slate-200">$2 to $5,000 USDT</span>
+              <span className="text-slate-200">${minWithdraw} to ${maxWithdraw.toLocaleString()} USDT</span>
             </div>
           </div>
 
@@ -296,18 +325,26 @@ export function TransactionalView({ user, mode, onRefresh }: TransactionalViewPr
               />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1">Withdrawal Amount (USDT)</label>
+              <label className="block text-xs font-semibold text-slate-300 mb-1">
+                Withdrawal Amount (USDT) &bull; Min ${minWithdraw}, Max ${maxWithdraw.toLocaleString()}
+              </label>
               <input
                 type="number"
-                min="2"
-                max="5000"
+                min={minWithdraw}
+                max={maxWithdraw}
                 step="any"
-                placeholder="$2 - $5,000 USDT"
+                placeholder={`$${minWithdraw} - $${maxWithdraw.toLocaleString()} USDT`}
                 value={withdrawAmount}
                 onChange={(e) => setWithdrawAmount(e.target.value)}
                 className="w-full bg-[#070e20] border border-[#1a2d52] rounded-xl px-3.5 py-2.5 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-blue-500"
                 required
               />
+              {Number(withdrawAmount) > 0 && (
+                <div className="text-[11px] text-slate-400 mt-1 flex justify-between">
+                  <span>Fee ({adminFeePercent}%): ${(Number(withdrawAmount) * (adminFeePercent / 100)).toFixed(2)} USDT</span>
+                  <span className="text-emerald-400 font-bold">Net Payout: ${(Number(withdrawAmount) * (1 - adminFeePercent / 100)).toFixed(2)} USDT</span>
+                </div>
+              )}
             </div>
             <div>
               <label className="block text-xs font-semibold text-slate-300 mb-1">6-Digit Transaction PIN</label>
@@ -323,10 +360,18 @@ export function TransactionalView({ user, mode, onRefresh }: TransactionalViewPr
             </div>
             <button
               type="submit"
-              disabled={submitting || !windowOpen}
-              className="w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm shadow-lg shadow-blue-600/30 transition-all disabled:opacity-50"
+              disabled={submitting || !windowStatus.isOpen}
+              className={`w-full py-3.5 rounded-xl font-bold text-sm transition-all shadow-lg ${
+                windowStatus.isOpen
+                  ? "bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-blue-600/30"
+                  : "bg-slate-800 text-slate-500 border border-slate-700 cursor-not-allowed opacity-60"
+              }`}
             >
-              {submitting ? "Submitting..." : windowOpen ? "Submit Withdrawal" : "Withdrawal Closed (10 AM - 2 PM IST)"}
+              {submitting
+                ? "Submitting Request..."
+                : windowStatus.isOpen
+                ? "Submit Withdrawal Request"
+                : `Withdrawal Closed (${windowStatus.label})`}
             </button>
           </form>
         </div>

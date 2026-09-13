@@ -18,6 +18,7 @@ import {
   Sparkles,
   Users
 } from "lucide-react";
+import { getWithdrawalWindowStatus } from "@/lib/constants";
 
 interface ConfigItem {
   value: string;
@@ -79,8 +80,11 @@ const FRIENDLY_NAMES: Record<string, string> = {
   LEVEL_12_PERCENT: "Level 12 Royalty % (Req: 12 Directs)",
 
   // Withdrawal Rules & Timings
-  WITHDRAWAL_START_HOUR: "Withdrawal Window Start Hour (24h IST)",
-  WITHDRAWAL_END_HOUR: "Withdrawal Window End Hour (24h IST)",
+  WITHDRAWAL_24H_OPEN: "24/7 Unlimited Withdrawal Window (Always Open)",
+  WITHDRAWAL_START_TIME: "Withdrawal Window Start Time (HH:MM IST)",
+  WITHDRAWAL_END_TIME: "Withdrawal Window End Time (HH:MM IST)",
+  WITHDRAWAL_START_HOUR: "Withdrawal Window Start Hour (Legacy 24h IST)",
+  WITHDRAWAL_END_HOUR: "Withdrawal Window End Hour (Legacy 24h IST)",
   MIN_WITHDRAWAL_USDT: "Minimum Single Withdrawal (USDT)",
   MAX_WITHDRAWAL_USDT: "Maximum Single Withdrawal (USDT)",
   WITHDRAWAL_FEE_PERCENT: "Withdrawal Admin Fee (%)",
@@ -105,6 +109,101 @@ export function AdminConfigView() {
   const [activeCategory, setActiveCategory] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [statusMessage, setStatusMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const [, setTimeTick] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => setTimeTick((t) => t + 1), 5000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const previewStatus = getWithdrawalWindowStatus(formValues);
+  const is24hActive = 
+    formValues.WITHDRAWAL_24H_OPEN === "true" || 
+    (formValues.WITHDRAWAL_START_TIME === "00:00" && (formValues.WITHDRAWAL_END_TIME === "23:59" || formValues.WITHDRAWAL_END_TIME === "24:00"));
+
+  const currentStartTime = formValues.WITHDRAWAL_START_TIME || (formValues.WITHDRAWAL_START_HOUR !== undefined ? `${String(formValues.WITHDRAWAL_START_HOUR).padStart(2, "0")}:00` : "10:00");
+  const currentEndTime = formValues.WITHDRAWAL_END_TIME || (formValues.WITHDRAWAL_END_HOUR !== undefined ? (Number(formValues.WITHDRAWAL_END_HOUR) >= 23 ? "23:59" : `${String(formValues.WITHDRAWAL_END_HOUR).padStart(2, "0")}:00`) : "14:00");
+
+  const toggle24h = () => {
+    const willBe24h = !is24hActive;
+    setFormValues((prev) => ({
+      ...prev,
+      WITHDRAWAL_24H_OPEN: willBe24h ? "true" : "false",
+      WITHDRAWAL_START_TIME: willBe24h ? "00:00" : "10:00",
+      WITHDRAWAL_END_TIME: willBe24h ? "23:59" : "14:00",
+      WITHDRAWAL_START_HOUR: willBe24h ? "0" : "10",
+      WITHDRAWAL_END_HOUR: willBe24h ? "23" : "14",
+    }));
+  };
+
+  const updateStartTime = (timeStr: string) => {
+    const [h = 10] = timeStr.split(":").map(Number);
+    setFormValues((prev) => ({
+      ...prev,
+      WITHDRAWAL_START_TIME: timeStr,
+      WITHDRAWAL_START_HOUR: String(h),
+      WITHDRAWAL_24H_OPEN: "false",
+    }));
+  };
+
+  const updateEndTime = (timeStr: string) => {
+    const [h = 14] = timeStr.split(":").map(Number);
+    setFormValues((prev) => ({
+      ...prev,
+      WITHDRAWAL_END_TIME: timeStr,
+      WITHDRAWAL_END_HOUR: String(h),
+      WITHDRAWAL_24H_OPEN: "false",
+    }));
+  };
+
+  const applyPreset = (preset: "24h" | "default" | "morning" | "afternoon" | "evening") => {
+    if (preset === "24h") {
+      setFormValues((prev) => ({
+        ...prev,
+        WITHDRAWAL_24H_OPEN: "true",
+        WITHDRAWAL_START_TIME: "00:00",
+        WITHDRAWAL_END_TIME: "23:59",
+        WITHDRAWAL_START_HOUR: "0",
+        WITHDRAWAL_END_HOUR: "23",
+      }));
+    } else if (preset === "default") {
+      setFormValues((prev) => ({
+        ...prev,
+        WITHDRAWAL_24H_OPEN: "false",
+        WITHDRAWAL_START_TIME: "10:00",
+        WITHDRAWAL_END_TIME: "14:00",
+        WITHDRAWAL_START_HOUR: "10",
+        WITHDRAWAL_END_HOUR: "14",
+      }));
+    } else if (preset === "morning") {
+      setFormValues((prev) => ({
+        ...prev,
+        WITHDRAWAL_24H_OPEN: "false",
+        WITHDRAWAL_START_TIME: "09:00",
+        WITHDRAWAL_END_TIME: "13:00",
+        WITHDRAWAL_START_HOUR: "9",
+        WITHDRAWAL_END_HOUR: "13",
+      }));
+    } else if (preset === "afternoon") {
+      setFormValues((prev) => ({
+        ...prev,
+        WITHDRAWAL_24H_OPEN: "false",
+        WITHDRAWAL_START_TIME: "12:00",
+        WITHDRAWAL_END_TIME: "18:00",
+        WITHDRAWAL_START_HOUR: "12",
+        WITHDRAWAL_END_HOUR: "18",
+      }));
+    } else if (preset === "evening") {
+      setFormValues((prev) => ({
+        ...prev,
+        WITHDRAWAL_24H_OPEN: "false",
+        WITHDRAWAL_START_TIME: "16:00",
+        WITHDRAWAL_END_TIME: "22:00",
+        WITHDRAWAL_START_HOUR: "16",
+        WITHDRAWAL_END_HOUR: "22",
+      }));
+    }
+  };
 
   const fetchConfigs = async () => {
     try {
@@ -132,7 +231,30 @@ export function AdminConfigView() {
   }, []);
 
   const handleInputChange = (key: string, value: string) => {
-    setFormValues((prev) => ({ ...prev, [key]: value }));
+    setFormValues((prev) => {
+      const next = { ...prev, [key]: value };
+      if (key === "WITHDRAWAL_START_TIME") {
+        const [h = 10] = value.split(":").map(Number);
+        next.WITHDRAWAL_START_HOUR = String(h);
+      } else if (key === "WITHDRAWAL_START_HOUR") {
+        const h = Number(value);
+        next.WITHDRAWAL_START_TIME = `${String(isNaN(h) ? 10 : h).padStart(2, "0")}:00`;
+      } else if (key === "WITHDRAWAL_END_TIME") {
+        const [h = 14] = value.split(":").map(Number);
+        next.WITHDRAWAL_END_HOUR = String(h);
+      } else if (key === "WITHDRAWAL_END_HOUR") {
+        const h = Number(value);
+        next.WITHDRAWAL_END_TIME = h >= 23 ? "23:59" : `${String(isNaN(h) ? 14 : h).padStart(2, "0")}:00`;
+      } else if (key === "WITHDRAWAL_24H_OPEN") {
+        if (value === "true") {
+          next.WITHDRAWAL_START_TIME = "00:00";
+          next.WITHDRAWAL_END_TIME = "23:59";
+          next.WITHDRAWAL_START_HOUR = "0";
+          next.WITHDRAWAL_END_HOUR = "23";
+        }
+      }
+      return next;
+    });
   };
 
   const handleReset = () => {
@@ -303,6 +425,168 @@ export function AdminConfigView() {
         </div>
       </div>
 
+      {/* Dedicated Withdrawal Window & 24/7 Hours Controller */}
+      {(activeCategory === "withdrawal" || activeCategory === "all") && !searchQuery && (
+        <div className="bg-gradient-to-br from-[#091326] via-[#0d1633] to-[#141030] border-2 border-purple-500/40 rounded-3xl p-6 sm:p-7 backdrop-blur shadow-2xl relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-80 h-80 bg-purple-500/10 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20" />
+
+          <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6 pb-6 border-b border-slate-800">
+            <div>
+              <div className="flex items-center gap-2 text-purple-400 text-xs font-bold uppercase tracking-widest mb-1.5">
+                <Clock className="w-4 h-4 text-purple-400" />
+                <span>Withdrawal Timing &amp; Schedule Controller</span>
+              </div>
+              <h2 className="text-xl sm:text-2xl font-black text-white flex items-center gap-3">
+                <span>Withdrawal Window &amp; 24/7 Hours</span>
+                <span className={`text-xs px-2.5 py-1 rounded-full font-bold uppercase border ${
+                  previewStatus.isOpen
+                    ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/40"
+                    : "bg-rose-500/20 text-rose-300 border-rose-500/40"
+                }`}>
+                  {previewStatus.isOpen ? "● Live: Open Now" : "● Live: Closed"}
+                </span>
+              </h2>
+              <p className="text-slate-400 text-xs sm:text-sm mt-1 max-w-xl">
+                Set custom daily withdrawal hours (HH:MM IST) or toggle 24/7 withdrawals. Changes apply instantly to Member Dashboards, withdrawal modals, and backend validation.
+              </p>
+            </div>
+
+            {/* 24/7 Mode Switch */}
+            <div className="flex items-center gap-4 bg-[#060c1d] border border-purple-500/40 p-4 rounded-2xl shadow-lg">
+              <div className="text-left sm:text-right">
+                <div className="text-xs font-bold text-white flex items-center gap-1.5 sm:justify-end">
+                  <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                  <span>24/7 Mode (Always Open)</span>
+                </div>
+                <div className="text-[11px] text-slate-400">
+                  {is24hActive ? "Members can withdraw anytime 24 hours" : "Strict HH:MM window active"}
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={toggle24h}
+                className={`relative inline-flex h-9 w-18 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                  is24hActive ? "bg-emerald-500 shadow-lg shadow-emerald-500/30" : "bg-slate-700"
+                }`}
+                title="Toggle 24/7 withdrawals"
+              >
+                <span
+                  className={`pointer-events-none inline-block h-8 w-8 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out flex items-center justify-center text-[10px] font-black tracking-tighter ${
+                    is24hActive ? "translate-x-9 text-emerald-600" : "translate-x-0 text-slate-700"
+                  }`}
+                >
+                  {is24hActive ? "ON" : "OFF"}
+                </span>
+              </button>
+            </div>
+          </div>
+
+          {/* Timing Pickers & Live Preview */}
+          <div className="relative z-10 grid grid-cols-1 md:grid-cols-3 gap-5 mt-6">
+            {/* Start Time Picker */}
+            <div className="bg-[#050b18] border border-slate-800 rounded-2xl p-4 flex flex-col justify-between">
+              <div>
+                <label className="text-xs font-bold text-slate-200 block mb-1">
+                  Daily Window Start Time (HH:MM IST)
+                </label>
+                <p className="text-[11px] text-slate-400 mb-3">
+                  Time when withdrawal button becomes active and open
+                </p>
+              </div>
+              <input
+                type="time"
+                value={currentStartTime}
+                disabled={is24hActive}
+                onChange={(e) => updateStartTime(e.target.value)}
+                className="w-full bg-[#081023] border border-slate-700 rounded-xl px-3 py-2 text-white font-mono text-sm focus:outline-none focus:border-purple-500 disabled:opacity-40 disabled:cursor-not-allowed"
+              />
+            </div>
+
+            {/* End Time Picker */}
+            <div className="bg-[#050b18] border border-slate-800 rounded-2xl p-4 flex flex-col justify-between">
+              <div>
+                <label className="text-xs font-bold text-slate-200 block mb-1">
+                  Daily Window End Time (HH:MM IST)
+                </label>
+                <p className="text-[11px] text-slate-400 mb-3">
+                  Time when withdrawal button automatically closes
+                </p>
+              </div>
+              <input
+                type="time"
+                value={currentEndTime}
+                disabled={is24hActive}
+                onChange={(e) => updateEndTime(e.target.value)}
+                className="w-full bg-[#081023] border border-slate-700 rounded-xl px-3 py-2 text-white font-mono text-sm focus:outline-none focus:border-purple-500 disabled:opacity-40 disabled:cursor-not-allowed"
+              />
+            </div>
+
+            {/* Live Member Portal Preview */}
+            <div className="bg-[#050b18] border border-purple-500/30 rounded-2xl p-4 flex flex-col justify-between">
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-xs font-bold text-purple-300">Live Member Portal View</span>
+                  <span className="text-[10px] font-mono text-slate-400">Current IST: {previewStatus.currentIstTime}</span>
+                </div>
+                <div className="text-sm font-black text-white mt-1">
+                  {previewStatus.label}
+                </div>
+              </div>
+              <div className="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs">
+                <span className="text-slate-400">User Button Status:</span>
+                <span className={`font-bold px-2.5 py-0.5 rounded-full text-[11px] ${
+                  previewStatus.isOpen
+                    ? "bg-emerald-950 text-emerald-300 border border-emerald-500/40"
+                    : "bg-rose-950 text-rose-300 border border-rose-500/40"
+                }`}>
+                  {previewStatus.isOpen ? "Enabled (Open Now)" : "Disabled (Closed)"}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Quick Timing Presets */}
+          <div className="relative z-10 mt-5 pt-4 border-t border-slate-800/80 flex flex-wrap items-center gap-2">
+            <span className="text-xs font-semibold text-slate-400 mr-2">Quick Timing Presets:</span>
+            <button
+              type="button"
+              onClick={() => applyPreset("24h")}
+              className="px-3.5 py-1.5 rounded-xl bg-purple-950/60 hover:bg-purple-900/60 text-purple-300 border border-purple-500/30 text-xs font-semibold transition-all"
+            >
+              ⚡ 24 Hours Always Open (00:00 - 23:59)
+            </button>
+            <button
+              type="button"
+              onClick={() => applyPreset("default")}
+              className="px-3.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 text-xs font-semibold transition-all"
+            >
+              🕒 Default (10:00 AM - 02:00 PM)
+            </button>
+            <button
+              type="button"
+              onClick={() => applyPreset("morning")}
+              className="px-3.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 text-xs font-semibold transition-all"
+            >
+              🌅 Morning (09:00 AM - 01:00 PM)
+            </button>
+            <button
+              type="button"
+              onClick={() => applyPreset("afternoon")}
+              className="px-3.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 text-xs font-semibold transition-all"
+            >
+              🌇 Afternoon (12:00 PM - 06:00 PM)
+            </button>
+            <button
+              type="button"
+              onClick={() => applyPreset("evening")}
+              className="px-3.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 text-xs font-semibold transition-all"
+            >
+              🌙 Evening (04:00 PM - 10:00 PM)
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Configuration Form Grid */}
       {loading ? (
         <div className="flex flex-col items-center justify-center py-20 bg-slate-900/30 rounded-3xl border border-slate-800/40">
@@ -321,14 +605,18 @@ export function AdminConfigView() {
             const isRoyaltyLevel = key.startsWith("LEVEL_") && key.endsWith("_PERCENT");
             const levelNum = isRoyaltyLevel ? key.split("_")[1] : null;
 
+            const is24hToggle = key === "WITHDRAWAL_24H_OPEN";
+            const isTimePicker = key === "WITHDRAWAL_START_TIME" || key === "WITHDRAWAL_END_TIME";
             const isNumber = 
-              key.includes("RATE") || 
+              !isTimePicker &&
+              !is24hToggle &&
+              (key.includes("RATE") || 
               key.includes("PERCENT") || 
               key.includes("HOUR") || 
               key.includes("MIN") || 
               key.includes("MAX") || 
               key.includes("BONUS") ||
-              key.includes("DAYS");
+              key.includes("DAYS"));
 
             return (
               <div
@@ -336,6 +624,8 @@ export function AdminConfigView() {
                 className={`bg-slate-900/50 backdrop-blur border rounded-2xl p-5 transition-all flex flex-col justify-between shadow-md ${
                   isRoyaltyLevel
                     ? "border-amber-500/30 bg-gradient-to-br from-slate-900/60 to-amber-950/20"
+                    : is24hToggle || isTimePicker
+                    ? "border-purple-500/40 bg-gradient-to-br from-slate-900/70 to-purple-950/20"
                     : "border-slate-800/60 hover:border-purple-500/40"
                 }`}
               >
@@ -363,21 +653,49 @@ export function AdminConfigView() {
 
                 <div className="mt-2">
                   <div className="relative">
-                    <input
-                      type={isNumber ? "number" : "text"}
-                      step={key.includes("PERCENT") || key.includes("RATE") ? "any" : "1"}
-                      value={formValues[key] ?? item.value}
-                      onChange={(e) => handleInputChange(key, e.target.value)}
-                      className={`w-full bg-[#050b18] border rounded-xl px-3.5 py-2.5 text-sm text-slate-100 focus:outline-none transition-all ${
-                        formValues[key] !== item.value
-                          ? "border-amber-400 focus:border-amber-300 bg-amber-950/10"
-                          : "border-slate-800 focus:border-purple-500"
-                      } ${isAddress ? "font-mono text-xs" : "font-semibold"}`}
-                      placeholder={`Enter ${FRIENDLY_NAMES[key] || key}`}
-                      required
-                    />
+                    {is24hToggle ? (
+                      <select
+                        value={formValues[key] ?? item.value}
+                        onChange={(e) => handleInputChange(key, e.target.value)}
+                        className={`w-full bg-[#050b18] border rounded-xl px-3.5 py-2.5 text-sm text-slate-100 focus:outline-none transition-all font-semibold ${
+                          formValues[key] !== item.value
+                            ? "border-amber-400 focus:border-amber-300 bg-amber-950/10"
+                            : "border-slate-800 focus:border-purple-500"
+                        }`}
+                      >
+                        <option value="false">Scheduled Window (IST Hours)</option>
+                        <option value="true">24/7 Open (Always Accessible)</option>
+                      </select>
+                    ) : isTimePicker ? (
+                      <input
+                        type="time"
+                        value={formValues[key] ?? item.value}
+                        onChange={(e) => handleInputChange(key, e.target.value)}
+                        className={`w-full bg-[#050b18] border rounded-xl px-3.5 py-2.5 text-sm text-slate-100 focus:outline-none transition-all font-mono font-semibold ${
+                          formValues[key] !== item.value
+                            ? "border-amber-400 focus:border-amber-300 bg-amber-950/10"
+                            : "border-slate-800 focus:border-purple-500"
+                        }`}
+                        required
+                      />
+                    ) : (
+                      <input
+                        type={isNumber ? "number" : "text"}
+                        step={key.includes("PERCENT") || key.includes("RATE") ? "any" : "1"}
+                        value={formValues[key] ?? item.value}
+                        onChange={(e) => handleInputChange(key, e.target.value)}
+                        className={`w-full bg-[#050b18] border rounded-xl px-3.5 py-2.5 text-sm text-slate-100 focus:outline-none transition-all ${
+                          formValues[key] !== item.value
+                            ? "border-amber-400 focus:border-amber-300 bg-amber-950/10"
+                            : "border-slate-800 focus:border-purple-500"
+                        } ${isAddress ? "font-mono text-xs" : "font-semibold"}`}
+                        placeholder={`Enter ${FRIENDLY_NAMES[key] || key}`}
+                        required
+                      />
+                    )}
+
                     {formValues[key] !== item.value && (
-                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-bold text-amber-400 uppercase tracking-wider bg-amber-950/80 px-1.5 py-0.5 rounded border border-amber-500/40">
+                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-bold text-amber-400 uppercase tracking-wider bg-amber-950/80 px-1.5 py-0.5 rounded border border-amber-500/40 pointer-events-none">
                         Modified
                       </span>
                     )}

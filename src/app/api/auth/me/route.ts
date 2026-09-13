@@ -152,6 +152,53 @@ export async function GET() {
     currentLevelUserIds = nextLevelUsers.map((u) => u.id);
   }
 
+  // Calculate detailed income breakdown stats from ledgers
+  const todayStart = new Date();
+  todayStart.setHours(0, 0, 0, 0);
+
+  let joiningBonus = 0;
+  let basicReferralIncome = 0;
+  let basicTodayRoi = 0;
+  let basicTodayLevel = 0;
+  let basicTotalRoi = 0;
+  let basicTotalLevel = 0;
+
+  let fdTodayRoi = 0;
+  let fdTodayLevel = 0;
+  let fdTotalRoi = 0;
+  let fdTotalLevel = 0;
+  let fdReferralIncome = 0;
+  let fdReleased = 0;
+
+  for (const entry of user.ledgers) {
+    const amt = Number(entry.amount.toString());
+    const isToday = new Date(entry.createdAt) >= todayStart;
+
+    if (entry.type === "SIGNUP_BONUS") {
+      joiningBonus += amt;
+    } else if (entry.type === "DIRECT_REFERRAL") {
+      basicReferralIncome += amt;
+    } else if (entry.type === "BASIC_ROI" || (entry.type as string) === "BASIC_DAILY_ROI") {
+      basicTotalRoi += amt;
+      if (isToday) basicTodayRoi += amt;
+    } else if (entry.type === "BASIC_LEVEL_INCOME") {
+      basicTotalLevel += amt;
+      if (isToday) basicTodayLevel += amt;
+    } else if (entry.type === "FD_ROI" || (entry.type as string) === "FD_DAILY_ROI") {
+      fdTotalRoi += amt;
+      if (isToday) fdTodayRoi += amt;
+    } else if (entry.type === "FD_LEVEL_INCOME") {
+      fdTotalLevel += amt;
+      if (isToday) fdTodayLevel += amt;
+    } else if ((entry.type as string) === "FD_RELEASED" || (entry.type as string) === "FD_MATURITY_RELEASE") {
+      fdReleased += amt;
+    }
+  }
+
+  if (joiningBonus === 0) {
+    joiningBonus = 50.0;
+  }
+
   const systemConfig = await getAllSystemConfigs();
 
   return NextResponse.json({
@@ -197,6 +244,20 @@ export async function GET() {
         };
       }),
       ledgerEntries: user.ledgers,
+      incomeBreakdown: {
+        joiningBonus,
+        basicReferralIncome,
+        basicTodayRoi,
+        basicTodayLevel,
+        basicTotalRoi,
+        basicTotalLevel,
+        fdTodayRoi,
+        fdTodayLevel,
+        fdTotalRoi,
+        fdTotalLevel,
+        fdReferralIncome,
+        fdReleased,
+      },
       systemConfig,
     },
   });

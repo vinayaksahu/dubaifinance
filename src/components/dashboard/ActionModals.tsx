@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { APP_CONFIG, isWithdrawalWindowOpen } from "@/lib/constants";
+import { APP_CONFIG, isWithdrawalWindowOpen, getWithdrawalWindowStatus } from "@/lib/constants";
 import { formatInr, formatUsdt } from "@/lib/utils";
 import {
   Wallet,
@@ -188,23 +188,20 @@ export function ActionModals({ user, onRefresh }: { user: any; onRefresh: () => 
   };
 
   const cfg = user?.systemConfig || {};
-  const startHour = cfg.WITHDRAWAL_START_HOUR !== undefined ? Number(cfg.WITHDRAWAL_START_HOUR) : APP_CONFIG.withdrawalWindow.startHour;
-  const endHour = cfg.WITHDRAWAL_END_HOUR !== undefined ? Number(cfg.WITHDRAWAL_END_HOUR) : APP_CONFIG.withdrawalWindow.endHour;
+  const [windowStatus, setWindowStatus] = useState(() => getWithdrawalWindowStatus(cfg));
+
+  React.useEffect(() => {
+    setWindowStatus(getWithdrawalWindowStatus(cfg));
+    const interval = setInterval(() => {
+      setWindowStatus(getWithdrawalWindowStatus(cfg));
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [cfg]);
+
   const minWithdrawUsdt = cfg.MIN_WITHDRAWAL_USDT !== undefined ? Number(cfg.MIN_WITHDRAWAL_USDT) : APP_CONFIG.minWithdrawalUsdt;
   const maxWithdrawUsdt = cfg.MAX_WITHDRAWAL_USDT !== undefined ? Number(cfg.MAX_WITHDRAWAL_USDT) : APP_CONFIG.maxWithdrawalUsdt;
-  const adminFeePercent = cfg.WITHDRAWAL_ADMIN_FEE_PERCENT !== undefined ? Number(cfg.WITHDRAWAL_ADMIN_FEE_PERCENT) : APP_CONFIG.withdrawalAdminFeePercent;
-
-  const now = new Date();
-  const utc = now.getTime() + now.getTimezoneOffset() * 60000;
-  const ist = new Date(utc + 3600000 * 5.5);
-  const curHour = ist.getHours();
-  const windowOpen = curHour >= startHour && curHour < endHour;
-
-  const formatHour = (h: number) => {
-    const period = h >= 12 ? 'PM' : 'AM';
-    const hour12 = h % 12 === 0 ? 12 : h % 12;
-    return `${hour12 < 10 ? '0' : ''}${hour12}:00 ${period}`;
-  };
+  const adminFeePercent = cfg.WITHDRAWAL_FEE_PERCENT || cfg.WITHDRAWAL_ADMIN_FEE_PERCENT ? Number(cfg.WITHDRAWAL_FEE_PERCENT || cfg.WITHDRAWAL_ADMIN_FEE_PERCENT) : APP_CONFIG.withdrawalAdminFeePercent;
+  const windowOpen = windowStatus.isOpen;
 
   return (
     <div>
@@ -273,7 +270,7 @@ export function ActionModals({ user, onRefresh }: { user: any; onRefresh: () => 
             <ArrowDownToLine className="w-5 h-5" />
           </div>
           <span className="text-xs font-black text-red-300">Withdrawal</span>
-          <span className="text-[10px] text-slate-400">10 AM - 2 PM (10% Fee)</span>
+          <span className="text-[10px] text-slate-400">{windowStatus.is24h ? "24/7 Open" : windowStatus.label}</span>
         </button>
       </div>
 
@@ -660,10 +657,10 @@ export function ActionModals({ user, onRefresh }: { user: any; onRefresh: () => 
                   Flat {adminFeePercent}% Admin Charge. Net payout credited directly to your BEP-20 address.
                 </p>
 
-                {!windowOpen && (
+                {!windowStatus.isOpen && (
                   <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs font-semibold mb-4 flex items-center gap-2">
                     <Clock className="w-4 h-4 shrink-0" />
-                    Notice: Withdrawal window is open daily from {formatHour(startHour)} to {formatHour(endHour)} (IST).
+                    Notice: Withdrawal window is open daily during {windowStatus.label}. (Current IST Time: {windowStatus.currentIstTime})
                   </div>
                 )}
 
@@ -717,10 +714,14 @@ export function ActionModals({ user, onRefresh }: { user: any; onRefresh: () => 
 
                   <button
                     type="submit"
-                    disabled={loading}
-                    className="w-full py-3 rounded-xl gold-btn text-xs font-bold mt-4"
+                    disabled={loading || !windowStatus.isOpen}
+                    className="w-full py-3 rounded-xl gold-btn text-xs font-bold mt-4 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    {loading ? "Processing..." : "Submit Withdrawal Request"}
+                    {loading
+                      ? "Processing..."
+                      : windowStatus.isOpen
+                      ? "Submit Withdrawal Request"
+                      : `Withdrawal Closed (${windowStatus.label})`}
                   </button>
                 </div>
               </form>

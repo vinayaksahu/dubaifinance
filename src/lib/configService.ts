@@ -133,6 +133,21 @@ export const DEFAULT_SYSTEM_CONFIGS: Record<string, { value: string; description
   },
 
   // 6. Withdrawal Rules & Timings (Dark PDF Slide 21)
+  WITHDRAWAL_24H_OPEN: {
+    value: "false",
+    description: "Allow 24/7 withdrawals anytime without timing restriction (true / false)",
+    category: "withdrawal",
+  },
+  WITHDRAWAL_START_TIME: {
+    value: "10:00",
+    description: "Daily withdrawal window start time in HH:MM IST (e.g. 10:00)",
+    category: "withdrawal",
+  },
+  WITHDRAWAL_END_TIME: {
+    value: "14:00",
+    description: "Daily withdrawal window close time in HH:MM IST (e.g. 14:00 or 23:59)",
+    category: "withdrawal",
+  },
   WITHDRAWAL_START_HOUR: {
     value: String(APP_CONFIG.withdrawalWindow.startHour),
     description: "Daily withdrawal window start hour in 24h IST (e.g. 10 for 10:00 AM)",
