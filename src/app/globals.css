@@ -1,14 +1,18 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, [data-theme="dark"], [data-theme="dark"] *));
+
 @layer base {
-  :root {
+  :root,
+  html.light,
+  :root[data-theme="light"] {
     --font-sans: var(--font-plus-jakarta), 'Plus Jakarta Sans', system-ui, sans-serif;
     --font-display: var(--font-space-grotesk), 'Space Grotesk', system-ui, sans-serif;
 
     /* Light Mode Default Variables (Ivory Alabaster Luxury Theme) */
     --bg-main: #FAF7F2;
-    --bg-secondary: #F3ECE1;
-    --bg-card: rgba(255, 255, 255, 0.9);
+    --bg-secondary: #FFFFFF;
+    --bg-card: #FFFFFF;
     --bg-card-gold: linear-gradient(145deg, rgba(255, 251, 235, 0.95), rgba(254, 243, 199, 0.85));
     --bg-inner: rgba(243, 236, 225, 0.7);
     --text-main: #0F172A;
