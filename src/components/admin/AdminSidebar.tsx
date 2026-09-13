@@ -16,7 +16,8 @@ import {
   ChevronLeft,
   ChevronRight,
   X,
-  ShieldCheck
+  ShieldCheck,
+  Landmark
 } from "lucide-react";
 
 interface AdminSidebarProps {
@@ -44,6 +45,7 @@ export default function AdminSidebar({
     { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
     { id: "deposits", label: "Deposit Management", icon: Wallet, badge: pendingDepositsCount > 0 ? pendingDepositsCount : null, badgeColor: "bg-cyan-500/20 text-cyan-400 border-cyan-500/40" },
     { id: "withdrawals", label: "Withdrawal Management", icon: Banknote, badge: pendingWithdrawalsCount > 0 ? pendingWithdrawalsCount : null, badgeColor: "bg-rose-500/20 text-rose-400 border-rose-500/40" },
+    { id: "admin-income", label: "Admin Fee Income", icon: Landmark, badge: "10%", badgeColor: "bg-amber-500/20 text-amber-400 border-amber-500/40" },
     { id: "users", label: "User Management", icon: Users },
     { id: "roi-engine", label: "ROI Engine", icon: Zap },
     { id: "tickets", label: "Support Tickets", icon: Headphones },

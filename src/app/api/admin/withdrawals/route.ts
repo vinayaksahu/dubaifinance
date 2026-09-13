@@ -17,27 +17,74 @@ export async function GET() {
     },
   });
 
-  const withdrawals = rawWithdrawals.map((w) => ({
-    id: w.id,
-    userId: w.userId,
-    user: {
-      name: w.user?.fullName || "Member",
-      fullName: w.user?.fullName || "Member",
-      customId: w.user?.customId || "N/A",
-      email: w.user?.email || "N/A",
-    },
-    amountUsdt: Number(w.amountInUsdt),
-    amountInUsdt: Number(w.amountInUsdt),
-    amountInr: Number(w.amountInInr),
-    payoutAddress: w.toAddress || "",
-    toAddress: w.toAddress || "",
-    txHash: w.txHash || "",
-    adminNote: w.adminNote,
-    status: w.status,
-    createdAt: w.createdAt,
-  }));
+  let totalProcessedGross = 0;
+  let totalProcessedFee = 0;
+  let totalProcessedNet = 0;
+  let pendingGross = 0;
+  let pendingFee = 0;
+  let pendingNet = 0;
 
-  return NextResponse.json({ withdrawals });
+  const withdrawals = rawWithdrawals.map((w) => {
+    const gross = Number(w.amountInUsdt);
+    const feePercent = w.feePercent != null ? Number(w.feePercent) : 10;
+    const feeAmount = w.feeAmount != null && Number(w.feeAmount) > 0 
+      ? Number(w.feeAmount) 
+      : (gross * (feePercent / 100));
+    const netAmount = w.netAmount != null && Number(w.netAmount) > 0 
+      ? Number(w.netAmount) 
+      : (gross - feeAmount);
+
+    if (w.status === "PROCESSED") {
+      totalProcessedGross += gross;
+      totalProcessedFee += feeAmount;
+      totalProcessedNet += netAmount;
+    } else if (w.status === "PENDING") {
+      pendingGross += gross;
+      pendingFee += feeAmount;
+      pendingNet += netAmount;
+    }
+
+    return {
+      id: w.id,
+      userId: w.userId,
+      user: {
+        name: w.user?.fullName || "Member",
+        fullName: w.user?.fullName || "Member",
+        customId: w.user?.customId || "N/A",
+        email: w.user?.email || "N/A",
+      },
+      // Net payout amount that admin must dispatch (e.g. $450)
+      amountUsdt: netAmount,
+      netPayout: netAmount,
+      netAmount: netAmount,
+      // Gross requested amount (e.g. $500)
+      grossAmount: gross,
+      amountGross: gross,
+      amountInUsdt: gross,
+      // Admin fee retained (e.g. $50)
+      feePercent: feePercent,
+      feeAmount: feeAmount,
+      amountInr: Number(w.amountInInr),
+      payoutAddress: w.toAddress || "",
+      toAddress: w.toAddress || "",
+      txHash: w.txHash || "",
+      adminNote: w.adminNote,
+      status: w.status,
+      createdAt: w.createdAt,
+    };
+  });
+
+  return NextResponse.json({ 
+    withdrawals,
+    summary: {
+      totalProcessedGross,
+      totalProcessedFee, // Admin Income from 10% fee
+      totalProcessedNet, // Dispatched to users
+      pendingGross,
+      pendingFee,
+      pendingNet,
+    }
+  });
 }
 
 export async function POST(req: NextRequest) {

@@ -10,6 +10,7 @@ import AdminWithdrawalsView from "@/components/admin/views/AdminWithdrawalsView"
 import { AdminUsersView } from "@/components/admin/views/AdminUsersView";
 import { AdminTicketsView } from "@/components/admin/views/AdminTicketsView";
 import { AdminConfigView } from "@/components/admin/views/AdminConfigView";
+import { AdminIncomeView } from "@/components/admin/views/AdminIncomeView";
 
 export default function AdminPage() {
   const router = useRouter();

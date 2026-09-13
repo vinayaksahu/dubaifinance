@@ -42,11 +42,11 @@ export function MemberSidebar({
 }: MemberSidebarProps) {
   const router = useRouter();
   const [openMenus, setOpenMenus] = useState<Record<string, boolean>>({
-    downline: true,
+    downline: false,
     income: false,
     transactional: false,
     reports: false,
-    packages: true,
+    packages: false,
   });
 
   const toggleMenu = (key: string) => {
@@ -55,6 +55,8 @@ export function MemberSidebar({
 
   const handleSelectTab = (tab: string) => {
     setActiveTab(tab);
+    // Close all dropdowns when a submenu item is clicked
+    setOpenMenus({ downline: false, income: false, transactional: false, reports: false, packages: false });
     if (typeof window !== "undefined" && window.innerWidth < 1024) {
       setIsOpen(false);
     }

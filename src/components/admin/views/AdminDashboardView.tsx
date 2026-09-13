@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Play, Users, Wallet, Banknote, Zap, Activity, Ticket, ArrowUpRight, ShieldCheck, Sparkles, CheckCircle2 } from "lucide-react";
+import { Play, Users, Wallet, Banknote, Zap, Activity, Ticket, ArrowUpRight, ShieldCheck, Sparkles, CheckCircle2, Landmark } from "lucide-react";
 import { formatUsdt } from "@/lib/utils";
 
 interface AdminDashboardViewProps {
@@ -45,8 +45,8 @@ export function AdminDashboardView({
         </div>
       </div>
 
-      {/* Stats row - 5 High-Impact Metric Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-3 sm:gap-4">
+      {/* Stats row - 6 High-Impact Metric Cards */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
         {/* Total Members */}
         <div 
           onClick={() => setActiveTab?.("users")}
@@ -61,7 +61,7 @@ export function AdminDashboardView({
           </h3>
           <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-            <span><strong className="text-emerald-600 dark:text-emerald-400">{safeStats.activeUsers || 0}</strong> active accounts</span>
+            <span><strong className="text-emerald-600 dark:text-emerald-400">{safeStats.activeUsers || 0}</strong> active</span>
           </div>
         </div>
         
@@ -74,7 +74,7 @@ export function AdminDashboardView({
           <h3 className="text-2xl sm:text-3xl font-display font-black text-amber-600 dark:text-amber-400 mb-1">
             {safeStats.activeContracts || 0}
           </h3>
-          <p className="text-xs text-slate-500 dark:text-slate-400">28-Day &amp; FD Tenure</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400">28-Day &amp; FD</p>
         </div>
 
         {/* Pending Deposits */}
@@ -89,7 +89,7 @@ export function AdminDashboardView({
           <h3 className="text-2xl sm:text-3xl font-display font-black text-cyan-600 dark:text-cyan-300 mb-1">
             {safeStats.pendingDeposits || 0}
           </h3>
-          <p className="text-xs text-cyan-600/80 dark:text-cyan-400/80 font-medium">Click to review &rarr;</p>
+          <p className="text-xs text-cyan-600/80 dark:text-cyan-400/80 font-medium">Review &rarr;</p>
         </div>
 
         {/* Pending Withdrawals */}
@@ -104,7 +104,22 @@ export function AdminDashboardView({
           <h3 className="text-2xl sm:text-3xl font-display font-black text-rose-600 dark:text-rose-400 mb-1">
             {safeStats.pendingWithdrawals || 0}
           </h3>
-          <p className="text-xs text-rose-600/80 dark:text-rose-400/80 font-medium">Click to process &rarr;</p>
+          <p className="text-xs text-rose-600/80 dark:text-rose-400/80 font-medium">Process &rarr;</p>
+        </div>
+
+        {/* Admin Fee Income (10%) */}
+        <div 
+          onClick={() => setActiveTab?.("admin-income")}
+          className="bg-white dark:bg-[#0c1322]/90 backdrop-blur-xl border border-amber-500/30 hover:border-amber-400 p-4 sm:p-5 rounded-2xl transition-all duration-200 group cursor-pointer shadow-md hover:-translate-y-0.5"
+        >
+          <div className="flex items-center justify-between text-amber-600 dark:text-amber-400 mb-2">
+            <span className="text-xs font-bold uppercase tracking-wider">Admin Fee (10%)</span>
+            <Landmark className="w-4 h-4 group-hover:scale-110 transition-transform" />
+          </div>
+          <h3 className="text-xl sm:text-2xl font-display font-black text-amber-600 dark:text-amber-400 mb-1 truncate" title={formatUsdt(safeStats.adminFeeIncomeUsdt || 0)}>
+            {formatUsdt(safeStats.adminFeeIncomeUsdt || 0)}
+          </h3>
+          <p className="text-xs text-amber-600/80 dark:text-amber-400/80 font-medium">Platform Profit &rarr;</p>
         </div>
 
         {/* Total Approved USDT */}
@@ -116,7 +131,7 @@ export function AdminDashboardView({
           <h3 className="text-xl sm:text-2xl font-display font-black text-emerald-600 dark:text-emerald-400 mb-1 truncate" title={formatUsdt(safeStats.totalApprovedDepositsUsdt || 0)}>
             {formatUsdt(safeStats.totalApprovedDepositsUsdt || 0)}
           </h3>
-          <p className="text-xs text-emerald-600 dark:text-emerald-500 font-medium">Liquidity Reserve Pool</p>
+          <p className="text-xs text-emerald-600 dark:text-emerald-500 font-medium">Liquidity Pool</p>
         </div>
       </div>
 
@@ -164,6 +179,62 @@ export function AdminDashboardView({
         )}
       </div>
 
+      {/* Admin Revenue & 10% Fee Breakdown Banner */}
+      <div className="bg-gradient-to-br from-[#0c1322] via-[#091124] to-[#1a120a] border border-amber-500/30 p-6 rounded-2xl shadow-xl">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-800">
+          <div>
+            <div className="flex items-center gap-2 text-amber-400 text-xs font-bold uppercase tracking-widest mb-1">
+              <Landmark className="w-4 h-4 text-amber-400" />
+              <span>Platform Revenue Accounting</span>
+            </div>
+            <h3 className="font-display font-black text-xl text-white">
+              Admin Income (10% Withdrawal Charges)
+            </h3>
+            <p className="text-xs text-slate-400 mt-0.5">
+              Every withdrawal automatically retains 10% as pure admin profit. For example, $450 is dispatched per $500 requested.
+            </p>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab?.("admin-income")}
+            className="px-4 py-2 rounded-xl bg-amber-500/20 text-amber-300 hover:bg-amber-500/30 border border-amber-500/40 text-xs font-bold transition-all flex items-center gap-1.5 self-start sm:self-auto"
+          >
+            <span>Open Revenue Ledger</span>
+            <ArrowUpRight className="w-3.5 h-3.5" />
+          </button>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4">
+          <div className="bg-[#050b18] border border-slate-800 rounded-xl p-4">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block mb-1">
+              Gross Requested (100%)
+            </span>
+            <span className="text-xl font-black text-white">
+              {formatUsdt(safeStats.totalProcessedWithdrawalsUsdt || 0)}
+            </span>
+          </div>
+
+          <div className="bg-[#050b18] border border-emerald-500/30 rounded-xl p-4">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-400 block mb-1">
+              Net Member Payouts (90%)
+            </span>
+            <span className="text-xl font-black text-emerald-300">
+              {formatUsdt(safeStats.totalNetDispatchedUsdt || 0)}
+            </span>
+          </div>
+
+          <div className="bg-[#050b18] border border-amber-500/30 rounded-xl p-4">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-amber-400 block mb-1">
+              Retained Admin Profit (10%)
+            </span>
+            <span className="text-xl font-black text-amber-300">
+              +{formatUsdt(safeStats.adminFeeIncomeUsdt || 0)}
+            </span>
+          </div>
+        </div>
+      </div>
+
       {/* Quick Actions (Interactive navigation cards) */}
       <div>
         <div className="flex items-center justify-between mb-4">
@@ -173,7 +244,7 @@ export function AdminDashboardView({
           <span className="text-xs text-slate-500 dark:text-slate-400">Click any card to open view</span>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 sm:gap-4">
           {/* Deposits Action */}
           <div 
             onClick={() => setActiveTab?.("deposits")}
@@ -203,6 +274,22 @@ export function AdminDashboardView({
             </h4>
             <span className="text-xs text-rose-700 dark:text-rose-400/90 font-semibold px-2 py-0.5 rounded-full bg-rose-500/10 border border-rose-500/20">
               {safeStats.pendingWithdrawals || 0} pending
+            </span>
+          </div>
+
+          {/* Admin Income Action */}
+          <div 
+            onClick={() => setActiveTab?.("admin-income")}
+            className="bg-white dark:bg-[#0c1322] border border-slate-200 dark:border-slate-800/80 hover:border-amber-500/50 p-5 rounded-2xl flex flex-col items-center justify-center text-center cursor-pointer hover:bg-amber-500/5 transition-all duration-200 group shadow-md"
+          >
+            <div className="h-12 w-12 bg-amber-500/10 text-amber-600 dark:text-amber-400 group-hover:scale-110 rounded-2xl flex items-center justify-center mb-3 transition-transform border border-amber-500/20">
+              <Landmark className="h-6 w-6" />
+            </div>
+            <h4 className="font-bold text-sm text-slate-900 dark:text-slate-100 mb-1 group-hover:text-amber-600 dark:group-hover:text-amber-300 transition-colors">
+              Admin Income
+            </h4>
+            <span className="text-xs text-amber-700 dark:text-amber-400/90 font-semibold px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/20">
+              10% Fee Ledger
             </span>
           </div>
           

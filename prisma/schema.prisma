@@ -132,6 +132,9 @@ model WithdrawalRequest {
   user           User            @relation(fields: [userId], references: [id])
   amountInInr    Decimal         @db.Decimal(20, 2)
   amountInUsdt   Decimal         @db.Decimal(20, 8)
+  feePercent     Decimal?        @default(10.0) @db.Decimal(5, 2)
+  feeAmount      Decimal?        @default(0.0) @db.Decimal(20, 8)
+  netAmount      Decimal?        @default(0.0) @db.Decimal(20, 8)
   toAddress      String
   network        String          @default("USDT_BEP20")
   txHash         String?

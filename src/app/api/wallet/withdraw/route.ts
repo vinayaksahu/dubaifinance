@@ -83,22 +83,30 @@ export async function POST(req: NextRequest) {
       }, { status: 400 });
     }
 
-    // Deduct Income Balance via Ledger
+    const feePercent = await getNumericConfig("WITHDRAWAL_FEE_PERCENT", APP_CONFIG.withdrawalAdminFeePercent);
+    const feeRateDec = new Decimal(feePercent).dividedBy(100);
+    const feeAmountDec = amountUsdtDec.times(feeRateDec);
+    const netAmountDec = amountUsdtDec.minus(feeAmountDec);
+
+    // Deduct Gross Income Balance via Ledger
     await executeLedgerTransaction({
       userId: user.id,
       type: "WITHDRAWAL",
       wallet: "INCOME",
       amount: amountUsdtDec.negated(),
       referenceKey: `WITHDRAWAL_REQ_${Date.now()}_${user.id}`,
-      description: `Requested USDT Payout of $${amountUsdtDec.toFixed(2)} USDT to ${payoutAddress.slice(0, 8)}...`,
+      description: `Requested Payout $${amountUsdtDec.toFixed(2)} USDT (Net: $${netAmountDec.toFixed(2)}, Admin Fee ${feePercent}%: $${feeAmountDec.toFixed(2)}) to ${payoutAddress.slice(0, 8)}...`,
     });
 
-    // Create WithdrawalRequest in DB
+    // Create WithdrawalRequest in DB with fee breakdown
     const request = await db.withdrawalRequest.create({
       data: {
         userId: user.id,
         amountInInr: amountUsdtDec.toFixed(2),
         amountInUsdt: amountUsdtDec.toFixed(8),
+        feePercent: new Decimal(feePercent),
+        feeAmount: feeAmountDec.toFixed(8),
+        netAmount: netAmountDec.toFixed(8),
         toAddress: payoutAddress,
         network: "USDT_BEP20",
         status: "PENDING",
@@ -107,8 +115,12 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: "Withdrawal request submitted successfully! Admin will dispatch payout shortly.",
+      message: `Withdrawal request for $${amountUsdtDec.toFixed(2)} USDT (Net Payout: $${netAmountDec.toFixed(2)} USDT) submitted successfully!`,
       withdrawalId: request.id,
+      grossAmount: amountUsdtDec.toNumber(),
+      feePercent: Number(feePercent),
+      feeAmount: feeAmountDec.toNumber(),
+      netPayout: netAmountDec.toNumber(),
     });
   } catch (error: any) {
     console.error("Withdrawal error:", error);

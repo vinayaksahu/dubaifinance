@@ -45,7 +45,7 @@ export function AdminTopNavbar({ user, onToggleSidebar, isCollapsed = false }: A
         <div className="flex items-center gap-2 px-3 py-1.5 bg-amber-500/10 border border-amber-500/25 rounded-xl">
           <Crown className="h-4 w-4 text-amber-500 dark:text-amber-400 shrink-0" />
           <span className="text-xs font-bold text-amber-600 dark:text-amber-400 tracking-wide uppercase whitespace-nowrap">
-            CMD Console
+            Admin Console
           </span>
           <span className="hidden sm:inline-flex items-center gap-1 text-[10px] text-emerald-500 dark:text-emerald-400 font-bold border-l border-amber-500/20 pl-2">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
@@ -77,7 +77,7 @@ export function AdminTopNavbar({ user, onToggleSidebar, isCollapsed = false }: A
             {user?.fullName || user?.name || "Super Admin"}
           </span>
           <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-600 dark:text-amber-400 font-black border border-amber-500/30 uppercase">
-            CMD
+            ADMIN
           </span>
         </div>
 
