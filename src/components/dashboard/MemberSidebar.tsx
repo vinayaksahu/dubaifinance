@@ -55,8 +55,20 @@ export function MemberSidebar({
 
   const handleSelectTab = (tab: string) => {
     setActiveTab(tab);
-    // Close all dropdowns when a submenu item is clicked
-    setOpenMenus({ downline: false, income: false, transactional: false, reports: false, packages: false });
+    // Keep only the parent accordion open for the selected tab
+    const parentKey = tab.startsWith("package-") ? "packages"
+      : tab.startsWith("downline-") ? "downline"
+      : tab.startsWith("income-") ? "income"
+      : tab.startsWith("tx-") ? "transactional"
+      : tab.startsWith("report-") ? "reports"
+      : null;
+    setOpenMenus({
+      downline: parentKey === "downline",
+      income: parentKey === "income",
+      transactional: parentKey === "transactional",
+      reports: parentKey === "reports",
+      packages: parentKey === "packages",
+    });
     if (typeof window !== "undefined" && window.innerWidth < 1024) {
       setIsOpen(false);
     }
@@ -181,14 +193,14 @@ export function MemberSidebar({
                 <span className={isCollapsed ? "lg:hidden" : "inline"}>Package Activation</span>
               </div>
               <span className={isCollapsed ? "lg:hidden" : "inline"}>
-                {openMenus.packages || activeTab.startsWith("package-") ? (
+                {openMenus.packages ? (
                   <ChevronDown className="w-4 h-4 text-slate-400" />
                 ) : (
                   <ChevronRight className="w-4 h-4 text-slate-400" />
                 )}
               </span>
             </button>
-            {(openMenus.packages || activeTab.startsWith("package-")) && (
+            {openMenus.packages && (
               <div className={`${isCollapsed ? "lg:hidden" : "block"} pl-11 pr-2 py-1 space-y-1`}>
                 <button
                   type="button"
@@ -235,14 +247,14 @@ export function MemberSidebar({
                 <span className={isCollapsed ? "lg:hidden" : "inline"}>Downline</span>
               </div>
               <span className={isCollapsed ? "lg:hidden" : "inline"}>
-                {openMenus.downline || activeTab.startsWith("downline-") ? (
+                {openMenus.downline ? (
                   <ChevronDown className="w-4 h-4 text-slate-400" />
                 ) : (
                   <ChevronRight className="w-4 h-4 text-slate-400" />
                 )}
               </span>
             </button>
-            {(openMenus.downline || activeTab.startsWith("downline-")) && (
+            {openMenus.downline && (
               <div className={`${isCollapsed ? "lg:hidden" : "block"} pl-11 pr-2 py-1 space-y-1`}>
                 <button
                   type="button"
@@ -300,14 +312,14 @@ export function MemberSidebar({
                 <span className={isCollapsed ? "lg:hidden" : "inline"}>Income</span>
               </div>
               <span className={isCollapsed ? "lg:hidden" : "inline"}>
-                {openMenus.income || activeTab.startsWith("income-") ? (
+                {openMenus.income ? (
                   <ChevronDown className="w-4 h-4 text-slate-400" />
                 ) : (
                   <ChevronRight className="w-4 h-4 text-slate-400" />
                 )}
               </span>
             </button>
-            {(openMenus.income || activeTab.startsWith("income-")) && (
+            {openMenus.income && (
               <div className={`${isCollapsed ? "lg:hidden" : "block"} pl-11 pr-2 py-1 space-y-1`}>
                 <button
                   type="button"
@@ -376,14 +388,14 @@ export function MemberSidebar({
                 <span className={isCollapsed ? "lg:hidden" : "inline"}>Transactional</span>
               </div>
               <span className={isCollapsed ? "lg:hidden" : "inline"}>
-                {openMenus.transactional || activeTab.startsWith("tx-") ? (
+                {openMenus.transactional ? (
                   <ChevronDown className="w-4 h-4 text-slate-400" />
                 ) : (
                   <ChevronRight className="w-4 h-4 text-slate-400" />
                 )}
               </span>
             </button>
-            {(openMenus.transactional || activeTab.startsWith("tx-")) && (
+            {openMenus.transactional && (
               <div className={`${isCollapsed ? "lg:hidden" : "block"} pl-11 pr-2 py-1 space-y-1`}>
                 <button
                   type="button"
@@ -452,14 +464,14 @@ export function MemberSidebar({
                 <span className={isCollapsed ? "lg:hidden" : "inline"}>Reports</span>
               </div>
               <span className={isCollapsed ? "lg:hidden" : "inline"}>
-                {openMenus.reports || activeTab.startsWith("report-") ? (
+                {openMenus.reports ? (
                   <ChevronDown className="w-4 h-4 text-slate-400" />
                 ) : (
                   <ChevronRight className="w-4 h-4 text-slate-400" />
                 )}
               </span>
             </button>
-            {(openMenus.reports || activeTab.startsWith("report-")) && (
+            {openMenus.reports && (
               <div className={`${isCollapsed ? "lg:hidden" : "block"} pl-11 pr-2 py-1 space-y-1`}>
                 <button
                   type="button"
