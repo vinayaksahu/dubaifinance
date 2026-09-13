@@ -5,11 +5,11 @@ import { Sun, Moon, Monitor, Check } from "lucide-react";
 import { useTheme, ThemeMode } from "./ThemeProvider";
 
 interface ThemeToggleProps {
-  variant?: "segmented" | "dropdown" | "compact";
+  variant?: "icons" | "segmented" | "dropdown" | "compact";
   className?: string;
 }
 
-export function ThemeToggle({ variant = "segmented", className = "" }: ThemeToggleProps) {
+export function ThemeToggle({ variant = "icons", className = "" }: ThemeToggleProps) {
   const { theme, resolvedTheme, setTheme } = useTheme();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -24,6 +24,60 @@ export function ThemeToggle({ variant = "segmented", className = "" }: ThemeTogg
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // Sleek, ultra-compact icon-only segmented pill for top navigation
+  if (variant === "icons") {
+    return (
+      <div
+        className={`inline-flex items-center p-0.5 rounded-full bg-slate-900/60 dark:bg-slate-900/80 light:bg-slate-200/70 border border-amber-500/25 dark:border-amber-500/25 light:border-amber-600/30 shadow-inner backdrop-blur-md shrink-0 ${className}`}
+        role="group"
+        aria-label="Theme selection"
+      >
+        <button
+          type="button"
+          onClick={() => setTheme("light")}
+          title="Switch to Light Mode"
+          aria-label="Light Mode"
+          className={`p-1.5 rounded-full transition-all ${
+            theme === "light"
+              ? "bg-amber-400 text-slate-950 font-bold shadow-sm shadow-amber-400/30 scale-105"
+              : "text-slate-400 hover:text-amber-500 dark:hover:text-amber-300"
+          }`}
+        >
+          <Sun className="w-3.5 h-3.5" />
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setTheme("dark")}
+          title="Switch to Dark Mode"
+          aria-label="Dark Mode"
+          className={`p-1.5 rounded-full transition-all ${
+            theme === "dark"
+              ? "bg-amber-400 text-slate-950 font-bold shadow-sm shadow-amber-400/30 scale-105"
+              : "text-slate-400 hover:text-amber-500 dark:hover:text-amber-300"
+          }`}
+        >
+          <Moon className="w-3.5 h-3.5" />
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setTheme("system")}
+          title="Switch to System Default Mode"
+          aria-label="System Mode"
+          className={`p-1.5 rounded-full transition-all ${
+            theme === "system"
+              ? "bg-amber-400 text-slate-950 font-bold shadow-sm shadow-amber-400/30 scale-105"
+              : "text-slate-400 hover:text-amber-500 dark:hover:text-amber-300"
+          }`}
+        >
+          <Monitor className="w-3.5 h-3.5" />
+        </button>
+      </div>
+    );
+  }
+
+  // Segmented with text labels (used in mobile drawer & footer)
   if (variant === "segmented") {
     return (
       <div
@@ -36,14 +90,14 @@ export function ThemeToggle({ variant = "segmented", className = "" }: ThemeTogg
           onClick={() => setTheme("light")}
           title="Light Mode"
           aria-label="Light Mode"
-          className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-xs font-semibold transition-all ${
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${
             theme === "light"
               ? "bg-amber-400 text-slate-950 font-bold shadow-md shadow-amber-400/20 scale-[1.02]"
               : "text-slate-400 hover:text-slate-200 light:text-slate-600 light:hover:text-slate-900"
           }`}
         >
           <Sun className="w-3.5 h-3.5" />
-          <span className="hidden sm:inline">Light</span>
+          <span>Light</span>
         </button>
 
         <button
@@ -51,14 +105,14 @@ export function ThemeToggle({ variant = "segmented", className = "" }: ThemeTogg
           onClick={() => setTheme("dark")}
           title="Dark Mode"
           aria-label="Dark Mode"
-          className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-xs font-semibold transition-all ${
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${
             theme === "dark"
               ? "bg-amber-400 text-slate-950 font-bold shadow-md shadow-amber-400/20 scale-[1.02]"
               : "text-slate-400 hover:text-slate-200 light:text-slate-600 light:hover:text-slate-900"
           }`}
         >
           <Moon className="w-3.5 h-3.5" />
-          <span className="hidden sm:inline">Dark</span>
+          <span>Dark</span>
         </button>
 
         <button
@@ -66,14 +120,14 @@ export function ThemeToggle({ variant = "segmented", className = "" }: ThemeTogg
           onClick={() => setTheme("system")}
           title="System Default Mode"
           aria-label="System Default Mode"
-          className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-xs font-semibold transition-all ${
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${
             theme === "system"
               ? "bg-amber-400 text-slate-950 font-bold shadow-md shadow-amber-400/20 scale-[1.02]"
               : "text-slate-400 hover:text-slate-200 light:text-slate-600 light:hover:text-slate-900"
           }`}
         >
           <Monitor className="w-3.5 h-3.5" />
-          <span className="hidden sm:inline">System</span>
+          <span>System</span>
         </button>
       </div>
     );
@@ -85,12 +139,12 @@ export function ThemeToggle({ variant = "segmented", className = "" }: ThemeTogg
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="w-10 h-10 rounded-xl flex items-center justify-center border border-amber-500/30 bg-slate-900/60 dark:bg-slate-900/60 light:bg-white/80 hover:border-amber-400 text-amber-300 transition shadow-sm"
+        className="w-9 h-9 rounded-xl flex items-center justify-center border border-amber-500/30 bg-slate-900/60 dark:bg-slate-900/60 light:bg-white/80 hover:border-amber-400 text-amber-500 dark:text-amber-300 transition shadow-sm"
         aria-label="Toggle theme menu"
-        title={`Current: ${theme.toUpperCase()} (${resolvedTheme} active)`}
+        title={`Theme: ${theme.toUpperCase()}`}
       >
         {resolvedTheme === "dark" ? (
-          <Moon className="w-4 h-4 text-amber-300" />
+          <Moon className="w-4 h-4 text-amber-400" />
         ) : (
           <Sun className="w-4 h-4 text-amber-500" />
         )}
