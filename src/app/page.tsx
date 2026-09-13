@@ -17,7 +17,7 @@ export default function HomePage() {
       <div className="bg-glow-blue -bottom-40 -left-40" />
 
       <Navbar />
-      <main>
+      <main className="pt-20">
         <Hero />
         <About />
         <Packages />
