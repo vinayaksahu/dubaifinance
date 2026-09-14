@@ -497,6 +497,50 @@ export function MemberSidebar({
               <div className={`${isCollapsed ? "lg:hidden" : "block"} pl-11 pr-2 py-1 space-y-1`}>
                 <button
                   type="button"
+                  onClick={() => handleSelectTab("report-daily")}
+                  className={`w-full text-left py-2 px-3 rounded-lg text-xs font-medium transition-all ${
+                    activeTab === "report-daily"
+                      ? "text-amber-300 bg-amber-500/15 font-bold border-l-2 border-amber-400"
+                      : "text-slate-600 dark:text-slate-400 hover:text-amber-600 dark:hover:text-amber-200 hover:bg-amber-500/10"
+                  }`}
+                >
+                  • Daily Income Report
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleSelectTab("report-monthly")}
+                  className={`w-full text-left py-2 px-3 rounded-lg text-xs font-medium transition-all ${
+                    activeTab === "report-monthly"
+                      ? "text-amber-300 bg-amber-500/15 font-bold border-l-2 border-amber-400"
+                      : "text-slate-600 dark:text-slate-400 hover:text-amber-600 dark:hover:text-amber-200 hover:bg-amber-500/10"
+                  }`}
+                >
+                  • Monthly Income Report
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleSelectTab("report-fund-wallet")}
+                  className={`w-full text-left py-2 px-3 rounded-lg text-xs font-medium transition-all ${
+                    activeTab === "report-fund-wallet"
+                      ? "text-amber-300 bg-amber-500/15 font-bold border-l-2 border-amber-400"
+                      : "text-slate-600 dark:text-slate-400 hover:text-amber-600 dark:hover:text-amber-200 hover:bg-amber-500/10"
+                  }`}
+                >
+                  • Fund Wallet Summary
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleSelectTab("report-income-wallet")}
+                  className={`w-full text-left py-2 px-3 rounded-lg text-xs font-medium transition-all ${
+                    activeTab === "report-income-wallet"
+                      ? "text-amber-300 bg-amber-500/15 font-bold border-l-2 border-amber-400"
+                      : "text-slate-600 dark:text-slate-400 hover:text-amber-600 dark:hover:text-amber-200 hover:bg-amber-500/10"
+                  }`}
+                >
+                  • Income Wallet Summary
+                </button>
+                <button
+                  type="button"
                   onClick={() => handleSelectTab("report-statement")}
                   className={`w-full text-left py-2 px-3 rounded-lg text-xs font-medium transition-all ${
                     activeTab === "report-statement"

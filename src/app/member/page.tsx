@@ -160,6 +160,22 @@ export default function MemberDashboardPage() {
             <TransactionalView user={user} mode="withdraw-report" onRefresh={fetchUser} />
           )}
 
+          {activeTab === "report-daily" && (
+            <ReportsView user={user} reportType="daily" />
+          )}
+
+          {activeTab === "report-monthly" && (
+            <ReportsView user={user} reportType="monthly" />
+          )}
+
+          {activeTab === "report-fund-wallet" && (
+            <ReportsView user={user} reportType="fund-wallet" />
+          )}
+
+          {activeTab === "report-income-wallet" && (
+            <ReportsView user={user} reportType="income-wallet" />
+          )}
+
           {activeTab === "report-statement" && (
             <ReportsView user={user} reportType="statement" />
           )}
