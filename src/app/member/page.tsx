@@ -121,27 +121,27 @@ export default function MemberDashboardPage() {
           )}
 
           {activeTab === "income-roi" && (
-            <IncomeView user={user} incomeType="roi" />
+            <IncomeView user={user} incomeType="roi" onRefresh={fetchUser} />
           )}
 
           {activeTab === "income-fd" && (
-            <IncomeView user={user} incomeType="fd" />
+            <IncomeView user={user} incomeType="fd" onRefresh={fetchUser} />
           )}
 
           {activeTab === "income-referral" && (
-            <IncomeView user={user} incomeType="referral" />
+            <IncomeView user={user} incomeType="referral" onRefresh={fetchUser} />
           )}
 
           {activeTab === "income-level" && (
-            <IncomeView user={user} incomeType="level" />
+            <IncomeView user={user} incomeType="level" onRefresh={fetchUser} />
           )}
 
           {activeTab === "income-fd-referral" && (
-            <IncomeView user={user} incomeType="fd-referral" />
+            <IncomeView user={user} incomeType="fd-referral" onRefresh={fetchUser} />
           )}
 
           {activeTab === "income-fd-level" && (
-            <IncomeView user={user} incomeType="fd-level" />
+            <IncomeView user={user} incomeType="fd-level" onRefresh={fetchUser} />
           )}
 
           {activeTab === "tx-transfer" && (
@@ -161,27 +161,27 @@ export default function MemberDashboardPage() {
           )}
 
           {activeTab === "report-daily" && (
-            <ReportsView user={user} reportType="daily" />
+            <ReportsView user={user} reportType="daily" onRefresh={fetchUser} />
           )}
 
           {activeTab === "report-monthly" && (
-            <ReportsView user={user} reportType="monthly" />
+            <ReportsView user={user} reportType="monthly" onRefresh={fetchUser} />
           )}
 
           {activeTab === "report-fund-wallet" && (
-            <ReportsView user={user} reportType="fund-wallet" />
+            <ReportsView user={user} reportType="fund-wallet" onRefresh={fetchUser} />
           )}
 
           {activeTab === "report-income-wallet" && (
-            <ReportsView user={user} reportType="income-wallet" />
+            <ReportsView user={user} reportType="income-wallet" onRefresh={fetchUser} />
           )}
 
           {activeTab === "report-statement" && (
-            <ReportsView user={user} reportType="statement" />
+            <ReportsView user={user} reportType="statement" onRefresh={fetchUser} />
           )}
 
           {activeTab === "report-packages" && (
-            <ReportsView user={user} reportType="packages" />
+            <ReportsView user={user} reportType="packages" onRefresh={fetchUser} />
           )}
 
           {activeTab === "support" && (
