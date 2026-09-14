@@ -88,6 +88,7 @@ export default function MemberDashboardPage() {
           user={user}
           onToggleSidebar={handleToggleSidebar}
           isCollapsed={sidebarCollapsed}
+          onRefresh={fetchUser}
         />
 
         {/* Dynamic View Body */}
