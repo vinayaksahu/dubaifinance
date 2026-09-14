@@ -330,7 +330,29 @@ export function MemberSidebar({
                       : "text-slate-600 dark:text-slate-400 hover:text-amber-600 dark:hover:text-amber-200 hover:bg-amber-500/10"
                   }`}
                 >
-                  • Daily ROI Income
+                  • Basic ROI Income
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleSelectTab("income-referral")}
+                  className={`w-full text-left py-2 px-3 rounded-lg text-xs font-medium transition-all ${
+                    activeTab === "income-referral"
+                      ? "text-amber-300 bg-amber-500/15 font-bold border-l-2 border-amber-400"
+                      : "text-slate-600 dark:text-slate-400 hover:text-amber-600 dark:hover:text-amber-200 hover:bg-amber-500/10"
+                  }`}
+                >
+                  • Basic Referral Income
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleSelectTab("income-level")}
+                  className={`w-full text-left py-2 px-3 rounded-lg text-xs font-medium transition-all ${
+                    activeTab === "income-level"
+                      ? "text-amber-300 bg-amber-500/15 font-bold border-l-2 border-amber-400"
+                      : "text-slate-600 dark:text-slate-400 hover:text-amber-600 dark:hover:text-amber-200 hover:bg-amber-500/10"
+                  }`}
+                >
+                  • Basic Level Income
                 </button>
                 <button
                   type="button"
@@ -345,25 +367,25 @@ export function MemberSidebar({
                 </button>
                 <button
                   type="button"
-                  onClick={() => handleSelectTab("income-referral")}
+                  onClick={() => handleSelectTab("income-fd-referral")}
                   className={`w-full text-left py-2 px-3 rounded-lg text-xs font-medium transition-all ${
-                    activeTab === "income-referral"
+                    activeTab === "income-fd-referral"
                       ? "text-amber-300 bg-amber-500/15 font-bold border-l-2 border-amber-400"
                       : "text-slate-600 dark:text-slate-400 hover:text-amber-600 dark:hover:text-amber-200 hover:bg-amber-500/10"
                   }`}
                 >
-                  • Direct Referral Income
+                  • FD Referral Income
                 </button>
                 <button
                   type="button"
-                  onClick={() => handleSelectTab("income-level")}
+                  onClick={() => handleSelectTab("income-fd-level")}
                   className={`w-full text-left py-2 px-3 rounded-lg text-xs font-medium transition-all ${
-                    activeTab === "income-level"
+                    activeTab === "income-fd-level"
                       ? "text-amber-300 bg-amber-500/15 font-bold border-l-2 border-amber-400"
                       : "text-slate-600 dark:text-slate-400 hover:text-amber-600 dark:hover:text-amber-200 hover:bg-amber-500/10"
                   }`}
                 >
-                  • Level ROI Income
+                  • FD Level Income
                 </button>
               </div>
             )}

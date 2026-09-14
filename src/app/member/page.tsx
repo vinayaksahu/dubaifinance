@@ -136,6 +136,14 @@ export default function MemberDashboardPage() {
             <IncomeView user={user} incomeType="level" />
           )}
 
+          {activeTab === "income-fd-referral" && (
+            <IncomeView user={user} incomeType="fd-referral" />
+          )}
+
+          {activeTab === "income-fd-level" && (
+            <IncomeView user={user} incomeType="fd-level" />
+          )}
+
           {activeTab === "tx-transfer" && (
             <TransactionalView user={user} mode="transfer" onRefresh={fetchUser} />
           )}

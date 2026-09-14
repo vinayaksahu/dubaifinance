@@ -5,17 +5,19 @@ import { Banknote, TrendingUp, Users, Award } from "lucide-react";
 
 interface IncomeViewProps {
   user: any;
-  incomeType: "roi" | "fd" | "referral" | "level";
+  incomeType: "roi" | "fd" | "referral" | "level" | "fd-referral" | "fd-level";
 }
 
 export function IncomeView({ user, incomeType }: IncomeViewProps) {
   const ledger = user.ledgerEntries || [];
 
   const typeConfig: Record<string, { title: string; filterTypes: string[] }> = {
-    roi: { title: "Daily ROI Income", filterTypes: ["BASIC_DAILY_ROI"] },
+    roi: { title: "Basic ROI Income", filterTypes: ["BASIC_DAILY_ROI"] },
+    referral: { title: "Basic Referral Income (15%)", filterTypes: ["DIRECT_REFERRAL"] },
+    level: { title: "Basic Level Income", filterTypes: ["BASIC_LEVEL_INCOME"] },
     fd: { title: "FD ROI Income", filterTypes: ["FD_DAILY_ROI", "FD_MATURITY_RELEASE"] },
-    referral: { title: "Direct Referral Income (15%)", filterTypes: ["DIRECT_REFERRAL"] },
-    level: { title: "12-Level Team Royalty Income", filterTypes: ["BASIC_LEVEL_INCOME", "FD_LEVEL_INCOME"] },
+    "fd-referral": { title: "FD Referral Income", filterTypes: ["FD_DIRECT_REFERRAL"] },
+    "fd-level": { title: "FD Level Income", filterTypes: ["FD_LEVEL_INCOME"] },
   };
 
   const current = typeConfig[incomeType] || typeConfig.roi;
