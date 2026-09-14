@@ -39,22 +39,22 @@ export default function AdminPage() {
       ]);
 
       if (!meRes.ok || !statsRes.ok) {
-        router.push("/login");
+        router.push("/adminlogin");
         return;
       }
 
       const meData = await meRes.json();
       const statsData = await statsRes.json();
 
-      if (meData.user.role !== "SUPER_ADMIN") {
-        router.push("/member");
+      if (meData.user.role !== "SUPER_ADMIN" && meData.user.role !== "ADMIN") {
+        router.push("/adminlogin");
         return;
       }
 
       setUser(meData.user);
       setStats(statsData.stats);
     } catch {
-      router.push("/login");
+      router.push("/adminlogin");
     } finally {
       setLoading(false);
     }

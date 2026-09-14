@@ -18,7 +18,7 @@ export function AdminTopNavbar({ user, onToggleSidebar, isCollapsed = false }: A
     } catch {
       // ignore
     } finally {
-      window.location.href = "/login";
+      window.location.href = "/adminlogin";
     }
   };
 

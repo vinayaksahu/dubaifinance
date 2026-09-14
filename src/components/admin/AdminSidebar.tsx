@@ -58,7 +58,7 @@ export default function AdminSidebar({
     } catch {
       // ignore
     } finally {
-      window.location.href = "/login";
+      window.location.href = "/adminlogin";
     }
   };
 

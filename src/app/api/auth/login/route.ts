@@ -11,6 +11,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const identifier = body.identifier || body.customId || body.email;
     const password = body.password;
+    const portal = body.portal; // "member" | "admin"
 
     if (!identifier || !password) {
       return NextResponse.json({ error: "User ID / Email and Password are required." }, { status: 400 });
@@ -41,6 +42,23 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Invalid credentials. User ID or Password incorrect." }, { status: 401 });
     }
 
+    const isAdmin = user.role === "SUPER_ADMIN" || user.role === "ADMIN";
+
+    // Strict portal separation
+    if (portal === "admin" && !isAdmin) {
+      return NextResponse.json(
+        { error: "Access Denied. You do not have administrator permissions. Please use Member Login (/login)." },
+        { status: 403 }
+      );
+    }
+
+    if (portal === "member" && isAdmin) {
+      return NextResponse.json(
+        { error: "Admin account detected. Please sign in via the Admin Portal at /adminlogin." },
+        { status: 403 }
+      );
+    }
+
     const token = await createSessionToken({
       userId: user.id,
       customId: user.customId,
@@ -56,7 +74,7 @@ export async function POST(req: NextRequest) {
         fullName: user.fullName,
         role: user.role,
       },
-      redirectTo: user.role === "USER" ? "/member" : "/admin",
+      redirectTo: isAdmin ? "/admin" : "/member",
     });
 
     response.cookies.set("df_session", token, {

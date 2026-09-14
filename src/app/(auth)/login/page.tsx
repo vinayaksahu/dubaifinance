@@ -23,7 +23,7 @@ export default function LoginPage() {
       const res = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ identifier, password }),
+        body: JSON.stringify({ identifier, password, portal: "member" }),
       });
       const data = await res.json();
 
@@ -39,14 +39,9 @@ export default function LoginPage() {
     }
   };
 
-  const handleDemoFill = (type: "member" | "admin") => {
-    if (type === "member") {
-      setIdentifier("DF478752");
-      setPassword("qwer1234");
-    } else {
-      setIdentifier("DF000001");
-      setPassword("adminPassword123!");
-    }
+  const handleDemoFill = () => {
+    setIdentifier("DF478752");
+    setPassword("qwer1234");
   };
 
   return (
@@ -78,25 +73,18 @@ export default function LoginPage() {
               </div>
             </div>
           </Link>
-          <h2 className="font-display text-2xl font-black text-[var(--text-main)]">Welcome Back!</h2>
-          <p className="text-xs text-[var(--text-muted)] mt-1">Please sign in to your Dubai Finance account</p>
+          <h2 className="font-display text-2xl font-black text-[var(--text-main)]">Member Portal</h2>
+          <p className="text-xs text-[var(--text-muted)] mt-1">Sign in to your Dubai Finance investor account</p>
         </div>
 
-        {/* Demo Fast Fill Buttons */}
-        <div className="flex gap-2 mb-6">
+        {/* Demo Fast Fill Button */}
+        <div className="mb-6">
           <button
             type="button"
-            onClick={() => handleDemoFill("member")}
-            className="flex-1 py-1.5 px-3 rounded-lg bg-slate-900 border border-amber-500/30 text-[11px] font-bold text-amber-300 hover:bg-amber-500/10 transition"
+            onClick={handleDemoFill}
+            className="w-full py-1.5 px-3 rounded-lg bg-slate-900/90 border border-amber-500/30 text-[11px] font-bold text-amber-300 hover:bg-amber-500/10 transition"
           >
-            Demo Member (DF478752)
-          </button>
-          <button
-            type="button"
-            onClick={() => handleDemoFill("admin")}
-            className="flex-1 py-1.5 px-3 rounded-lg bg-slate-900 border border-cyan-500/30 text-[11px] font-bold text-cyan-300 hover:bg-cyan-500/10 transition"
-          >
-            Demo Admin (DF000001)
+            Demo Member Login (DF478752)
           </button>
         </div>
 
