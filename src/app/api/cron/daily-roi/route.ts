@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { executeDailyRoiDistribution } from "@/lib/services/roiService";
+import { getSession } from "@/lib/auth";
 
 export async function GET(req: NextRequest) {
   try {
@@ -7,7 +8,11 @@ export async function GET(req: NextRequest) {
     const secretParam = req.nextUrl.searchParams.get("key");
     const validSecret = process.env.CRON_SECRET || "DF-cr0n-s3cr3t-2026-dubaifinance-key-k9p2";
 
+    const session = await getSession();
+    const isAdmin = session?.role === "ADMIN" || session?.role === "SUPER_ADMIN";
+
     const isAuthorized =
+      isAdmin ||
       authHeader === `Bearer ${validSecret}` ||
       secretParam === validSecret ||
       process.env.NODE_ENV !== "production";

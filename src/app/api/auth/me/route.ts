@@ -2,12 +2,26 @@ import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { getAllSystemConfigs } from "@/lib/configService";
+import { executeDailyRoiDistribution } from "@/lib/services/roiService";
 import Decimal from "decimal.js";
+
+let lastAutoRoiCheck = 0;
 
 export async function GET() {
   const session = await getSession();
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  // Auto-distribute pending ROI on portal load (throttled to at most once per 60 seconds)
+  const nowMs = Date.now();
+  if (nowMs - lastAutoRoiCheck > 60000) {
+    lastAutoRoiCheck = nowMs;
+    try {
+      await executeDailyRoiDistribution();
+    } catch (e) {
+      console.error("Auto daily ROI check failed in auth/me:", e);
+    }
   }
 
   const user = await db.user.findUnique({
