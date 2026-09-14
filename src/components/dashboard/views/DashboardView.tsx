@@ -11,8 +11,11 @@ interface DashboardViewProps {
 export function DashboardView({ user, setActiveTab }: DashboardViewProps) {
   const [copied, setCopied] = useState(false);
 
-  // Dynamic origin or fallback referral link
-  const origin = typeof window !== "undefined" ? window.location.origin : "https://dubai.nexarise.us";
+  // Always use dubaifinance.online in production (or localhost during dev)
+  const origin =
+    typeof window !== "undefined" && window.location.hostname === "localhost"
+      ? window.location.origin
+      : "https://dubaifinance.online";
   const customId = user?.customId || "DF478752";
   const referralUrl = `${origin}/register?r=${customId}`;
 

@@ -20,7 +20,7 @@ export default function RegisterPage() {
   useEffect(() => {
     if (typeof window !== "undefined") {
       const params = new URLSearchParams(window.location.search);
-      const ref = params.get("r");
+      const ref = params.get("r") || params.get("ref");
       if (ref) setSponsorCode(ref);
     }
   }, []);

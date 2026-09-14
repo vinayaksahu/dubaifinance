@@ -231,8 +231,11 @@ export function GenealogyTreeView({ user, onNavigateTab }: GenealogyTreeViewProp
 
   // Copy referral link
   const copyReferral = () => {
-    const origin = typeof window !== "undefined" ? window.location.origin : "https://dubai.nexarise.us";
-    const refUrl = `${origin}/register?ref=${user?.customId || "DF000001"}`;
+    const origin =
+      typeof window !== "undefined" && window.location.hostname === "localhost"
+        ? window.location.origin
+        : "https://dubaifinance.online";
+    const refUrl = `${origin}/register?r=${user?.customId || "DF000001"}`;
     navigator.clipboard.writeText(refUrl);
     setCopiedId(true);
     setTimeout(() => setCopiedId(false), 2000);

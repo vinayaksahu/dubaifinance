@@ -14,9 +14,11 @@ export function MemberHeader({ user }: { user: any }) {
     router.push("/login");
   };
 
-  const referralUrl = typeof window !== "undefined"
-    ? `${window.location.origin}/register?r=${user.customId}`
-    : `https://dubaifinance.online/register?r=${user.customId}`;
+  const origin =
+    typeof window !== "undefined" && window.location.hostname === "localhost"
+      ? window.location.origin
+      : "https://dubaifinance.online";
+  const referralUrl = `${origin}/register?r=${user?.customId || "DF000001"}`;
 
   const copyLink = () => {
     navigator.clipboard.writeText(referralUrl);
