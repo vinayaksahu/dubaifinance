@@ -514,7 +514,7 @@ export function MilestoneRewardsView({
                     <h2 className="text-lg sm:text-xl font-black text-slate-100">
                       Next Rank Target: {rankAnalysis.targetRank.title}
                     </h2>
-                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase bg-amber-500/20 text-amber-300 border border-amber-500/30 whitespace-nowrap shrink-0">
                       IN PROGRESS &bull; {rankAnalysis.targetRank.overallPct}%
                     </span>
                   </div>
@@ -707,7 +707,7 @@ export function MilestoneRewardsView({
                     </div>
 
                     <span
-                      className={`px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase shrink-0 ${
+                      className={`px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase shrink-0 whitespace-nowrap ${
                         isAchieved
                           ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/40"
                           : isInProgress
@@ -913,7 +913,7 @@ export function MilestoneRewardsView({
                 <th className="py-3 px-4">GUARANTEED REWARD</th>
                 <th className="py-3 px-4 text-right">CASH BONUS</th>
                 <th className="py-3 px-4 text-center">PROGRESS</th>
-                <th className="py-3 px-4 text-center">STATUS</th>
+                <th className="py-3 px-4 text-center whitespace-nowrap min-w-[130px]">STATUS</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800/60">
@@ -982,16 +982,22 @@ export function MilestoneRewardsView({
                           </span>
                         </div>
                       </td>
-                      <td className="py-3.5 px-4 text-center">
+                      <td className="py-3.5 px-4 text-center whitespace-nowrap">
                         <span
-                          className={`px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase ${
+                          className={`inline-flex items-center justify-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-extrabold uppercase tracking-wide whitespace-nowrap ${
                             isAchieved
-                              ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/40"
+                              ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shadow-sm shadow-emerald-500/10"
                               : isInProgress
-                              ? "bg-amber-500/20 text-amber-300 border border-amber-500/40"
+                              ? "bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow-sm shadow-amber-500/10"
                               : "bg-slate-800 text-slate-400 border border-slate-700"
                           }`}
                         >
+                          {isInProgress && (
+                            <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse shrink-0" />
+                          )}
+                          {isAchieved && (
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />
+                          )}
                           {rank.status}
                         </span>
                       </td>
