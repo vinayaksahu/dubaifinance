@@ -34,6 +34,30 @@ export function DashboardView({ user, setActiveTab }: DashboardViewProps) {
   // Currency symbol - pure $ as requested
   const currency = "$";
 
+  // Basic Package & FD Package totals
+  let calculatedBasicPkg = Number(user?.basicPackageTotal ?? 0);
+  let calculatedFdPkg = Number(user?.fdPackageTotal ?? 0);
+  if (calculatedBasicPkg === 0 && calculatedFdPkg === 0 && Array.isArray(user?.contracts)) {
+    for (const c of user.contracts) {
+      if (c.status === "ACTIVE") {
+        const amt = Number(
+          c.amountInUsdt != null
+            ? c.amountInUsdt
+            : Number(c.amountInInr || 0) > 5000
+            ? Number(c.amountInInr) / 110
+            : Number(c.amountInInr || 0)
+        );
+        if (c.packageType === "BASIC_SAVING") {
+          calculatedBasicPkg += amt;
+        } else {
+          calculatedFdPkg += amt;
+        }
+      }
+    }
+  }
+  const basicPackageTotal = calculatedBasicPkg;
+  const fdPackageTotal = calculatedFdPkg > 0 ? calculatedFdPkg : Number(user?.fdLockedBalance ?? 0);
+
   // Available Fund (Recharge Wallet)
   const fundBal = Number(user?.fundBalance ?? 0);
 
@@ -209,58 +233,96 @@ export function DashboardView({ user, setActiveTab }: DashboardViewProps) {
           </div>
         </div>
 
-        {/* Right Column: 4 Summary Balance Cards (2x2 Grid) */}
-        <div className="lg:col-span-6 grid grid-cols-1 sm:grid-cols-2 gap-3 h-full">
-          {/* AVAILABLE FUND */}
-          <div
-            onClick={() => setActiveTab("recharge")}
-            className="bg-[#091124] border border-[#17274a] rounded-2xl p-3.5 sm:p-4 text-center shadow-lg hover:border-emerald-500/40 transition-all cursor-pointer flex flex-col justify-center items-center"
-          >
-            <p className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">
-              AVAILABLE FUND
-            </p>
-            <p className="text-xl sm:text-2xl font-extrabold text-emerald-400 font-mono">
-              {currency} {fundBal.toFixed(2)}
-            </p>
+        {/* Right Column: Packages & Balance Summary (Matching INDIAFINANCE) */}
+        <div className="lg:col-span-6 flex flex-col justify-between gap-3 h-full">
+          {/* Top Packages Row: BASIC PACKAGE & FD PACKAGE */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {/* BASIC PACKAGE */}
+            <div
+              onClick={() => setActiveTab("package-base")}
+              className="bg-[#091124] border border-[#17274a] rounded-2xl p-3.5 sm:p-4 text-center shadow-lg hover:border-amber-500/40 transition-all cursor-pointer flex flex-col justify-center items-center"
+            >
+              <p className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">
+                BASIC PACKAGE
+              </p>
+              <p className="text-xl sm:text-2xl font-extrabold text-slate-100 font-mono">
+                {currency} {basicPackageTotal.toFixed(2)}
+              </p>
+            </div>
+
+            {/* FD PACKAGE */}
+            <div
+              onClick={() => setActiveTab("package-fd")}
+              className="bg-[#091124] border border-[#17274a] rounded-2xl p-3.5 sm:p-4 text-center shadow-lg hover:border-amber-500/40 transition-all cursor-pointer flex flex-col justify-center items-center"
+            >
+              <p className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">
+                FD PACKAGE
+              </p>
+              <p className="text-xl sm:text-2xl font-extrabold text-slate-100 font-mono">
+                {currency} {fdPackageTotal.toFixed(2)}
+              </p>
+            </div>
           </div>
 
-          {/* AVAILABLE BALANCE */}
-          <div
-            onClick={() => setActiveTab("tx-withdraw")}
-            className="bg-[#091124] border border-[#17274a] rounded-2xl p-3.5 sm:p-4 text-center shadow-lg hover:border-cyan-500/40 transition-all cursor-pointer flex flex-col justify-center items-center"
-          >
-            <p className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">
-              AVAILABLE BALANCE
-            </p>
-            <p className="text-xl sm:text-2xl font-extrabold text-cyan-400 font-mono">
-              {currency} {incomeBal.toFixed(2)}
-            </p>
+          {/* Section Title: 🎁 Balance Summary (As in INDIAFINANCE) */}
+          <div className="flex items-center gap-2 pt-1 text-slate-100 font-bold text-sm sm:text-base">
+            <span className="text-base">🎁</span>
+            <span className="tracking-tight">Balance Summary</span>
           </div>
 
-          {/* TOTAL INCOME */}
-          <div
-            onClick={() => setActiveTab("income-roi")}
-            className="bg-[#091124] border border-[#17274a] rounded-2xl p-3.5 sm:p-4 text-center shadow-lg hover:border-emerald-500/40 transition-all cursor-pointer flex flex-col justify-center items-center"
-          >
-            <p className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">
-              TOTAL INCOME
-            </p>
-            <p className="text-xl sm:text-2xl font-extrabold text-emerald-400 font-mono">
-              {currency} {totalInc.toFixed(2)}
-            </p>
-          </div>
+          {/* 4 Balance Summary Cards (2x2 Grid) */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {/* AVAILABLE FUND */}
+            <div
+              onClick={() => setActiveTab("recharge")}
+              className="bg-[#091124] border border-[#17274a] rounded-2xl p-3.5 sm:p-4 text-center shadow-lg hover:border-emerald-500/40 transition-all cursor-pointer flex flex-col justify-center items-center"
+            >
+              <p className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">
+                AVAILABLE FUND
+              </p>
+              <p className="text-xl sm:text-2xl font-extrabold text-emerald-400 font-mono">
+                {currency} {fundBal.toFixed(2)}
+              </p>
+            </div>
 
-          {/* TOTAL WITHDRAWAL */}
-          <div
-            onClick={() => setActiveTab("tx-withdraw-report")}
-            className="bg-[#091124] border border-[#17274a] rounded-2xl p-3.5 sm:p-4 text-center shadow-lg hover:border-rose-500/40 transition-all cursor-pointer flex flex-col justify-center items-center"
-          >
-            <p className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">
-              TOTAL WITHDRAWAL
-            </p>
-            <p className="text-xl sm:text-2xl font-extrabold text-rose-500 font-mono">
-              {currency} {totalWithdrawn.toFixed(2)}
-            </p>
+            {/* AVAILABLE BALANCE */}
+            <div
+              onClick={() => setActiveTab("tx-withdraw")}
+              className="bg-[#091124] border border-[#17274a] rounded-2xl p-3.5 sm:p-4 text-center shadow-lg hover:border-cyan-500/40 transition-all cursor-pointer flex flex-col justify-center items-center"
+            >
+              <p className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">
+                AVAILABLE BALANCE
+              </p>
+              <p className="text-xl sm:text-2xl font-extrabold text-cyan-400 font-mono">
+                {currency} {incomeBal.toFixed(2)}
+              </p>
+            </div>
+
+            {/* TOTAL INCOME */}
+            <div
+              onClick={() => setActiveTab("income-roi")}
+              className="bg-[#091124] border border-[#17274a] rounded-2xl p-3.5 sm:p-4 text-center shadow-lg hover:border-emerald-500/40 transition-all cursor-pointer flex flex-col justify-center items-center"
+            >
+              <p className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">
+                TOTAL INCOME
+              </p>
+              <p className="text-xl sm:text-2xl font-extrabold text-emerald-400 font-mono">
+                {currency} {totalInc.toFixed(2)}
+              </p>
+            </div>
+
+            {/* TOTAL WITHDRAWAL */}
+            <div
+              onClick={() => setActiveTab("tx-withdraw-report")}
+              className="bg-[#091124] border border-[#17274a] rounded-2xl p-3.5 sm:p-4 text-center shadow-lg hover:border-rose-500/40 transition-all cursor-pointer flex flex-col justify-center items-center"
+            >
+              <p className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">
+                TOTAL WITHDRAWAL
+              </p>
+              <p className="text-xl sm:text-2xl font-extrabold text-rose-500 font-mono">
+                {currency} {totalWithdrawn.toFixed(2)}
+              </p>
+            </div>
           </div>
         </div>
       </div>
