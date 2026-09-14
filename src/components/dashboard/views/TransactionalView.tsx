@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Repeat, ArrowRightLeft, Send, Clock, ShieldCheck, AlertCircle } from "lucide-react";
+import { Repeat, ArrowRightLeft, Send, Clock, ShieldCheck, AlertCircle, Check } from "lucide-react";
 import { APP_CONFIG, getWithdrawalWindowStatus } from "@/lib/constants";
 
 interface TransactionalViewProps {
@@ -27,6 +27,7 @@ export function TransactionalView({ user, mode, onRefresh }: TransactionalViewPr
 
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState<{ text: string; error?: boolean } | null>(null);
+  const [showWithdrawSuccessModal, setShowWithdrawSuccessModal] = useState(false);
 
   const fundBal = Number(user.fundBalance || 0);
   const incomeBal = Number(user.incomeBalance || 0);
@@ -119,7 +120,8 @@ export function TransactionalView({ user, mode, onRefresh }: TransactionalViewPr
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Withdrawal failed");
-      setMessage({ text: data.message || "Withdrawal request submitted successfully!" });
+      setShowWithdrawSuccessModal(true);
+      setMessage(null);
       setWithdrawAmount("");
       setWithdrawPin("");
       onRefresh();
@@ -426,6 +428,50 @@ export function TransactionalView({ user, mode, onRefresh }: TransactionalViewPr
                 )}
               </tbody>
             </table>
+          </div>
+        </div>
+      )}
+
+      {/* Withdrawal Success Popup Modal */}
+      {showWithdrawSuccessModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200"
+          onClick={() => setShowWithdrawSuccessModal(false)}
+        >
+          <div
+            className="relative w-full max-w-[340px] sm:max-w-[360px] bg-white dark:bg-[#0c162d] rounded-2xl sm:rounded-3xl p-6 pt-8 pb-3 text-center shadow-2xl border border-slate-100 dark:border-slate-800 animate-in zoom-in-95 duration-150"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Green Checkmark Badge */}
+            <div className="w-20 h-20 mx-auto rounded-full border-[3px] border-[#86efac] dark:border-emerald-500/50 flex items-center justify-center bg-white dark:bg-emerald-950/20 mb-5">
+              <Check className="w-10 h-10 text-[#22c55e] stroke-[3]" />
+            </div>
+
+            {/* Title */}
+            <h3 className="text-2xl font-bold text-slate-800 dark:text-white tracking-tight mb-2">
+              Successful
+            </h3>
+
+            {/* Message */}
+            <p className="text-sm text-slate-600 dark:text-slate-300 max-w-[280px] mx-auto leading-relaxed mb-6">
+              Withdrawal amount requested and will be processed in 24 hours.
+            </p>
+
+            {/* OK Button */}
+            <button
+              type="button"
+              onClick={() => setShowWithdrawSuccessModal(false)}
+              className="px-8 py-2.5 rounded-lg bg-[#6f63f2] hover:bg-[#5e51e8] active:scale-95 text-white font-semibold text-sm shadow-md transition-all cursor-pointer inline-flex items-center justify-center min-w-[90px]"
+            >
+              OK
+            </button>
+
+            {/* Bottom Footer Divider */}
+            <div className="w-full border-t border-slate-100 dark:border-slate-800/80 mt-6 pt-3 text-center">
+              <p className="text-[11px] sm:text-xs text-slate-400 dark:text-slate-500 font-medium">
+                Powered by Dubai Finance
+              </p>
+            </div>
           </div>
         </div>
       )}
