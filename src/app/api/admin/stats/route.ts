@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { getUpcomingCycleForecast } from "@/lib/services/roiService";
 
 export async function GET() {
   const session = await getSession();
@@ -57,6 +58,14 @@ export async function GET() {
     }
   }
 
+  // Fetch upcoming cycle forecast for next 12:01 AM Dubai cycle
+  let upcomingCycle = null;
+  try {
+    upcomingCycle = await getUpcomingCycleForecast();
+  } catch (err) {
+    console.error("Failed to compute upcoming cycle forecast:", err);
+  }
+
   return NextResponse.json({
     stats: {
       totalUsers,
@@ -73,6 +82,8 @@ export async function GET() {
       totalNetDispatchedUsdt,
       pendingNetPayoutsUsdt,
       pendingGrossWithdrawalsUsdt,
+      // Next upcoming Dubai 12:01 AM cycle forecast
+      upcomingCycle,
     },
   });
 }

@@ -3,7 +3,6 @@ import { getSession, comparePin } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { executeLedgerTransaction } from "@/lib/ledger";
 import { processDirectReferralReward } from "@/lib/services/referralService";
-import { executeDailyRoiDistribution } from "@/lib/services/roiService";
 import { getNumericConfig } from "@/lib/configService";
 import { APP_CONFIG, inrToUsdt } from "@/lib/constants";
 import Decimal from "decimal.js";
@@ -143,13 +142,6 @@ export async function POST(req: NextRequest) {
 
     // Process instant direct referral commission for beneficiary sponsor (Dark PDF 10%)
     await processDirectReferralReward(beneficiary.id, contract.id, amountUsdtDec.toNumber());
-
-    // Immediately distribute Day 1 ROI for eligible contracts
-    try {
-      await executeDailyRoiDistribution();
-    } catch (roiErr) {
-      console.error("Immediate ROI distribution error:", roiErr);
-    }
 
     return NextResponse.json({
       success: true,

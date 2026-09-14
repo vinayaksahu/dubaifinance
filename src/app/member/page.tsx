@@ -12,6 +12,7 @@ import { DownlineView } from "@/components/dashboard/views/DownlineView";
 import { GenealogyTreeView } from "@/components/dashboard/views/GenealogyTreeView";
 import { TransactionalView } from "@/components/dashboard/views/TransactionalView";
 import { IncomeView } from "@/components/dashboard/views/IncomeView";
+import { MilestoneRewardsView } from "@/components/dashboard/views/MilestoneRewardsView";
 import { ReportsView } from "@/components/dashboard/views/ReportsView";
 import { SupportTicketView } from "@/components/dashboard/views/SupportTicketView";
 
@@ -143,6 +144,10 @@ export default function MemberDashboardPage() {
 
           {activeTab === "income-fd-level" && (
             <IncomeView user={user} incomeType="fd-level" onRefresh={fetchUser} />
+          )}
+
+          {activeTab === "income-rewards" && (
+            <MilestoneRewardsView user={user} onRefresh={fetchUser} />
           )}
 
           {activeTab === "tx-transfer" && (

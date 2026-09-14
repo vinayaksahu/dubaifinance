@@ -387,6 +387,17 @@ export function MemberSidebar({
                 >
                   • FD Level Income
                 </button>
+                <button
+                  type="button"
+                  onClick={() => handleSelectTab("income-rewards")}
+                  className={`w-full text-left py-2 px-3 rounded-lg text-xs font-medium transition-all ${
+                    activeTab === "income-rewards"
+                      ? "text-amber-300 bg-amber-500/15 font-bold border-l-2 border-amber-400"
+                      : "text-slate-600 dark:text-slate-400 hover:text-amber-600 dark:hover:text-amber-200 hover:bg-amber-500/10"
+                  }`}
+                >
+                  • Milestone Rewards
+                </button>
               </div>
             )}
           </div>
