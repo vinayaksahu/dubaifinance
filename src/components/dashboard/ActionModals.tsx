@@ -461,10 +461,11 @@ export function ActionModals({ user, onRefresh }: { user: any; onRefresh: () => 
                     >
                       <option value="50">Package 1 - $50 USDT</option>
                       <option value="100">Package 2 - $100 USDT</option>
-                      <option value="500">Package 3 - $500 USDT</option>
-                      <option value="1000">Package 4 (Popular) - $1,000 USDT</option>
-                      <option value="2000">Package 5 - $2,000 USDT</option>
-                      <option value="5000">Package 6 (VIP) - $5,000 USDT</option>
+                      <option value="200">Package 3 - $200 USDT</option>
+                      <option value="500">Package 4 - $500 USDT</option>
+                      <option value="1000">Package 5 (Popular) - $1,000 USDT</option>
+                      <option value="2000">Package 6 - $2,000 USDT</option>
+                      <option value="5000">Package 7 (VIP) - $5,000 USDT</option>
                     </select>
                   </div>
 

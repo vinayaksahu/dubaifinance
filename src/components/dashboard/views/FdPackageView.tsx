@@ -27,10 +27,11 @@ export function FdPackageView({ user, onRefresh }: FdPackageViewProps) {
   const FD_TIERS = [
     { id: "pkg-1", tier: "PACKAGE 1", amountUsdt: 50, featured: false },
     { id: "pkg-2", tier: "PACKAGE 2", amountUsdt: 100, featured: false },
-    { id: "pkg-3", tier: "PACKAGE 3", amountUsdt: 500, featured: false },
-    { id: "pkg-4", tier: "PACKAGE 4 (POPULAR)", amountUsdt: 1000, featured: true },
-    { id: "pkg-5", tier: "PACKAGE 5", amountUsdt: 2000, featured: false },
-    { id: "pkg-6", tier: "PACKAGE 6 (VIP)", amountUsdt: 5000, featured: false },
+    { id: "pkg-3", tier: "PACKAGE 3", amountUsdt: 200, featured: false },
+    { id: "pkg-4", tier: "PACKAGE 4", amountUsdt: 500, featured: false },
+    { id: "pkg-5", tier: "PACKAGE 5 (POPULAR)", amountUsdt: 1000, featured: true },
+    { id: "pkg-6", tier: "PACKAGE 6", amountUsdt: 2000, featured: false },
+    { id: "pkg-7", tier: "PACKAGE 7 (VIP)", amountUsdt: 5000, featured: false },
   ];
 
   const dynamicFdPlans = FD_TIERS.map((tier) => {

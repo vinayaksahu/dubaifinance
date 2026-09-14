@@ -25,6 +25,7 @@ export function Packages() {
   const fd180Plans = [
     { amount: 50, daily: 5, m30: 150, m90: 450, total: 900, mult: "18X" },
     { amount: 100, daily: 10, m30: 300, m90: 900, total: 1800, mult: "18X" },
+    { amount: 200, daily: 20, m30: 600, m90: 1800, total: 3600, mult: "18X" },
     { amount: 500, daily: 50, m30: 1500, m90: 4500, total: 9000, mult: "18X", popular: true },
     { amount: 1000, daily: 100, m30: 3000, m90: 9000, total: 18000, mult: "18X" },
     { amount: 2000, daily: 200, m30: 6000, m90: 18000, total: 36000, mult: "18X" },
@@ -32,7 +33,9 @@ export function Packages() {
   ];
 
   const fd210Plans = [
+    { amount: 50, daily: 7.5, m30: 225, m90: 675, total: 1575, mult: "31.5X" },
     { amount: 100, daily: 15, m30: 450, m90: 1350, total: 3150, mult: "31.5X" },
+    { amount: 200, daily: 30, m30: 900, m90: 2700, total: 6300, mult: "31.5X" },
     { amount: 500, daily: 75, m30: 2250, m90: 6750, total: 15750, mult: "31.5X", popular: true },
     { amount: 1000, daily: 150, m30: 4500, m90: 13500, total: 31500, mult: "31.5X" },
     { amount: 2000, daily: 300, m30: 9000, m90: 27000, total: 63000, mult: "31.5X" },
