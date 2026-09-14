@@ -20,6 +20,20 @@ export function AdminDashboardView({
   setActiveTab 
 }: AdminDashboardViewProps) {
   const safeStats = stats || {};
+  const [showQueuedList, setShowQueuedList] = useState(false);
+  const [contractSearch, setContractSearch] = useState("");
+  const upcoming = safeStats.upcomingCycle || {};
+  const queued = (upcoming.queuedContracts || []) as any[];
+
+  const filteredQueued = queued.filter((c: any) => {
+    if (!contractSearch) return true;
+    const q = contractSearch.toLowerCase();
+    return (
+      c.userCustomId?.toLowerCase().includes(q) ||
+      c.userFullName?.toLowerCase().includes(q) ||
+      c.contractId?.toLowerCase().includes(q)
+    );
+  });
   
   return (
     <div className="space-y-6">
@@ -135,48 +149,217 @@ export function AdminDashboardView({
         </div>
       </div>
 
-      {/* ROI Engine Banner */}
-      <div className="relative overflow-hidden bg-gradient-to-br from-amber-500/10 via-amber-50/50 to-amber-100/30 dark:from-amber-500/15 dark:via-[#0c1322] dark:to-amber-900/10 border border-amber-500/30 p-6 rounded-2xl shadow-xl">
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative z-10">
+      {/* Next Upcoming Cycle ROI Engine (Dubai 12:01 AM GST) */}
+      <div className="relative overflow-hidden bg-gradient-to-br from-amber-500/10 via-amber-50/50 to-amber-100/30 dark:from-amber-500/15 dark:via-[#0c1322] dark:to-amber-900/10 border border-amber-500/30 p-6 rounded-2xl shadow-xl space-y-6">
+        {/* Header with Dubai Time Info */}
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative z-10 pb-4 border-b border-amber-500/20">
           <div className="space-y-2">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-600 dark:text-amber-400 text-xs font-bold uppercase tracking-wider">
-              <Zap className="h-3.5 w-3.5 text-amber-500 dark:text-amber-400" />
-              <span>Smart Contract Automation</span>
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-600 dark:text-amber-400 text-xs font-bold uppercase tracking-wider">
+                <Clock className="h-3.5 w-3.5 text-amber-500" />
+                <span>Dubai 12:01 AM GST Cycle</span>
+              </span>
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 text-xs font-bold">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                <span>Next Cycle: {upcoming.nextCycleDubaiTime || "12:01 AM GST"}</span>
+              </span>
             </div>
             <h2 className="font-display font-black text-xl sm:text-2xl text-slate-900 dark:text-slate-100">
-              Automated Daily ROI &amp; 12-Level Royalty Distribution
+              Next Upcoming Cycle Income &amp; ROI Automation
             </h2>
             <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 max-w-2xl leading-relaxed">
-              Distributes 5% Daily Basic ROI (28-Day Tenure), 10% &amp; 15% Fix Deposit returns, and 12-Level Downline Royalties. Scheduled daily via background cron, with on-demand manual override.
+              New package activations do not credit Day 1 immediately. Instead, returns are queued and auto-calculated every night at <strong>12:01 AM Dubai Time (GST)</strong>. Below is the projected payout for the next cycle.
             </p>
           </div>
           
-          <button
-            type="button"
-            onClick={onTriggerCron}
-            disabled={cronLoading}
-            className="gold-btn px-6 py-3.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2.5 shadow-lg shadow-amber-500/20 whitespace-nowrap self-start lg:self-auto disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-          >
-            {cronLoading ? (
-              <>
-                <Activity className="h-5 w-5 animate-spin text-slate-950" />
-                <span>Executing Cycle...</span>
-              </>
-            ) : (
-              <>
-                <Play className="h-5 w-5 text-slate-950 fill-slate-950" />
-                <span>Execute Daily ROI Cycle</span>
-              </>
-            )}
-          </button>
+          <div className="flex flex-col sm:flex-row lg:flex-col items-start lg:items-end gap-2.5">
+            <div className="text-xs text-slate-500 dark:text-slate-400 bg-black/30 border border-slate-800 px-3 py-1.5 rounded-xl font-mono">
+              Dubai Time: <span className="text-amber-400 font-bold">{upcoming.currentDubaiTime || "Loading..."}</span>
+            </div>
+            <button
+              type="button"
+              onClick={onTriggerCron}
+              disabled={cronLoading}
+              className="gold-btn px-6 py-3 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg shadow-amber-500/20 whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed transition-all cursor-pointer"
+            >
+              {cronLoading ? (
+                <>
+                  <Activity className="h-4 w-4 animate-spin text-slate-950" />
+                  <span>Executing Cycle...</span>
+                </>
+              ) : (
+                <>
+                  <Play className="h-4 w-4 text-slate-950 fill-slate-950" />
+                  <span>Execute Cycle Now</span>
+                </>
+              )}
+            </button>
+          </div>
         </div>
 
         {cronMsg && (
-          <div className="mt-5 p-3.5 bg-white/90 dark:bg-slate-950/80 border border-amber-500/30 rounded-xl text-xs sm:text-sm text-amber-700 dark:text-amber-300 flex items-center gap-2 animate-in fade-in duration-200">
+          <div className="p-3.5 bg-white/90 dark:bg-slate-950/80 border border-amber-500/30 rounded-xl text-xs sm:text-sm text-amber-700 dark:text-amber-300 flex items-center gap-2 animate-in fade-in duration-200">
             <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
             <span>{cronMsg}</span>
           </div>
         )}
+
+        {/* 4 Projected Metric Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+          <div className="bg-[#050b18]/80 border border-amber-500/30 rounded-2xl p-4 shadow-sm">
+            <div className="flex items-center justify-between text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">
+              <span>Upcoming Basic ROI (5%)</span>
+              <Banknote className="w-4 h-4 text-amber-400" />
+            </div>
+            <h4 className="text-2xl font-black text-amber-400">
+              {formatUsdt(upcoming.projectedBasicRoiUsdt || 0)}
+            </h4>
+            <p className="text-[11px] text-slate-500 mt-1">Credited to Available Income</p>
+          </div>
+
+          <div className="bg-[#050b18]/80 border border-cyan-500/30 rounded-2xl p-4 shadow-sm">
+            <div className="flex items-center justify-between text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">
+              <span>Upcoming FD ROI (10-15%)</span>
+              <ShieldCheck className="w-4 h-4 text-cyan-400" />
+            </div>
+            <h4 className="text-2xl font-black text-cyan-400">
+              {formatUsdt(upcoming.projectedFdRoiUsdt || 0)}
+            </h4>
+            <p className="text-[11px] text-slate-500 mt-1">Accumulated in FD Locked</p>
+          </div>
+
+          <div className="bg-[#050b18]/80 border border-indigo-500/30 rounded-2xl p-4 shadow-sm">
+            <div className="flex items-center justify-between text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">
+              <span>Upcoming Level Royalties</span>
+              <Layers className="w-4 h-4 text-indigo-400" />
+            </div>
+            <h4 className="text-2xl font-black text-indigo-400">
+              {formatUsdt(upcoming.projectedLevelIncomeUsdt || 0)}
+            </h4>
+            <p className="text-[11px] text-slate-500 mt-1">12-Level Downline Royalties</p>
+          </div>
+
+          <div className="bg-gradient-to-br from-amber-500/20 to-emerald-500/20 border border-emerald-500/40 rounded-2xl p-4 shadow-sm">
+            <div className="flex items-center justify-between text-emerald-300 text-xs font-bold uppercase tracking-wider mb-1">
+              <span>Total Next Cycle Payout</span>
+              <Sparkles className="w-4 h-4 text-emerald-400" />
+            </div>
+            <h4 className="text-2xl font-black text-emerald-400">
+              {formatUsdt(upcoming.projectedTotalPayoutUsdt || 0)}
+            </h4>
+            <p className="text-[11px] text-emerald-300/80 mt-1 font-semibold">
+              Across {upcoming.totalScheduledContracts || 0} active contracts
+            </p>
+          </div>
+        </div>
+
+        {/* Queued Contracts List Toggle & Table */}
+        <div className="pt-2">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#070e20] border border-[#162544] p-3.5 rounded-xl">
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-bold text-slate-200">
+                Queued Contracts for Next Cycle:
+              </span>
+              <span className="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-extrabold text-xs">
+                {queued.length} Contracts
+              </span>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setShowQueuedList(!showQueuedList)}
+              className="text-xs font-bold text-amber-400 hover:text-amber-300 flex items-center gap-1.5 transition cursor-pointer"
+            >
+              <span>{showQueuedList ? "Hide Queue Breakdown" : "View Contract-by-Contract Breakdown"}</span>
+              {showQueuedList ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+            </button>
+          </div>
+
+          {showQueuedList && (
+            <div className="mt-3 bg-[#070e20] border border-[#162544] rounded-2xl p-4 space-y-3 animate-in fade-in duration-200">
+              {/* Search Bar */}
+              <div className="relative">
+                <Search className="w-4 h-4 absolute left-3 top-3 text-slate-500" />
+                <input
+                  type="text"
+                  placeholder="Search by User ID, Name, or Contract ID..."
+                  value={contractSearch}
+                  onChange={(e) => setContractSearch(e.target.value)}
+                  className="w-full bg-[#050b18] border border-slate-800 rounded-xl pl-9 pr-3.5 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-500 font-mono"
+                />
+              </div>
+
+              {/* Table */}
+              <div className="overflow-x-auto rounded-xl border border-slate-800">
+                <table className="w-full text-left text-xs text-slate-300">
+                  <thead className="bg-[#050b18] text-slate-400 text-[11px] uppercase tracking-wider font-semibold border-b border-slate-800">
+                    <tr>
+                      <th className="py-2.5 px-3">SR</th>
+                      <th className="py-2.5 px-3">Member</th>
+                      <th className="py-2.5 px-3">Package</th>
+                      <th className="py-2.5 px-3">Invested</th>
+                      <th className="py-2.5 px-3">Daily Rate</th>
+                      <th className="py-2.5 px-3">Next Return</th>
+                      <th className="py-2.5 px-3">Upcoming Cycle</th>
+                      <th className="py-2.5 px-3">Wallet</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-800/80">
+                    {filteredQueued.length === 0 ? (
+                      <tr>
+                        <td colSpan={8} className="py-6 text-center text-slate-500">
+                          {queued.length === 0
+                            ? "No active contracts currently queued for next cycle."
+                            : "No matching contracts found."}
+                        </td>
+                      </tr>
+                    ) : (
+                      filteredQueued.map((c: any, idx: number) => (
+                        <tr key={c.contractId || idx} className="hover:bg-white/5 transition-colors">
+                          <td className="py-2.5 px-3 font-mono text-slate-500">{idx + 1}</td>
+                          <td className="py-2.5 px-3">
+                            <span className="font-bold text-white block">{c.userCustomId}</span>
+                            <span className="text-[10px] text-slate-400 truncate max-w-[120px] block">{c.userFullName}</span>
+                          </td>
+                          <td className="py-2.5 px-3">
+                            <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold ${
+                              c.packageType === "BASIC_SAVING"
+                                ? "bg-amber-500/10 text-amber-300 border border-amber-500/30"
+                                : "bg-cyan-500/10 text-cyan-300 border border-cyan-500/30"
+                            }`}>
+                              {c.packageType === "BASIC_SAVING" ? "Basic Saving" : "Fix Deposit"}
+                            </span>
+                          </td>
+                          <td className="py-2.5 px-3 font-semibold text-slate-200">
+                            ${c.amountInUsdt.toFixed(2)} USDT
+                          </td>
+                          <td className="py-2.5 px-3 font-mono text-amber-400 font-bold">
+                            {c.dailyRoiRate}%
+                          </td>
+                          <td className="py-2.5 px-3 font-bold text-emerald-400">
+                            +${c.upcomingRoiUsdt.toFixed(2)} USDT
+                          </td>
+                          <td className="py-2.5 px-3">
+                            <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                              c.isFirstCycle
+                                ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/40"
+                                : "bg-slate-800 text-slate-300 border border-slate-700"
+                            }`}>
+                              {c.cycleLabel}
+                            </span>
+                          </td>
+                          <td className="py-2.5 px-3 text-[11px] text-slate-400">
+                            {c.targetWallet}
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Admin Revenue & 10% Fee Breakdown Banner */}
