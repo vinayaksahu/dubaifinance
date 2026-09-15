@@ -164,3 +164,15 @@ model SystemConfig {
   description    String?
   updatedAt      DateTime        @updatedAt
 }
+
+model OtpVerification {
+  id             String          @id @default(cuid())
+  email          String
+  otp            String
+  purpose        String          @default("REGISTRATION") // REGISTRATION, FORGOT_PASSWORD, etc.
+  expiresAt      DateTime
+  createdAt      DateTime        @default(now())
+
+  @@index([email, purpose])
+}
+

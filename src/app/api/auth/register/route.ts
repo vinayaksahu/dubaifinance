@@ -3,14 +3,31 @@ import { db } from "@/lib/db";
 import { hashPassword, hashPin, createSessionToken } from "@/lib/auth";
 import { executeLedgerTransaction } from "@/lib/ledger";
 import { APP_CONFIG } from "@/lib/constants";
+import { verifyOtp } from "@/lib/mail";
 import Decimal from "decimal.js";
 
 export async function POST(req: NextRequest) {
   try {
-    const { fullName, email, phone, password, transactionPin, sponsorCode } = await req.json();
+    const { fullName, email, phone, password, transactionPin, sponsorCode, otp } = await req.json();
 
     if (!fullName || !email || !password) {
       return NextResponse.json({ error: "Name, email and password are required." }, { status: 400 });
+    }
+
+    if (!otp || typeof otp !== "string" || otp.trim().length !== 6) {
+      return NextResponse.json(
+        { error: "Valid 6-digit Email Verification Code (OTP) is required." },
+        { status: 400 }
+      );
+    }
+
+    // Verify OTP
+    const isValidOtp = await verifyOtp(email, otp, "REGISTRATION");
+    if (!isValidOtp) {
+      return NextResponse.json(
+        { error: "Invalid or expired OTP. Please request a new verification code." },
+        { status: 400 }
+      );
     }
 
     // Check existing email
