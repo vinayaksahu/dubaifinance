@@ -42,10 +42,34 @@ export function ActionModals({ user, onRefresh }: { user: any; onRefresh: () => 
   const [withdrawAmount, setWithdrawAmount] = useState("50");
   const [withdrawAddress, setWithdrawAddress] = useState(user.usdtAddress || "");
 
+  const [txOtpSending, setTxOtpSending] = useState(false);
+  const [txOtpSent, setTxOtpSent] = useState(false);
+
+  const handleSendTxOtp = async () => {
+    setTxOtpSending(true);
+    setMsg(null);
+    try {
+      const res = await fetch("/api/auth/send-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: user.email, purpose: "TRANSACTION" }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to send OTP");
+      setTxOtpSent(true);
+      setMsg({ type: "success", text: `Security OTP sent to ${user.email}. Check inbox/spam.` });
+    } catch (err: any) {
+      setMsg({ type: "error", text: err.message });
+    } finally {
+      setTxOtpSending(false);
+    }
+  };
+
   const closeModal = () => {
     setActiveModal(null);
     setMsg(null);
     setPin("");
+    setTxOtpSent(false);
   };
 
   // Deposit handler
@@ -411,17 +435,27 @@ export function ActionModals({ user, onRefresh }: { user: any; onRefresh: () => 
                   </div>
 
                   <div>
-                    <label className="block text-[11px] font-bold text-slate-300 mb-1">
-                      6-Digit Transaction PIN
-                    </label>
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="block text-[11px] font-bold text-slate-300">
+                        Security OTP / PIN
+                      </label>
+                      <button
+                        type="button"
+                        onClick={handleSendTxOtp}
+                        disabled={txOtpSending}
+                        className="text-[11px] font-bold text-amber-400 hover:text-amber-300 underline disabled:opacity-50"
+                      >
+                        {txOtpSending ? "Sending OTP..." : txOtpSent ? "Resend OTP" : "Get OTP on Email"}
+                      </button>
+                    </div>
                     <input
-                      type="password"
+                      type="text"
                       maxLength={6}
                       required
                       value={pin}
-                      onChange={(e) => setPin(e.target.value)}
-                      placeholder="e.g. 123456"
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-black/50 border border-slate-700 text-amber-300 text-sm outline-none"
+                      onChange={(e) => setPin(e.target.value.replace(/\D/g, ""))}
+                      placeholder="Enter 6-digit OTP code"
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-black/50 border border-amber-500/40 focus:border-amber-400 text-amber-300 text-sm font-bold tracking-widest outline-none placeholder:font-normal placeholder:tracking-normal placeholder:text-slate-500"
                     />
                   </div>
 
@@ -513,17 +547,27 @@ export function ActionModals({ user, onRefresh }: { user: any; onRefresh: () => 
                   </div>
 
                   <div>
-                    <label className="block text-[11px] font-bold text-slate-300 mb-1">
-                      6-Digit Transaction PIN
-                    </label>
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="block text-[11px] font-bold text-slate-300">
+                        Security OTP / PIN
+                      </label>
+                      <button
+                        type="button"
+                        onClick={handleSendTxOtp}
+                        disabled={txOtpSending}
+                        className="text-[11px] font-bold text-amber-400 hover:text-amber-300 underline disabled:opacity-50"
+                      >
+                        {txOtpSending ? "Sending OTP..." : txOtpSent ? "Resend OTP" : "Get OTP on Email"}
+                      </button>
+                    </div>
                     <input
-                      type="password"
+                      type="text"
                       maxLength={6}
                       required
                       value={pin}
-                      onChange={(e) => setPin(e.target.value)}
-                      placeholder="e.g. 123456"
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-black/50 border border-slate-700 text-amber-300 text-sm outline-none"
+                      onChange={(e) => setPin(e.target.value.replace(/\D/g, ""))}
+                      placeholder="Enter 6-digit OTP code"
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-black/50 border border-amber-500/40 focus:border-amber-400 text-amber-300 text-sm font-bold tracking-widest outline-none placeholder:font-normal placeholder:tracking-normal placeholder:text-slate-500"
                     />
                   </div>
 
@@ -576,17 +620,27 @@ export function ActionModals({ user, onRefresh }: { user: any; onRefresh: () => 
                   </div>
 
                   <div>
-                    <label className="block text-[11px] font-bold text-slate-300 mb-1">
-                      6-Digit Transaction PIN
-                    </label>
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="block text-[11px] font-bold text-slate-300">
+                        Security OTP / PIN
+                      </label>
+                      <button
+                        type="button"
+                        onClick={handleSendTxOtp}
+                        disabled={txOtpSending}
+                        className="text-[11px] font-bold text-amber-400 hover:text-amber-300 underline disabled:opacity-50"
+                      >
+                        {txOtpSending ? "Sending OTP..." : txOtpSent ? "Resend OTP" : "Get OTP on Email"}
+                      </button>
+                    </div>
                     <input
-                      type="password"
+                      type="text"
                       maxLength={6}
                       required
                       value={pin}
-                      onChange={(e) => setPin(e.target.value)}
-                      placeholder="e.g. 123456"
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-black/50 border border-slate-700 text-amber-300 text-sm outline-none"
+                      onChange={(e) => setPin(e.target.value.replace(/\D/g, ""))}
+                      placeholder="Enter 6-digit OTP code"
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-black/50 border border-amber-500/40 focus:border-amber-400 text-amber-300 text-sm font-bold tracking-widest outline-none placeholder:font-normal placeholder:tracking-normal placeholder:text-slate-500"
                     />
                   </div>
 
@@ -625,17 +679,27 @@ export function ActionModals({ user, onRefresh }: { user: any; onRefresh: () => 
                   </div>
 
                   <div>
-                    <label className="block text-[11px] font-bold text-slate-300 mb-1">
-                      6-Digit Transaction PIN
-                    </label>
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="block text-[11px] font-bold text-slate-300">
+                        Security OTP / PIN
+                      </label>
+                      <button
+                        type="button"
+                        onClick={handleSendTxOtp}
+                        disabled={txOtpSending}
+                        className="text-[11px] font-bold text-amber-400 hover:text-amber-300 underline disabled:opacity-50"
+                      >
+                        {txOtpSending ? "Sending OTP..." : txOtpSent ? "Resend OTP" : "Get OTP on Email"}
+                      </button>
+                    </div>
                     <input
-                      type="password"
+                      type="text"
                       maxLength={6}
                       required
                       value={pin}
-                      onChange={(e) => setPin(e.target.value)}
-                      placeholder="e.g. 123456"
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-black/50 border border-slate-700 text-amber-300 text-sm outline-none"
+                      onChange={(e) => setPin(e.target.value.replace(/\D/g, ""))}
+                      placeholder="Enter 6-digit OTP code"
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-black/50 border border-amber-500/40 focus:border-amber-400 text-amber-300 text-sm font-bold tracking-widest outline-none placeholder:font-normal placeholder:tracking-normal placeholder:text-slate-500"
                     />
                   </div>
 
@@ -699,17 +763,27 @@ export function ActionModals({ user, onRefresh }: { user: any; onRefresh: () => 
                   </div>
 
                   <div>
-                    <label className="block text-[11px] font-bold text-slate-300 mb-1">
-                      6-Digit Transaction PIN
-                    </label>
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="block text-[11px] font-bold text-slate-300">
+                        Security OTP / PIN
+                      </label>
+                      <button
+                        type="button"
+                        onClick={handleSendTxOtp}
+                        disabled={txOtpSending}
+                        className="text-[11px] font-bold text-amber-400 hover:text-amber-300 underline disabled:opacity-50"
+                      >
+                        {txOtpSending ? "Sending OTP..." : txOtpSent ? "Resend OTP" : "Get OTP on Email"}
+                      </button>
+                    </div>
                     <input
-                      type="password"
+                      type="text"
                       maxLength={6}
                       required
                       value={pin}
-                      onChange={(e) => setPin(e.target.value)}
-                      placeholder="e.g. 123456"
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-black/50 border border-slate-700 text-amber-300 text-sm outline-none"
+                      onChange={(e) => setPin(e.target.value.replace(/\D/g, ""))}
+                      placeholder="Enter 6-digit OTP code"
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-black/50 border border-amber-500/40 focus:border-amber-400 text-amber-300 text-sm font-bold tracking-widest outline-none placeholder:font-normal placeholder:tracking-normal placeholder:text-slate-500"
                     />
                   </div>
 

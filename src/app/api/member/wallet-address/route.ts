@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getSession, comparePin } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { verifyOtp } from "@/lib/mail";
 
 export async function POST(req: Request) {
   try {
@@ -31,27 +32,29 @@ export async function POST(req: Request) {
 
     const user = await db.user.findUnique({
       where: { id: session.userId },
-      select: { id: true, transactionPin: true },
+      select: { id: true, email: true, transactionPin: true },
     });
 
     if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    if (user.transactionPin) {
-      if (!transactionPin) {
+    const verificationCode = (body.otp || transactionPin || "").trim();
+    if (verificationCode) {
+      const isAuthorized = (await verifyOtp(user.email, verificationCode, "TRANSACTION")) ||
+        (user.transactionPin ? await comparePin(verificationCode, user.transactionPin) : false);
+
+      if (!isAuthorized) {
         return NextResponse.json(
-          { error: "Transaction PIN is required to update wallet address" },
+          { error: "Invalid or expired Security OTP / PIN" },
           { status: 400 }
         );
       }
-      const isPinValid = await comparePin(transactionPin, user.transactionPin);
-      if (!isPinValid) {
-        return NextResponse.json(
-          { error: "Invalid Transaction PIN" },
-          { status: 400 }
-        );
-      }
+    } else if (user.transactionPin) {
+      return NextResponse.json(
+        { error: "Security OTP or PIN is required to update payout wallet address" },
+        { status: 400 }
+      );
     }
 
     const updated = await db.user.update({

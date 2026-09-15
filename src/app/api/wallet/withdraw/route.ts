@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { executeLedgerTransaction } from "@/lib/ledger";
 import { getNumericConfig, getAllSystemConfigs } from "@/lib/configService";
 import { APP_CONFIG, getWithdrawalWindowStatus } from "@/lib/constants";
+import { verifyOtp } from "@/lib/mail";
 import Decimal from "decimal.js";
 
 export async function POST(req: NextRequest) {
@@ -26,11 +27,12 @@ export async function POST(req: NextRequest) {
     const minUsdt = await getNumericConfig("MIN_WITHDRAWAL_USDT", APP_CONFIG.minWithdrawalUsdt);
     const maxUsdt = await getNumericConfig("MAX_WITHDRAWAL_USDT", APP_CONFIG.maxWithdrawalUsdt);
 
-    const { amountInUsdt, amount, amountInInr, toAddress, transactionPin } = await req.json();
+    const { amountInUsdt, amount, amountInInr, toAddress, transactionPin, otp } = await req.json();
     const rawAmount = amountInUsdt ?? amount ?? amountInInr;
+    const verificationCode = (otp || transactionPin || "").trim();
 
-    if (!rawAmount || !transactionPin) {
-      return NextResponse.json({ error: "Amount and 6-digit PIN are required." }, { status: 400 });
+    if (!rawAmount || !verificationCode) {
+      return NextResponse.json({ error: "Amount and Security OTP / PIN are required." }, { status: 400 });
     }
 
     const user = await db.user.findUnique({
@@ -38,19 +40,28 @@ export async function POST(req: NextRequest) {
       select: {
         id: true,
         customId: true,
+        email: true,
         transactionPin: true,
         incomeBalance: true,
         usdtAddress: true,
       },
     });
 
-    if (!user || !user.transactionPin) {
-      return NextResponse.json({ error: "Please set your 6-digit Transaction PIN first." }, { status: 400 });
+    if (!user) {
+      return NextResponse.json({ error: "User not found." }, { status: 404 });
     }
 
-    const isPinValid = await comparePin(transactionPin, user.transactionPin);
-    if (!isPinValid) {
-      return NextResponse.json({ error: "Invalid 6-digit Transaction PIN." }, { status: 401 });
+    // Verify via OTP first, or fallback to saved PIN
+    let isAuthorized = false;
+    if (verificationCode) {
+      isAuthorized = await verifyOtp(user.email, verificationCode, "TRANSACTION");
+      if (!isAuthorized && user.transactionPin) {
+        isAuthorized = await comparePin(verificationCode, user.transactionPin);
+      }
+    }
+
+    if (!isAuthorized) {
+      return NextResponse.json({ error: "Invalid or expired Security OTP code." }, { status: 401 });
     }
 
     const payoutAddress = toAddress || user.usdtAddress;

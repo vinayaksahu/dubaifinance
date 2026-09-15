@@ -24,9 +24,30 @@ const PACKAGE_TEMPLATES = [
 export function BasicPackageView({ user, onRefresh, onRefreshUser }: BasicPackageViewProps) {
   const [selectedPlan, setSelectedPlan] = useState<any | null>(null);
   const [transactionPin, setTransactionPin] = useState("");
+  const [txOtpSending, setTxOtpSending] = useState(false);
+  const [txOtpSent, setTxOtpSent] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+
+  const handleSendTxOtp = async () => {
+    setTxOtpSending(true);
+    setError("");
+    try {
+      const res = await fetch("/api/auth/send-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: user?.email, purpose: "TRANSACTION" }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to send OTP");
+      setTxOtpSent(true);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setTxOtpSending(false);
+    }
+  };
 
   // Safe numerical fund balance
   const fundBal = Number(user?.fundBalance ?? 0);
@@ -275,16 +296,26 @@ export function BasicPackageView({ user, onRefresh, onRefreshUser }: BasicPackag
               )}
 
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-                  Enter 6-Digit Transaction PIN
-                </label>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="block text-xs font-semibold text-slate-300">
+                    Security OTP / PIN
+                  </label>
+                  <button
+                    type="button"
+                    onClick={handleSendTxOtp}
+                    disabled={txOtpSending}
+                    className="text-xs font-bold text-amber-400 hover:text-amber-300 underline disabled:opacity-50"
+                  >
+                    {txOtpSending ? "Sending OTP..." : txOtpSent ? "Resend OTP" : "Get OTP on Email"}
+                  </button>
+                </div>
                 <input
-                  type="password"
+                  type="text"
                   maxLength={6}
                   value={transactionPin}
                   onChange={(e) => setTransactionPin(e.target.value.replace(/\D/g, ""))}
-                  placeholder="••••••"
-                  className="w-full bg-[#060c1c] border border-[#17274a] text-white rounded-xl px-4 py-2.5 focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 text-sm font-mono tracking-widest text-center"
+                  placeholder="Enter 6-digit OTP code"
+                  className="w-full bg-[#060c1c] border border-[#17274a] text-amber-300 rounded-xl px-4 py-2.5 focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 text-sm font-mono tracking-widest text-center font-bold"
                 />
               </div>
 

@@ -5,35 +5,45 @@ import { executeLedgerTransaction } from "@/lib/ledger";
 import { processDirectReferralReward } from "@/lib/services/referralService";
 import { getNumericConfig } from "@/lib/configService";
 import { APP_CONFIG, inrToUsdt } from "@/lib/constants";
+import { verifyOtp } from "@/lib/mail";
 import Decimal from "decimal.js";
 
 export async function POST(req: NextRequest) {
   try {
     const session = await getSession();
     if (!session) {
-      return NextResponse.json({ error: "Unauthorized. Please log in." }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { packageType, amountInInr, amountInUsdt, amount, targetCustomId, transactionPin, fdTenureDays } = await req.json();
+    const { packageType, amountInInr, amountInUsdt, amount, targetCustomId, transactionPin, otp, fdTenureDays } = await req.json();
 
     const rawAmount = amountInUsdt ?? amount ?? amountInInr;
-    if (!packageType || !rawAmount || !transactionPin) {
-      return NextResponse.json({ error: "Package type, amount and 6-digit PIN are required." }, { status: 400 });
+    const verificationCode = (otp || transactionPin || "").trim();
+
+    if (!packageType || !rawAmount || !verificationCode) {
+      return NextResponse.json({ error: "Package type, amount and Security OTP / PIN are required." }, { status: 400 });
     }
 
-    // Verify user PIN
+    // Verify user PIN or OTP
     const caller = await db.user.findUnique({
       where: { id: session.userId },
-      select: { id: true, customId: true, transactionPin: true, fundBalance: true, status: true },
+      select: { id: true, customId: true, email: true, transactionPin: true, fundBalance: true, status: true },
     });
 
-    if (!caller || !caller.transactionPin) {
-      return NextResponse.json({ error: "Please set your 6-digit Transaction PIN in Security settings first." }, { status: 400 });
+    if (!caller) {
+      return NextResponse.json({ error: "User account not found." }, { status: 404 });
     }
 
-    const isPinValid = await comparePin(transactionPin, caller.transactionPin);
-    if (!isPinValid) {
-      return NextResponse.json({ error: "Invalid 6-digit Transaction PIN." }, { status: 401 });
+    let isAuthorized = false;
+    if (verificationCode) {
+      isAuthorized = await verifyOtp(caller.email, verificationCode, "TRANSACTION");
+      if (!isAuthorized && caller.transactionPin) {
+        isAuthorized = await comparePin(verificationCode, caller.transactionPin);
+      }
+    }
+
+    if (!isAuthorized) {
+      return NextResponse.json({ error: "Invalid or expired Security OTP code." }, { status: 401 });
     }
 
     // Target beneficiary

@@ -3,6 +3,7 @@ import { getSession, comparePin } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { executeLedgerTransaction } from "@/lib/ledger";
 import { inrToUsdt } from "@/lib/constants";
+import { verifyOtp } from "@/lib/mail";
 import Decimal from "decimal.js";
 
 export async function POST(req: NextRequest) {
@@ -12,25 +13,33 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { recipientCustomId, amountInInr, amountInUsdt, amount, transactionPin } = await req.json();
+    const { recipientCustomId, amountInInr, amountInUsdt, amount, transactionPin, otp } = await req.json();
     const rawAmount = amountInUsdt ?? amount ?? amountInInr;
+    const verificationCode = (otp || transactionPin || "").trim();
 
-    if (!recipientCustomId || !rawAmount || !transactionPin) {
-      return NextResponse.json({ error: "Recipient ID, Amount, and PIN are required." }, { status: 400 });
+    if (!recipientCustomId || !rawAmount || !verificationCode) {
+      return NextResponse.json({ error: "Recipient ID, Amount, and Security OTP / PIN are required." }, { status: 400 });
     }
 
     const sender = await db.user.findUnique({
       where: { id: session.userId },
-      select: { id: true, customId: true, transactionPin: true, fundBalance: true },
+      select: { id: true, customId: true, email: true, transactionPin: true, fundBalance: true },
     });
 
-    if (!sender || !sender.transactionPin) {
-      return NextResponse.json({ error: "PIN not configured." }, { status: 400 });
+    if (!sender) {
+      return NextResponse.json({ error: "Sender account not found." }, { status: 404 });
     }
 
-    const isPinValid = await comparePin(transactionPin, sender.transactionPin);
-    if (!isPinValid) {
-      return NextResponse.json({ error: "Invalid 6-digit Transaction PIN." }, { status: 401 });
+    let isAuthorized = false;
+    if (verificationCode) {
+      isAuthorized = await verifyOtp(sender.email, verificationCode, "TRANSACTION");
+      if (!isAuthorized && sender.transactionPin) {
+        isAuthorized = await comparePin(verificationCode, sender.transactionPin);
+      }
+    }
+
+    if (!isAuthorized) {
+      return NextResponse.json({ error: "Invalid or expired Security OTP code." }, { status: 401 });
     }
 
     if (sender.customId.toUpperCase() === recipientCustomId.trim().toUpperCase()) {

@@ -3,6 +3,7 @@ import { getSession, comparePin } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { executeLedgerTransaction } from "@/lib/ledger";
 import { inrToUsdt } from "@/lib/constants";
+import { verifyOtp } from "@/lib/mail";
 import Decimal from "decimal.js";
 
 export async function POST(req: NextRequest) {
@@ -12,25 +13,33 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { amountInInr, amountInUsdt, amount, transactionPin } = await req.json();
+    const { amountInInr, amountInUsdt, amount, transactionPin, otp } = await req.json();
     const rawAmount = amountInUsdt ?? amount ?? amountInInr;
+    const verificationCode = (otp || transactionPin || "").trim();
 
-    if (!rawAmount || !transactionPin) {
-      return NextResponse.json({ error: "Amount and 6-digit PIN are required." }, { status: 400 });
+    if (!rawAmount || !verificationCode) {
+      return NextResponse.json({ error: "Amount and Security OTP / PIN are required." }, { status: 400 });
     }
 
     const user = await db.user.findUnique({
       where: { id: session.userId },
-      select: { id: true, transactionPin: true, incomeBalance: true },
+      select: { id: true, email: true, transactionPin: true, incomeBalance: true },
     });
 
-    if (!user || !user.transactionPin) {
-      return NextResponse.json({ error: "PIN not set." }, { status: 400 });
+    if (!user) {
+      return NextResponse.json({ error: "User not found." }, { status: 404 });
     }
 
-    const isPinValid = await comparePin(transactionPin, user.transactionPin);
-    if (!isPinValid) {
-      return NextResponse.json({ error: "Invalid 6-digit Transaction PIN." }, { status: 401 });
+    let isAuthorized = false;
+    if (verificationCode) {
+      isAuthorized = await verifyOtp(user.email, verificationCode, "TRANSACTION");
+      if (!isAuthorized && user.transactionPin) {
+        isAuthorized = await comparePin(verificationCode, user.transactionPin);
+      }
+    }
+
+    if (!isAuthorized) {
+      return NextResponse.json({ error: "Invalid or expired Security OTP code." }, { status: 401 });
     }
 
     let parsedUsdt = Number(rawAmount);

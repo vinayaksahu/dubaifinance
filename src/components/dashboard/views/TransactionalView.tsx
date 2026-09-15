@@ -25,6 +25,29 @@ export function TransactionalView({ user, mode, onRefresh }: TransactionalViewPr
   const [withdrawPin, setWithdrawPin] = useState("");
   const [withdrawAddress, setWithdrawAddress] = useState(user.usdtAddress || "");
 
+  const [txOtpSending, setTxOtpSending] = useState(false);
+  const [txOtpSent, setTxOtpSent] = useState(false);
+
+  const handleSendTxOtp = async () => {
+    setTxOtpSending(true);
+    setMessage(null);
+    try {
+      const res = await fetch("/api/auth/send-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: user.email, purpose: "TRANSACTION" }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to send OTP");
+      setTxOtpSent(true);
+      setMessage({ text: `Security OTP sent to ${user.email}. Check your inbox/spam.`, error: false });
+    } catch (err: any) {
+      setMessage({ text: err.message, error: true });
+    } finally {
+      setTxOtpSending(false);
+    }
+  };
+
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState<{ text: string; error?: boolean } | null>(null);
   const [showWithdrawSuccessModal, setShowWithdrawSuccessModal] = useState(false);
@@ -196,14 +219,24 @@ export function TransactionalView({ user, mode, onRefresh }: TransactionalViewPr
               />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1">6-Digit Transaction PIN</label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="block text-xs font-semibold text-slate-300">Security OTP / PIN</label>
+                <button
+                  type="button"
+                  onClick={handleSendTxOtp}
+                  disabled={txOtpSending}
+                  className="text-xs font-bold text-blue-400 hover:text-blue-300 underline disabled:opacity-50"
+                >
+                  {txOtpSending ? "Sending OTP..." : txOtpSent ? "Resend OTP" : "Get OTP on Email"}
+                </button>
+              </div>
               <input
-                type="password"
+                type="text"
                 maxLength={6}
-                placeholder="******"
+                placeholder="Enter 6-digit OTP code"
                 value={p2pPin}
-                onChange={(e) => setP2pPin(e.target.value)}
-                className="w-full bg-[#070e20] border border-[#1a2d52] rounded-xl px-3.5 py-2.5 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-blue-500 text-center tracking-widest font-mono"
+                onChange={(e) => setP2pPin(e.target.value.replace(/\D/g, ""))}
+                className="w-full bg-[#070e20] border border-[#1a2d52] focus:border-blue-500 rounded-xl px-3.5 py-2.5 text-sm text-amber-300 placeholder-slate-500 focus:outline-none text-center tracking-widest font-mono font-bold"
                 required
               />
             </div>
@@ -244,14 +277,24 @@ export function TransactionalView({ user, mode, onRefresh }: TransactionalViewPr
               />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1">6-Digit Transaction PIN</label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="block text-xs font-semibold text-slate-300">Security OTP / PIN</label>
+                <button
+                  type="button"
+                  onClick={handleSendTxOtp}
+                  disabled={txOtpSending}
+                  className="text-xs font-bold text-blue-400 hover:text-blue-300 underline disabled:opacity-50"
+                >
+                  {txOtpSending ? "Sending OTP..." : txOtpSent ? "Resend OTP" : "Get OTP on Email"}
+                </button>
+              </div>
               <input
-                type="password"
+                type="text"
                 maxLength={6}
-                placeholder="******"
+                placeholder="Enter 6-digit OTP code"
                 value={swipePin}
-                onChange={(e) => setSwipePin(e.target.value)}
-                className="w-full bg-[#070e20] border border-[#1a2d52] rounded-xl px-3.5 py-2.5 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-blue-500 text-center tracking-widest font-mono"
+                onChange={(e) => setSwipePin(e.target.value.replace(/\D/g, ""))}
+                className="w-full bg-[#070e20] border border-[#1a2d52] focus:border-blue-500 rounded-xl px-3.5 py-2.5 text-sm text-amber-300 placeholder-slate-500 focus:outline-none text-center tracking-widest font-mono font-bold"
                 required
               />
             </div>
@@ -349,14 +392,24 @@ export function TransactionalView({ user, mode, onRefresh }: TransactionalViewPr
               )}
             </div>
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1">6-Digit Transaction PIN</label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="block text-xs font-semibold text-slate-300">Security OTP / PIN</label>
+                <button
+                  type="button"
+                  onClick={handleSendTxOtp}
+                  disabled={txOtpSending}
+                  className="text-xs font-bold text-blue-400 hover:text-blue-300 underline disabled:opacity-50"
+                >
+                  {txOtpSending ? "Sending OTP..." : txOtpSent ? "Resend OTP" : "Get OTP on Email"}
+                </button>
+              </div>
               <input
-                type="password"
+                type="text"
                 maxLength={6}
-                placeholder="******"
+                placeholder="Enter 6-digit OTP code"
                 value={withdrawPin}
-                onChange={(e) => setWithdrawPin(e.target.value)}
-                className="w-full bg-[#070e20] border border-[#1a2d52] rounded-xl px-3.5 py-2.5 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-blue-500 text-center tracking-widest font-mono"
+                onChange={(e) => setWithdrawPin(e.target.value.replace(/\D/g, ""))}
+                className="w-full bg-[#070e20] border border-[#1a2d52] focus:border-blue-500 rounded-xl px-3.5 py-2.5 text-sm text-amber-300 placeholder-slate-500 focus:outline-none text-center tracking-widest font-mono font-bold"
                 required
               />
             </div>
