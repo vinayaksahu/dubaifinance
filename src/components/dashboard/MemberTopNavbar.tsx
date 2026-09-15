@@ -394,7 +394,7 @@ export function MemberTopNavbar({
                   type="tel"
                   value={profilePhone}
                   onChange={(e) => setProfilePhone(e.target.value)}
-                  placeholder="e.g. +91 9876543210"
+                  placeholder="e.g. +971 50 123 4567"
                   className="w-full bg-[#070e20] border border-[#1a2d52] rounded-xl px-3.5 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
                 />
               </div>

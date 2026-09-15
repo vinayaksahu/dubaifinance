@@ -521,7 +521,7 @@ export function AdminUsersView({ onRefresh }: AdminUsersViewProps) {
                     type="text"
                     value={editPhone}
                     onChange={(e) => setEditPhone(e.target.value)}
-                    placeholder="+91 9876543210"
+                    placeholder="+971 50 123 4567"
                     className="w-full pl-10 pr-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-sm text-slate-200 focus:outline-none focus:border-amber-500/60 transition-colors"
                   />
                 </div>
