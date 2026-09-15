@@ -1,19 +1,34 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { sendOtpEmail } from "@/lib/mail";
+import { getSession } from "@/lib/auth";
 
 export async function POST(req: NextRequest) {
   try {
-    const { email, purpose = "REGISTRATION" } = await req.json();
+    const body = await req.json().catch(() => ({}));
+    const { purpose = "REGISTRATION" } = body;
+    let rawEmail = body.email;
 
-    if (!email || typeof email !== "string") {
+    // If email is not passed but purpose is TRANSACTION, try to get from session
+    if (!rawEmail && purpose === "TRANSACTION") {
+      const session = await getSession();
+      if (session?.userId) {
+        const user = await db.user.findUnique({
+          where: { id: session.userId },
+          select: { email: true },
+        });
+        if (user) rawEmail = user.email;
+      }
+    }
+
+    if (!rawEmail || typeof rawEmail !== "string") {
       return NextResponse.json(
         { error: "A valid email address is required." },
         { status: 400 }
       );
     }
 
-    const normalizedEmail = email.toLowerCase().trim();
+    const normalizedEmail = rawEmail.toLowerCase().trim();
 
     // Validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -33,6 +48,19 @@ export async function POST(req: NextRequest) {
         return NextResponse.json(
           { error: "This email is already registered. Please login." },
           { status: 400 }
+        );
+      }
+    }
+
+    // Check if user exists for FORGOT_PASSWORD purpose
+    if (purpose === "FORGOT_PASSWORD") {
+      const existingUser = await db.user.findUnique({
+        where: { email: normalizedEmail },
+      });
+      if (!existingUser) {
+        return NextResponse.json(
+          { error: "No Dubai Finance account found with this email address." },
+          { status: 404 }
         );
       }
     }

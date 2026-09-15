@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ShieldCheck, Lock, User, Eye, EyeOff, ArrowRight, ShieldAlert, KeyRound } from "lucide-react";
+import { ShieldCheck, Lock, User, Eye, EyeOff, ArrowRight, ShieldAlert } from "lucide-react";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 
 export default function AdminLoginPage() {
@@ -37,11 +37,6 @@ export default function AdminLoginPage() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleDemoFill = () => {
-    setIdentifier("DF000001");
-    setPassword("adminPassword123!");
   };
 
   return (
@@ -80,18 +75,6 @@ export default function AdminLoginPage() {
           <p className="text-xs text-slate-400 mt-1.5">
             Authorized Super Admin &amp; Management Console Access
           </p>
-        </div>
-
-        {/* Demo Fast Fill Button */}
-        <div className="mb-6">
-          <button
-            type="button"
-            onClick={handleDemoFill}
-            className="w-full py-2 px-3 rounded-xl bg-cyan-950/40 border border-cyan-500/40 text-xs font-bold text-cyan-300 hover:bg-cyan-900/40 transition flex items-center justify-center gap-2"
-          >
-            <KeyRound className="w-3.5 h-3.5 text-cyan-400" />
-            Fill Super Admin Credentials (DF000001)
-          </button>
         </div>
 
         {error && (

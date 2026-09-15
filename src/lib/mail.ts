@@ -26,11 +26,19 @@ export function generateOtpCode(): string {
  * HTML Email Template for Dubai Finance OTP
  */
 function getOtpHtmlTemplate(otp: string, purpose: string = "REGISTRATION"): string {
-  const isRegistration = purpose === "REGISTRATION";
-  const title = isRegistration ? "Verify Your Email Address" : "Dubai Finance Security Code";
-  const message = isRegistration
-    ? "Thank you for joining Dubai Finance. Use the 6-digit verification code below to complete your registration."
-    : "Use the following 6-digit verification code to complete your verification request.";
+  let title = "Dubai Finance Security Code";
+  let message = "Use the following 6-digit verification code to complete your verification request.";
+
+  if (purpose === "REGISTRATION") {
+    title = "Verify Your Email Address";
+    message = "Thank you for joining Dubai Finance. Use the 6-digit verification code below to complete your registration.";
+  } else if (purpose === "FORGOT_PASSWORD") {
+    title = "Reset Your Account Password";
+    message = "You recently requested to reset your Dubai Finance account password. Use the 6-digit security code below to proceed.";
+  } else if (purpose === "TRANSACTION") {
+    title = "Authorize Transaction";
+    message = "A transaction has been initiated on your Dubai Finance account. Use the 6-digit verification code below to authorize this action.";
+  }
 
   return `
 <!DOCTYPE html>
@@ -205,11 +213,22 @@ export async function sendOtpEmail(email: string, purpose: string = "REGISTRATIO
   const fromName = process.env.SMTP_FROM_NAME || "Dubai Finance Security";
   const fromEmail = process.env.GMAIL_USER || "dubaifinance.support@gmail.com";
 
+  let subject = `Your Dubai Finance Verification Code: ${otp}`;
+  let text = `Your Dubai Finance verification code is ${otp}. It will expire in 10 minutes. Do not share this code with anyone.`;
+
+  if (purpose === "FORGOT_PASSWORD") {
+    subject = `Reset Password Security Code: ${otp} - Dubai Finance`;
+    text = `Use ${otp} to reset your Dubai Finance account password. Valid for 10 minutes.`;
+  } else if (purpose === "TRANSACTION") {
+    subject = `Transaction Authorization Code: ${otp} - Dubai Finance`;
+    text = `Use ${otp} to authorize your Dubai Finance fund transaction. Valid for 10 minutes.`;
+  }
+
   const mailOptions = {
     from: `"${fromName}" <${fromEmail}>`,
     to: normalizedEmail,
-    subject: `Your Dubai Finance Verification Code: ${otp}`,
-    text: `Your Dubai Finance verification code is ${otp}. It will expire in 10 minutes. Do not share this code with anyone.`,
+    subject,
+    text,
     html: getOtpHtmlTemplate(otp, purpose),
   };
 

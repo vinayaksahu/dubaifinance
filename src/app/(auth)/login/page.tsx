@@ -39,11 +39,6 @@ export default function LoginPage() {
     }
   };
 
-  const handleDemoFill = () => {
-    setIdentifier("DF478752");
-    setPassword("qwer1234");
-  };
-
   return (
     <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-[var(--bg-main)] text-[var(--text-main)] transition-colors duration-200">
       <div className="bg-glow-gold -top-32 -left-32" />
@@ -75,17 +70,6 @@ export default function LoginPage() {
           </Link>
           <h2 className="font-display text-2xl font-black text-[var(--text-main)]">Member Portal</h2>
           <p className="text-xs text-[var(--text-muted)] mt-1">Sign in to your Dubai Finance investor account</p>
-        </div>
-
-        {/* Demo Fast Fill Button */}
-        <div className="mb-6">
-          <button
-            type="button"
-            onClick={handleDemoFill}
-            className="w-full py-1.5 px-3 rounded-lg bg-slate-900/90 border border-amber-500/30 text-[11px] font-bold text-amber-300 hover:bg-amber-500/10 transition"
-          >
-            Demo Member Login (DF478752)
-          </button>
         </div>
 
         {error && (
