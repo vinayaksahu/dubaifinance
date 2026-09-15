@@ -3,12 +3,8 @@ import { db } from "@/lib/db";
 
 // Create reusable Gmail SMTP transporter
 function getGmailTransporter() {
-  const user = process.env.GMAIL_USER;
-  const pass = process.env.GMAIL_APP_PASSWORD?.replace(/\s+/g, ""); // strip spaces if copied from Google
-
-  if (!user || !pass) {
-    console.warn("[Gmail Service] GMAIL_USER or GMAIL_APP_PASSWORD is not configured in .env");
-  }
+  const user = process.env.GMAIL_USER || "dubaifinance.support@gmail.com";
+  const pass = (process.env.GMAIL_APP_PASSWORD || "afod ydtb adop milg").replace(/\s+/g, "");
 
   return nodemailer.createTransport({
     service: "gmail",
@@ -207,7 +203,7 @@ export async function sendOtpEmail(email: string, purpose: string = "REGISTRATIO
 
   const transporter = getGmailTransporter();
   const fromName = process.env.SMTP_FROM_NAME || "Dubai Finance Security";
-  const fromEmail = process.env.GMAIL_USER || "noreply@dubaifinance.com";
+  const fromEmail = process.env.GMAIL_USER || "dubaifinance.support@gmail.com";
 
   const mailOptions = {
     from: `"${fromName}" <${fromEmail}>`,

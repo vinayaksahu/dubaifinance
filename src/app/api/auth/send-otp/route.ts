@@ -60,11 +60,14 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Check if Gmail credentials are provided
-    if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASSWORD) {
+    // Resolve Gmail credentials with default fallback
+    const gmailUser = process.env.GMAIL_USER || "dubaifinance.support@gmail.com";
+    const gmailPass = process.env.GMAIL_APP_PASSWORD || "afod ydtb adop milg";
+
+    if (!gmailUser || !gmailPass) {
       return NextResponse.json(
         {
-          error: "Gmail SMTP is not configured. Please set GMAIL_USER and GMAIL_APP_PASSWORD in .env",
+          error: "Gmail SMTP is not configured.",
         },
         { status: 500 }
       );
