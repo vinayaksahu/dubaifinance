@@ -219,21 +219,14 @@ export function TransactionalView({ user, mode, onRefresh }: TransactionalViewPr
               />
             </div>
             <div>
-              <div className="flex items-center justify-between mb-1">
-                <label className="block text-xs font-semibold text-slate-300">Security OTP / PIN</label>
-                <button
-                  type="button"
-                  onClick={handleSendTxOtp}
-                  disabled={txOtpSending}
-                  className="text-xs font-bold text-blue-400 hover:text-blue-300 underline disabled:opacity-50"
-                >
-                  {txOtpSending ? "Sending OTP..." : txOtpSent ? "Resend OTP" : "Get OTP on Email"}
-                </button>
-              </div>
+              <label className="block text-xs font-semibold text-slate-300 mb-1">
+                6-Digit Transaction PIN
+              </label>
               <input
-                type="text"
+                type="password"
+                inputMode="numeric"
                 maxLength={6}
-                placeholder="Enter 6-digit OTP code"
+                placeholder="Enter 6-digit Transaction PIN"
                 value={p2pPin}
                 onChange={(e) => setP2pPin(e.target.value.replace(/\D/g, ""))}
                 className="w-full bg-[#070e20] border border-[#1a2d52] focus:border-blue-500 rounded-xl px-3.5 py-2.5 text-sm text-amber-300 placeholder-slate-500 focus:outline-none text-center tracking-widest font-mono font-bold"
@@ -277,21 +270,14 @@ export function TransactionalView({ user, mode, onRefresh }: TransactionalViewPr
               />
             </div>
             <div>
-              <div className="flex items-center justify-between mb-1">
-                <label className="block text-xs font-semibold text-slate-300">Security OTP / PIN</label>
-                <button
-                  type="button"
-                  onClick={handleSendTxOtp}
-                  disabled={txOtpSending}
-                  className="text-xs font-bold text-blue-400 hover:text-blue-300 underline disabled:opacity-50"
-                >
-                  {txOtpSending ? "Sending OTP..." : txOtpSent ? "Resend OTP" : "Get OTP on Email"}
-                </button>
-              </div>
+              <label className="block text-xs font-semibold text-slate-300 mb-1">
+                6-Digit Transaction PIN
+              </label>
               <input
-                type="text"
+                type="password"
+                inputMode="numeric"
                 maxLength={6}
-                placeholder="Enter 6-digit OTP code"
+                placeholder="Enter 6-digit Transaction PIN"
                 value={swipePin}
                 onChange={(e) => setSwipePin(e.target.value.replace(/\D/g, ""))}
                 className="w-full bg-[#070e20] border border-[#1a2d52] focus:border-blue-500 rounded-xl px-3.5 py-2.5 text-sm text-amber-300 placeholder-slate-500 focus:outline-none text-center tracking-widest font-mono font-bold"
@@ -393,12 +379,12 @@ export function TransactionalView({ user, mode, onRefresh }: TransactionalViewPr
             </div>
             <div>
               <div className="flex items-center justify-between mb-1">
-                <label className="block text-xs font-semibold text-slate-300">Security OTP / PIN</label>
+                <label className="block text-xs font-semibold text-amber-400">Email Verification Code (OTP)</label>
                 <button
                   type="button"
                   onClick={handleSendTxOtp}
                   disabled={txOtpSending}
-                  className="text-xs font-bold text-blue-400 hover:text-blue-300 underline disabled:opacity-50"
+                  className="text-xs font-bold text-amber-400 hover:text-amber-300 underline disabled:opacity-50"
                 >
                   {txOtpSending ? "Sending OTP..." : txOtpSent ? "Resend OTP" : "Get OTP on Email"}
                 </button>
@@ -409,7 +395,7 @@ export function TransactionalView({ user, mode, onRefresh }: TransactionalViewPr
                 placeholder="Enter 6-digit OTP code"
                 value={withdrawPin}
                 onChange={(e) => setWithdrawPin(e.target.value.replace(/\D/g, ""))}
-                className="w-full bg-[#070e20] border border-[#1a2d52] focus:border-blue-500 rounded-xl px-3.5 py-2.5 text-sm text-amber-300 placeholder-slate-500 focus:outline-none text-center tracking-widest font-mono font-bold"
+                className="w-full bg-[#070e20] border border-[#1a2d52] focus:border-amber-400 rounded-xl px-3.5 py-2.5 text-sm text-amber-300 placeholder-slate-500 focus:outline-none text-center tracking-widest font-mono font-bold"
                 required
               />
             </div>

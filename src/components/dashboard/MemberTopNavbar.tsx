@@ -48,9 +48,31 @@ export function MemberTopNavbar({
 
   // Wallet Address Form State
   const [walletAddress, setWalletAddress] = useState(user.usdtAddress || "");
-  const [walletPin, setWalletPin] = useState("");
+  const [walletOtp, setWalletOtp] = useState("");
+  const [walletOtpSent, setWalletOtpSent] = useState(false);
+  const [walletOtpSending, setWalletOtpSending] = useState(false);
   const [walletLoading, setWalletLoading] = useState(false);
   const [walletMsg, setWalletMsg] = useState<{ text: string; error?: boolean } | null>(null);
+
+  const handleSendWalletOtp = async () => {
+    setWalletOtpSending(true);
+    setWalletMsg(null);
+    try {
+      const res = await fetch("/api/auth/send-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: user.email, purpose: "TRANSACTION" }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to send OTP");
+      setWalletOtpSent(true);
+      setWalletMsg({ text: `Security OTP sent to ${user.email}. Check inbox/spam.` });
+    } catch (err: any) {
+      setWalletMsg({ text: err.message, error: true });
+    } finally {
+      setWalletOtpSending(false);
+    }
+  };
 
   // Update internal states when user prop changes
   useEffect(() => {
@@ -141,12 +163,16 @@ export function MemberTopNavbar({
       const res = await fetch("/api/member/wallet-address", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ usdtAddress: walletAddress, transactionPin: walletPin }),
+        body: JSON.stringify({
+          usdtAddress: walletAddress,
+          otp: walletOtp.trim(),
+          transactionPin: walletOtp.trim(),
+        }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to update wallet address");
       setWalletMsg({ text: "USDT BEP-20 address updated successfully!" });
-      setWalletPin("");
+      setWalletOtp("");
       onRefresh?.();
     } catch (err: any) {
       setWalletMsg({ text: err.message, error: true });
@@ -570,19 +596,30 @@ export function MemberTopNavbar({
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">
-                  6-Digit Transaction PIN
-                </label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-xs font-semibold text-slate-300">
+                    Email Verification Code (OTP)
+                  </label>
+                  <button
+                    type="button"
+                    onClick={handleSendWalletOtp}
+                    disabled={walletOtpSending}
+                    className="text-xs font-bold text-amber-400 hover:text-amber-300 underline disabled:opacity-50"
+                  >
+                    {walletOtpSending ? "Sending OTP..." : walletOtpSent ? "Resend OTP" : "Get OTP on Email"}
+                  </button>
+                </div>
                 <input
-                  type="password"
+                  type="text"
                   maxLength={6}
-                  value={walletPin}
-                  onChange={(e) => setWalletPin(e.target.value)}
-                  placeholder="******"
-                  className="w-full bg-[#070e20] border border-[#1a2d52] rounded-xl px-3.5 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 font-mono text-center tracking-widest"
+                  value={walletOtp}
+                  onChange={(e) => setWalletOtp(e.target.value.replace(/\D/g, ""))}
+                  placeholder="Enter 6-digit OTP code"
+                  className="w-full bg-[#070e20] border border-[#1a2d52] rounded-xl px-3.5 py-2.5 text-sm text-amber-300 placeholder-slate-500 focus:outline-none focus:border-amber-400 font-mono text-center tracking-widest font-bold"
+                  required
                 />
-                <span className="text-[10px] text-slate-500 mt-1 block">
-                  Required if you have set a transaction PIN.
+                <span className="text-[10px] text-slate-400 mt-1 block">
+                  A 6-digit security code will be sent to {user.email}.
                 </span>
               </div>
 

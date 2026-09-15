@@ -3,7 +3,7 @@ import { db } from "@/lib/db";
 import { hashPassword, hashPin, createSessionToken } from "@/lib/auth";
 import { executeLedgerTransaction } from "@/lib/ledger";
 import { APP_CONFIG } from "@/lib/constants";
-import { verifyOtp } from "@/lib/mail";
+import { verifyOtp, sendWelcomeCredentialsEmail } from "@/lib/mail";
 import Decimal from "decimal.js";
 
 export async function POST(req: NextRequest) {
@@ -12,6 +12,13 @@ export async function POST(req: NextRequest) {
 
     if (!fullName || !email || !password) {
       return NextResponse.json({ error: "Name, email and password are required." }, { status: 400 });
+    }
+
+    if (!transactionPin || typeof transactionPin !== "string" || transactionPin.trim().length !== 6) {
+      return NextResponse.json(
+        { error: "A 6-digit Transaction PIN is required." },
+        { status: 400 }
+      );
     }
 
     if (!otp || typeof otp !== "string" || otp.trim().length !== 6) {
@@ -56,14 +63,15 @@ export async function POST(req: NextRequest) {
       if (!found) isUnique = true;
     }
 
+    const cleanPin = transactionPin.trim();
     const passwordHash = await hashPassword(password);
-    const pinHash = await hashPin(transactionPin || "123456");
+    const pinHash = await hashPin(cleanPin);
 
     const newUser = await db.user.create({
       data: {
         customId,
         fullName,
-        email,
+        email: email.toLowerCase().trim(),
         phone: phone || null,
         passwordHash,
         transactionPin: pinHash,
@@ -84,6 +92,14 @@ export async function POST(req: NextRequest) {
       description: `Welcome Bonus $${bonusUsdt.toFixed(2)} USDT`,
     });
 
+    // Send Welcome Email with User ID and PIN to user's Gmail in background
+    sendWelcomeCredentialsEmail({
+      email: newUser.email,
+      fullName: newUser.fullName,
+      customId: newUser.customId,
+      transactionPin: cleanPin,
+    }).catch((err) => console.error("[Welcome Email Failed]:", err));
+
     // Create session token
     const token = await createSessionToken({
       userId: newUser.id,
@@ -97,6 +113,12 @@ export async function POST(req: NextRequest) {
       user: {
         id: newUser.id,
         customId: newUser.customId,
+        fullName: newUser.fullName,
+        email: newUser.email,
+      },
+      credentials: {
+        customId: newUser.customId,
+        transactionPin: cleanPin,
         fullName: newUser.fullName,
         email: newUser.email,
       },

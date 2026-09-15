@@ -16,7 +16,12 @@ import {
   Search,
   Loader2,
   Sparkles,
-  Users
+  Users,
+  Upload,
+  QrCode,
+  Trash2,
+  Copy,
+  Check
 } from "lucide-react";
 import { getWithdrawalWindowStatus } from "@/lib/constants";
 
@@ -49,6 +54,7 @@ const CATEGORY_NAMES: Record<string, string> = {
 const FRIENDLY_NAMES: Record<string, string> = {
   // Financial & Wallet
   COMPANY_USDT_ADDRESS: "Company USDT (BEP-20) Receiving Wallet",
+  COMPANY_USDT_QR: "Company USDT (BEP-20) Receiving QR Code Image",
 
   // Basic Saving Plan
   BASIC_PLAN_DAILY_ROI: "Basic Saving Daily ROI (%)",
@@ -110,6 +116,42 @@ export function AdminConfigView() {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusMessage, setStatusMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const [, setTimeTick] = useState(0);
+  const [copiedAddress, setCopiedAddress] = useState(false);
+
+  const handleQrUpload = (file: File) => {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new window.Image();
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        const maxDim = 400;
+        let width = img.width;
+        let height = img.height;
+        if (width > height) {
+          if (width > maxDim) {
+            height = Math.round((height * maxDim) / width);
+            width = maxDim;
+          }
+        } else {
+          if (height > maxDim) {
+            width = Math.round((width * maxDim) / height);
+            height = maxDim;
+          }
+        }
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, width, height);
+          const dataUrl = canvas.toDataURL("image/png", 0.9);
+          handleInputChange("COMPANY_USDT_QR", dataUrl);
+        }
+      };
+      img.src = e.target?.result as string;
+    };
+    reader.readAsDataURL(file);
+  };
 
   useEffect(() => {
     const timer = setInterval(() => setTimeTick((t) => t + 1), 5000);
@@ -295,6 +337,7 @@ export function AdminConfigView() {
 
   // Filter keys by category and search query
   const filteredKeys = Object.keys(configs).filter((key) => {
+    if (key === "COMPANY_USDT_QR") return false;
     const item = configs[key];
     const matchesCategory = activeCategory === "all" || item.category === activeCategory;
     const query = searchQuery.toLowerCase();
@@ -601,6 +644,205 @@ export function AdminConfigView() {
         <form onSubmit={handleSave} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {filteredKeys.map((key) => {
             const item = configs[key];
+
+            // Custom unified card for COMPANY_USDT_ADDRESS with Address + QR Code Upload
+            if (key === "COMPANY_USDT_ADDRESS") {
+              const currentAddress = formValues["COMPANY_USDT_ADDRESS"] ?? item.value;
+              const customQr = formValues["COMPANY_USDT_QR"] ?? configs["COMPANY_USDT_QR"]?.value ?? "";
+              const activeQrUrl = customQr || (currentAddress ? `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(currentAddress)}` : "");
+              const isQrModified = formValues["COMPANY_USDT_QR"] !== undefined && formValues["COMPANY_USDT_QR"] !== (configs["COMPANY_USDT_QR"]?.value ?? "");
+              const isAddressModified = formValues["COMPANY_USDT_ADDRESS"] !== item.value;
+
+              return (
+                <div
+                  key={key}
+                  className="col-span-1 md:col-span-2 lg:col-span-3 bg-gradient-to-br from-slate-900/90 via-[#0a1228] to-purple-950/30 backdrop-blur border-2 border-purple-500/40 rounded-3xl p-6 sm:p-8 shadow-2xl relative overflow-hidden"
+                >
+                  <div className="absolute top-0 right-0 w-80 h-80 bg-purple-500/10 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20" />
+
+                  {/* Header Row */}
+                  <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4 pb-5 border-b border-slate-800">
+                    <div>
+                      <div className="flex items-center gap-2 text-purple-400 text-xs font-bold uppercase tracking-widest mb-1">
+                        <Wallet className="w-4 h-4 text-purple-400" />
+                        <span>Official Platform Deposit Vault</span>
+                      </div>
+                      <h2 className="text-xl sm:text-2xl font-black text-white">
+                        Company USDT (BEP-20) Receiving Wallet &amp; QR Code
+                      </h2>
+                      <p className="text-slate-400 text-xs sm:text-sm mt-1 max-w-2xl">
+                        This receiving address and official QR code will be displayed to all users when depositing funds via Binance Smart Chain (BEP-20 USDT). You can keep the auto-generated QR code or upload a custom branded payment QR.
+                      </p>
+                    </div>
+
+                    <div className="flex items-center gap-2 self-start md:self-auto">
+                      {(isAddressModified || isQrModified) && (
+                        <span className="text-[11px] font-bold text-amber-400 uppercase tracking-wider bg-amber-950/80 px-2.5 py-1 rounded-lg border border-amber-500/40">
+                          Unsaved Edits
+                        </span>
+                      )}
+                      <span className="font-mono text-xs px-3 py-1 rounded-lg bg-purple-950/80 text-purple-300 border border-purple-500/30">
+                        BEP-20 Network
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Two-Column Grid: Left Address & Controls, Right QR Code & Upload */}
+                  <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-6 mt-6 items-start">
+                    {/* Left: Address Input & Specs */}
+                    <div className="lg:col-span-7 space-y-4">
+                      <div>
+                        <div className="text-xs font-bold text-slate-200 mb-1.5 flex items-center justify-between">
+                          <span>Deposit Wallet Address (BSC BEP-20)</span>
+                          {currentAddress && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                navigator.clipboard.writeText(currentAddress);
+                                setCopiedAddress(true);
+                                setTimeout(() => setCopiedAddress(false), 2000);
+                              }}
+                              className="text-[11px] text-purple-400 hover:text-purple-300 flex items-center gap-1 font-semibold"
+                            >
+                              {copiedAddress ? (
+                                <>
+                                  <Check className="w-3 h-3 text-emerald-400" />
+                                  <span className="text-emerald-400">Copied!</span>
+                                </>
+                              ) : (
+                                <>
+                                  <Copy className="w-3 h-3" />
+                                  <span>Copy Address</span>
+                                </>
+                              )}
+                            </button>
+                          )}
+                        </div>
+                        <div className="relative">
+                          <input
+                            type="text"
+                            value={currentAddress}
+                            onChange={(e) => handleInputChange("COMPANY_USDT_ADDRESS", e.target.value.trim())}
+                            className={`w-full bg-[#050b18] border rounded-xl px-4 py-3 text-xs sm:text-sm text-slate-100 font-mono focus:outline-none transition-all ${
+                              isAddressModified
+                                ? "border-amber-400 focus:border-amber-300 bg-amber-950/10"
+                                : "border-slate-800 focus:border-purple-500"
+                            }`}
+                            placeholder="e.g. 0x1234567890abcdef..."
+                            required
+                          />
+                        </div>
+                        <p className="text-[11px] text-slate-500 mt-1.5">
+                          Make sure this is a valid Binance Smart Chain (BEP-20) USDT address. Incorrect addresses will cause deposit loss.
+                        </p>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                        <div className="bg-[#060c1c] border border-slate-800/80 rounded-2xl p-3.5">
+                          <div className="text-[11px] text-slate-400 font-semibold uppercase tracking-wider mb-1">
+                            Accepted Token
+                          </div>
+                          <div className="text-sm font-bold text-emerald-400 flex items-center gap-1.5">
+                            <span>USDT (Tether USD)</span>
+                          </div>
+                          <div className="text-[10px] text-slate-500 mt-0.5">Pegged on Binance Smart Chain</div>
+                        </div>
+                        <div className="bg-[#060c1c] border border-slate-800/80 rounded-2xl p-3.5">
+                          <div className="text-[11px] text-slate-400 font-semibold uppercase tracking-wider mb-1">
+                            Deposit Confirmation
+                          </div>
+                          <div className="text-sm font-bold text-purple-400 flex items-center gap-1.5">
+                            <span>Admin Approved</span>
+                          </div>
+                          <div className="text-[10px] text-slate-500 mt-0.5">Users submit TxHash + Screenshot</div>
+                        </div>
+                      </div>
+
+                      {/* QR Upload Action Buttons */}
+                      <div className="pt-2">
+                        <div className="text-xs font-bold text-slate-200 mb-2">
+                          Manage Deposit QR Code
+                        </div>
+                        <div className="flex flex-wrap items-center gap-3">
+                          <label className="cursor-pointer px-4 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold flex items-center gap-2 shadow-lg shadow-purple-600/30 transition-all">
+                            <Upload className="w-4 h-4" />
+                            <span>Upload Custom QR Image</span>
+                            <input
+                              type="file"
+                              accept="image/png,image/jpeg,image/webp,image/jpg"
+                              onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (file) handleQrUpload(file);
+                              }}
+                              className="hidden"
+                            />
+                          </label>
+
+                          {customQr ? (
+                            <button
+                              type="button"
+                              onClick={() => handleInputChange("COMPANY_USDT_QR", "")}
+                              className="px-4 py-2.5 rounded-xl bg-rose-950/60 hover:bg-rose-900/60 text-rose-300 border border-rose-500/30 text-xs font-bold flex items-center gap-1.5 transition-all"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                              <span>Reset to Auto Dynamic QR</span>
+                            </button>
+                          ) : null}
+                        </div>
+                        <p className="text-[11px] text-slate-400 mt-2">
+                          Supported formats: PNG, JPG, WEBP. The image is automatically optimized for fast loading on all user devices.
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Right: Live QR Preview Card */}
+                    <div className="lg:col-span-5 flex flex-col items-center justify-center bg-[#060c1d] border border-slate-800/80 rounded-2xl p-6 text-center">
+                      <div className="text-xs font-bold text-slate-300 mb-3 flex items-center gap-1.5">
+                        <QrCode className="w-4 h-4 text-purple-400" />
+                        <span>Live Deposit QR Preview</span>
+                      </div>
+
+                      {/* QR Box with white background padding for scan clarity */}
+                      <div className="relative group p-3 bg-white rounded-2xl shadow-xl shadow-purple-950/50 border border-slate-200">
+                        {activeQrUrl ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={activeQrUrl}
+                            alt="Deposit QR Code"
+                            className="w-44 h-44 sm:w-48 sm:h-48 object-contain rounded-lg"
+                          />
+                        ) : (
+                          <div className="w-44 h-44 sm:w-48 sm:h-48 flex flex-col items-center justify-center text-slate-400 text-xs">
+                            <QrCode className="w-10 h-10 mb-2 opacity-40 text-slate-600" />
+                            <span>No address or QR</span>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* QR Status Pill */}
+                      <div className="mt-4 flex items-center gap-2">
+                        {customQr ? (
+                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-emerald-950 border border-emerald-500/40 text-emerald-300">
+                            <Check className="w-3 h-3 text-emerald-400" />
+                            <span>Custom Uploaded QR Active</span>
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-purple-950 border border-purple-500/40 text-purple-300">
+                            <Sparkles className="w-3 h-3 text-purple-400" />
+                            <span>Auto-Generated From Wallet Address</span>
+                          </span>
+                        )}
+                      </div>
+
+                      <p className="text-[11px] text-slate-500 mt-2 max-w-xs">
+                        This exact QR code is rendered in the Recharge modal when members deposit USDT.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              );
+            }
+
             const isAddress = key.includes("ADDRESS");
             const isRoyaltyLevel = key.startsWith("LEVEL_") && key.endsWith("_PERCENT");
             const levelNum = isRoyaltyLevel ? key.split("_")[1] : null;

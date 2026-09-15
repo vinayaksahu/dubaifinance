@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { User, Mail, Phone, Lock, KeyRound, Users, ArrowRight, ShieldCheck, CheckCircle2 } from "lucide-react";
+import { User, Mail, Phone, Lock, KeyRound, Users, ArrowRight, ShieldCheck, CheckCircle2, Copy, Check, Sparkles } from "lucide-react";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 
 export default function RegisterPage() {
@@ -13,6 +13,15 @@ export default function RegisterPage() {
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
+  const [transactionPin, setTransactionPin] = useState("");
+  const [registeredCreds, setRegisteredCreds] = useState<{
+    customId: string;
+    pin: string;
+    fullName: string;
+    email: string;
+  } | null>(null);
+  const [copiedId, setCopiedId] = useState(false);
+  const [copiedPin, setCopiedPin] = useState(false);
   const [otp, setOtp] = useState("");
   const [otpSent, setOtpSent] = useState(false);
   const [sendingOtp, setSendingOtp] = useState(false);
@@ -78,6 +87,12 @@ export default function RegisterPage() {
       return;
     }
 
+    if (!transactionPin || transactionPin.trim().length !== 6) {
+      setError("Please create a 6-digit Transaction PIN.");
+      setLoading(false);
+      return;
+    }
+
     try {
       const res = await fetch("/api/auth/register", {
         method: "POST",
@@ -88,6 +103,7 @@ export default function RegisterPage() {
           email,
           phone,
           password,
+          transactionPin: transactionPin.trim(),
           otp: otp.trim(),
         }),
       });
@@ -97,7 +113,16 @@ export default function RegisterPage() {
         throw new Error(data.error || "Registration failed");
       }
 
-      router.push("/member");
+      if (data.credentials) {
+        setRegisteredCreds({
+          customId: data.credentials.customId,
+          pin: data.credentials.transactionPin,
+          fullName: data.credentials.fullName || fullName,
+          email: data.credentials.email || email,
+        });
+      } else {
+        router.push("/member");
+      }
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -277,7 +302,7 @@ export default function RegisterPage() {
 
           <div>
             <label className="block text-[11px] font-bold text-slate-300 uppercase tracking-wider mb-1">
-              Password
+              Create Password
             </label>
             <div className="relative">
               <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400">
@@ -288,18 +313,42 @@ export default function RegisterPage() {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="Create secure password"
+                placeholder="Create login password"
                 className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-black/50 border border-slate-700 focus:border-amber-400 text-white text-sm outline-none"
+              />
+            </div>
+          </div>
+
+          <div>
+            <div className="flex items-center justify-between mb-1">
+              <label className="block text-[11px] font-bold text-slate-300 uppercase tracking-wider">
+                Create 6-Digit Transaction PIN
+              </label>
+              <span className="text-[10px] text-amber-400 font-semibold">For P2P & Packages</span>
+            </div>
+            <div className="relative">
+              <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-amber-400">
+                <KeyRound className="w-4 h-4" />
+              </span>
+              <input
+                type="password"
+                inputMode="numeric"
+                maxLength={6}
+                required
+                value={transactionPin}
+                onChange={(e) => setTransactionPin(e.target.value.replace(/\D/g, ""))}
+                placeholder="e.g. 123456"
+                className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-black/50 border border-slate-700 focus:border-amber-400 text-white text-sm font-mono tracking-widest outline-none"
               />
             </div>
           </div>
 
           <button
             type="submit"
-            disabled={loading || otp.length !== 6}
+            disabled={loading || otp.length !== 6 || transactionPin.length !== 6}
             className="w-full py-3.5 rounded-xl gold-btn text-sm font-bold flex items-center justify-center gap-2 shadow-lg mt-4 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? "Registering..." : "Verify OTP & Create Account"} <ArrowRight className="w-4 h-4" />
+            {loading ? "Creating Account..." : "Verify OTP & Create Account"} <ArrowRight className="w-4 h-4" />
           </button>
         </form>
 
@@ -310,6 +359,114 @@ export default function RegisterPage() {
           </Link>
         </div>
       </div>
+
+      {/* CONGRATULATIONS MODAL */}
+      {registeredCreds && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-in fade-in duration-200">
+          <div className="relative w-full max-w-md bg-[#080f1e] border-2 border-amber-500/50 rounded-3xl p-6 sm:p-8 shadow-2xl shadow-amber-500/20 text-center animate-in zoom-in-95 duration-200">
+            {/* Gold Glow Icon */}
+            <div className="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-tr from-amber-500 to-amber-300 flex items-center justify-center text-slate-950 shadow-lg shadow-amber-500/40 mb-4 animate-bounce">
+              <Sparkles className="w-9 h-9" />
+            </div>
+
+            <span className="px-3 py-1 rounded-full text-[11px] font-extrabold uppercase tracking-wider bg-amber-500/10 text-amber-400 border border-amber-500/30">
+              Registration Complete
+            </span>
+
+            <h2 className="text-2xl font-black text-white mt-2">
+              🎉 Congratulations!
+            </h2>
+            <p className="text-sm font-bold text-amber-300 mt-0.5">
+              {registeredCreds.fullName}
+            </p>
+            <p className="text-xs text-slate-400 mt-2">
+              Your Dubai Finance account is successfully registered. We have also emailed your User ID and Transaction PIN to <strong className="text-slate-200">{registeredCreds.email}</strong>.
+            </p>
+
+            {/* Credentials Box */}
+            <div className="my-5 p-4 rounded-2xl bg-[#040812] border border-amber-500/30 space-y-3.5 text-left">
+              {/* User ID */}
+              <div>
+                <span className="text-[10px] font-bold text-amber-400 uppercase tracking-wider block mb-1">
+                  Your Member User ID (Login ID)
+                </span>
+                <div className="flex items-center justify-between bg-black/60 border border-amber-500/20 rounded-xl px-3.5 py-2.5">
+                  <span className="font-mono text-lg font-extrabold text-white tracking-wide">
+                    {registeredCreds.customId}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      navigator.clipboard.writeText(registeredCreds.customId);
+                      setCopiedId(true);
+                      setTimeout(() => setCopiedId(false), 2000);
+                    }}
+                    className="flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/30 transition"
+                  >
+                    {copiedId ? (
+                      <>
+                        <Check className="w-3.5 h-3.5 text-emerald-400" />
+                        <span className="text-emerald-400">Copied</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="w-3.5 h-3.5" />
+                        <span>Copy</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              {/* Transaction PIN */}
+              <div>
+                <span className="text-[10px] font-bold text-amber-400 uppercase tracking-wider block mb-1">
+                  Your 6-Digit Transaction PIN
+                </span>
+                <div className="flex items-center justify-between bg-black/60 border border-amber-500/20 rounded-xl px-3.5 py-2.5">
+                  <span className="font-mono text-lg font-extrabold text-amber-300 tracking-widest">
+                    {registeredCreds.pin}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      navigator.clipboard.writeText(registeredCreds.pin);
+                      setCopiedPin(true);
+                      setTimeout(() => setCopiedPin(false), 2000);
+                    }}
+                    className="flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/30 transition"
+                  >
+                    {copiedPin ? (
+                      <>
+                        <Check className="w-3.5 h-3.5 text-emerald-400" />
+                        <span className="text-emerald-400">Copied</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="w-3.5 h-3.5" />
+                        <span>Copy</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              <div className="text-[10px] text-slate-400 bg-amber-500/5 border border-amber-500/10 rounded-lg p-2.5">
+                <span className="text-amber-400 font-bold">Security Note:</span> Store this PIN safely. You will need it to authorize P2P Transfers, Wallet Swipes, and Package Activations.
+              </div>
+            </div>
+
+            {/* Dashboard Redirect */}
+            <button
+              type="button"
+              onClick={() => router.push("/member")}
+              className="w-full py-3.5 rounded-xl gold-btn font-black text-sm flex items-center justify-center gap-2 shadow-xl shadow-amber-500/20"
+            >
+              Enter Member Dashboard <ArrowRight className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

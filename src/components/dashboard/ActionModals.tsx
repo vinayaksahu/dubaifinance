@@ -435,27 +435,18 @@ export function ActionModals({ user, onRefresh }: { user: any; onRefresh: () => 
                   </div>
 
                   <div>
-                    <div className="flex items-center justify-between mb-1">
-                      <label className="block text-[11px] font-bold text-slate-300">
-                        Security OTP / PIN
-                      </label>
-                      <button
-                        type="button"
-                        onClick={handleSendTxOtp}
-                        disabled={txOtpSending}
-                        className="text-[11px] font-bold text-amber-400 hover:text-amber-300 underline disabled:opacity-50"
-                      >
-                        {txOtpSending ? "Sending OTP..." : txOtpSent ? "Resend OTP" : "Get OTP on Email"}
-                      </button>
-                    </div>
+                    <label className="block text-[11px] font-bold text-slate-300 mb-1">
+                      6-Digit Transaction PIN
+                    </label>
                     <input
-                      type="text"
+                      type="password"
+                      inputMode="numeric"
                       maxLength={6}
                       required
                       value={pin}
                       onChange={(e) => setPin(e.target.value.replace(/\D/g, ""))}
-                      placeholder="Enter 6-digit OTP code"
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-black/50 border border-amber-500/40 focus:border-amber-400 text-amber-300 text-sm font-bold tracking-widest outline-none placeholder:font-normal placeholder:tracking-normal placeholder:text-slate-500"
+                      placeholder="Enter 6-digit Transaction PIN"
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-black/50 border border-amber-500/40 focus:border-amber-400 text-amber-300 text-sm font-bold tracking-widest outline-none placeholder:font-normal placeholder:tracking-normal placeholder:text-slate-500 font-mono text-center"
                     />
                   </div>
 
@@ -547,27 +538,18 @@ export function ActionModals({ user, onRefresh }: { user: any; onRefresh: () => 
                   </div>
 
                   <div>
-                    <div className="flex items-center justify-between mb-1">
-                      <label className="block text-[11px] font-bold text-slate-300">
-                        Security OTP / PIN
-                      </label>
-                      <button
-                        type="button"
-                        onClick={handleSendTxOtp}
-                        disabled={txOtpSending}
-                        className="text-[11px] font-bold text-amber-400 hover:text-amber-300 underline disabled:opacity-50"
-                      >
-                        {txOtpSending ? "Sending OTP..." : txOtpSent ? "Resend OTP" : "Get OTP on Email"}
-                      </button>
-                    </div>
+                    <label className="block text-[11px] font-bold text-slate-300 mb-1">
+                      6-Digit Transaction PIN
+                    </label>
                     <input
-                      type="text"
+                      type="password"
+                      inputMode="numeric"
                       maxLength={6}
                       required
                       value={pin}
                       onChange={(e) => setPin(e.target.value.replace(/\D/g, ""))}
-                      placeholder="Enter 6-digit OTP code"
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-black/50 border border-amber-500/40 focus:border-amber-400 text-amber-300 text-sm font-bold tracking-widest outline-none placeholder:font-normal placeholder:tracking-normal placeholder:text-slate-500"
+                      placeholder="Enter 6-digit Transaction PIN"
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-black/50 border border-amber-500/40 focus:border-amber-400 text-amber-300 text-sm font-bold tracking-widest outline-none placeholder:font-normal placeholder:tracking-normal placeholder:text-slate-500 font-mono text-center"
                     />
                   </div>
 
@@ -620,27 +602,18 @@ export function ActionModals({ user, onRefresh }: { user: any; onRefresh: () => 
                   </div>
 
                   <div>
-                    <div className="flex items-center justify-between mb-1">
-                      <label className="block text-[11px] font-bold text-slate-300">
-                        Security OTP / PIN
-                      </label>
-                      <button
-                        type="button"
-                        onClick={handleSendTxOtp}
-                        disabled={txOtpSending}
-                        className="text-[11px] font-bold text-amber-400 hover:text-amber-300 underline disabled:opacity-50"
-                      >
-                        {txOtpSending ? "Sending OTP..." : txOtpSent ? "Resend OTP" : "Get OTP on Email"}
-                      </button>
-                    </div>
+                    <label className="block text-[11px] font-bold text-slate-300 mb-1">
+                      6-Digit Transaction PIN
+                    </label>
                     <input
-                      type="text"
+                      type="password"
+                      inputMode="numeric"
                       maxLength={6}
                       required
                       value={pin}
                       onChange={(e) => setPin(e.target.value.replace(/\D/g, ""))}
-                      placeholder="Enter 6-digit OTP code"
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-black/50 border border-amber-500/40 focus:border-amber-400 text-amber-300 text-sm font-bold tracking-widest outline-none placeholder:font-normal placeholder:tracking-normal placeholder:text-slate-500"
+                      placeholder="Enter 6-digit Transaction PIN"
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-black/50 border border-amber-500/40 focus:border-amber-400 text-amber-300 text-sm font-bold tracking-widest outline-none placeholder:font-normal placeholder:tracking-normal placeholder:text-slate-500 font-mono text-center"
                     />
                   </div>
 
@@ -679,27 +652,18 @@ export function ActionModals({ user, onRefresh }: { user: any; onRefresh: () => 
                   </div>
 
                   <div>
-                    <div className="flex items-center justify-between mb-1">
-                      <label className="block text-[11px] font-bold text-slate-300">
-                        Security OTP / PIN
-                      </label>
-                      <button
-                        type="button"
-                        onClick={handleSendTxOtp}
-                        disabled={txOtpSending}
-                        className="text-[11px] font-bold text-amber-400 hover:text-amber-300 underline disabled:opacity-50"
-                      >
-                        {txOtpSending ? "Sending OTP..." : txOtpSent ? "Resend OTP" : "Get OTP on Email"}
-                      </button>
-                    </div>
+                    <label className="block text-[11px] font-bold text-slate-300 mb-1">
+                      6-Digit Transaction PIN
+                    </label>
                     <input
-                      type="text"
+                      type="password"
+                      inputMode="numeric"
                       maxLength={6}
                       required
                       value={pin}
                       onChange={(e) => setPin(e.target.value.replace(/\D/g, ""))}
-                      placeholder="Enter 6-digit OTP code"
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-black/50 border border-amber-500/40 focus:border-amber-400 text-amber-300 text-sm font-bold tracking-widest outline-none placeholder:font-normal placeholder:tracking-normal placeholder:text-slate-500"
+                      placeholder="Enter 6-digit Transaction PIN"
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-black/50 border border-amber-500/40 focus:border-amber-400 text-amber-300 text-sm font-bold tracking-widest outline-none placeholder:font-normal placeholder:tracking-normal placeholder:text-slate-500 font-mono text-center"
                     />
                   </div>
 
@@ -764,8 +728,8 @@ export function ActionModals({ user, onRefresh }: { user: any; onRefresh: () => 
 
                   <div>
                     <div className="flex items-center justify-between mb-1">
-                      <label className="block text-[11px] font-bold text-slate-300">
-                        Security OTP / PIN
+                      <label className="block text-[11px] font-bold text-amber-400">
+                        Email Verification Code (OTP)
                       </label>
                       <button
                         type="button"

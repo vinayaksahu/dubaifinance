@@ -272,3 +272,232 @@ export async function verifyOtp(email: string, otp: string, purpose: string = "R
 
   return true;
 }
+
+/**
+ * Send Welcome Email with User ID and Transaction PIN
+ */
+export async function sendWelcomeCredentialsEmail({
+  email,
+  fullName,
+  customId,
+  transactionPin,
+}: {
+  email: string;
+  fullName: string;
+  customId: string;
+  transactionPin: string;
+}) {
+  const normalizedEmail = email.toLowerCase().trim();
+  const transporter = getGmailTransporter();
+  const fromName = process.env.SMTP_FROM_NAME || "Dubai Finance Security";
+  const fromEmail = process.env.GMAIL_USER || "dubaifinance.support@gmail.com";
+
+  const html = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Welcome to Dubai Finance</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #030712;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      color: #f3f4f6;
+    }
+    .container {
+      max-width: 560px;
+      margin: 40px auto;
+      background: #0f172a;
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8);
+    }
+    .header {
+      background: linear-gradient(135deg, #1e1b4b 0%, #090d16 100%);
+      padding: 32px 24px;
+      text-align: center;
+      border-bottom: 1px solid rgba(245, 158, 11, 0.25);
+    }
+    .brand-title {
+      color: #fbbf24;
+      font-size: 26px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      margin: 0;
+      text-transform: uppercase;
+    }
+    .brand-subtitle {
+      color: #94a3b8;
+      font-size: 13px;
+      margin-top: 4px;
+    }
+    .content {
+      padding: 36px 28px;
+    }
+    .badge {
+      display: inline-block;
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(16, 185, 129, 0.4);
+      color: #34d399;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 4px 14px;
+      border-radius: 20px;
+      margin-bottom: 16px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .heading {
+      color: #ffffff;
+      font-size: 22px;
+      font-weight: 800;
+      margin: 0 0 12px 0;
+    }
+    .text {
+      color: #94a3b8;
+      font-size: 14px;
+      line-height: 1.6;
+      margin: 0 0 24px 0;
+    }
+    .credentials-card {
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.08) 0%, rgba(15, 23, 42, 0.8) 100%);
+      border: 2px solid rgba(245, 158, 11, 0.4);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+    .credential-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .credential-row:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+    .credential-row:first-child {
+      padding-top: 0;
+    }
+    .cred-label {
+      font-size: 12px;
+      font-weight: 700;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .cred-value {
+      font-size: 18px;
+      font-weight: 800;
+      color: #fbbf24;
+      font-family: 'Courier New', Courier, monospace;
+      letter-spacing: 1px;
+    }
+    .btn-container {
+      text-align: center;
+      margin: 28px 0;
+    }
+    .btn {
+      display: inline-block;
+      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+      color: #030712 !important;
+      font-size: 14px;
+      font-weight: 800;
+      text-decoration: none;
+      padding: 14px 32px;
+      border-radius: 12px;
+      box-shadow: 0 10px 20px -5px rgba(245, 158, 11, 0.4);
+    }
+    .notice {
+      background: rgba(239, 68, 68, 0.08);
+      border: 1px solid rgba(239, 68, 68, 0.25);
+      border-radius: 12px;
+      padding: 14px 18px;
+      color: #fca5a5;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+    .footer {
+      background: #090d16;
+      padding: 20px 24px;
+      text-align: center;
+      border-top: 1px solid #1e293b;
+      font-size: 11px;
+      color: #64748b;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="brand-title">Dubai Finance</div>
+      <div class="brand-subtitle">Smart Wealth & Asset Management</div>
+    </div>
+    <div class="content">
+      <div class="badge">&check; Account Created Successfully</div>
+      <h2 class="heading">Congratulations, ${fullName}!</h2>
+      <p class="text">
+        Welcome to Dubai Finance. Your investor account is now active. Please find your essential account credentials below:
+      </p>
+
+      <div class="credentials-card">
+        <div class="credential-row">
+          <span class="cred-label">Member / User ID</span>
+          <span class="cred-value">${customId}</span>
+        </div>
+        <div class="credential-row">
+          <span class="cred-label">Registered Email</span>
+          <span class="cred-value" style="font-size: 14px; font-family: inherit; color: #ffffff;">${normalizedEmail}</span>
+        </div>
+        <div class="credential-row">
+          <span class="cred-label">6-Digit Transaction PIN</span>
+          <span class="cred-value">${transactionPin}</span>
+        </div>
+      </div>
+
+      <div class="notice">
+        <strong>Important Security Notice:</strong>
+        <ul style="margin: 6px 0 0 0; padding-left: 18px;">
+          <li>Your <strong>User ID</strong> is required to log in to your member portal.</li>
+          <li>Your <strong>6-Digit Transaction PIN</strong> is required to authorize P2P Transfers, Swipes, and Package Activations.</li>
+          <li>Never share your Transaction PIN or password with anyone.</li>
+        </ul>
+      </div>
+
+      <div class="btn-container">
+        <a href="${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/login" class="btn">
+          Sign In to Member Portal &rarr;
+        </a>
+      </div>
+    </div>
+    <div class="footer">
+      &copy; ${new Date().getFullYear()} Dubai Finance. All rights reserved. <br>
+      Automated account security notice.
+    </div>
+  </div>
+</body>
+</html>
+  `.trim();
+
+  const mailOptions = {
+    from: `"${fromName}" <${fromEmail}>`,
+    to: normalizedEmail,
+    subject: `Account Created: Your Dubai Finance User ID (${customId}) & PIN`,
+    text: `Congratulations ${fullName}! Your Dubai Finance account has been created.\nUser ID: ${customId}\nTransaction PIN: ${transactionPin}\nPlease keep these credentials safe.`,
+    html,
+  };
+
+  try {
+    const info = await transporter.sendMail(mailOptions);
+    return { success: true, messageId: info.messageId };
+  } catch (err: any) {
+    console.error("[Welcome Email Error]:", err);
+    return { success: false, error: err.message };
+  }
+}
+

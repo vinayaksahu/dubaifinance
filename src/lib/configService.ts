@@ -8,6 +8,11 @@ export const DEFAULT_SYSTEM_CONFIGS: Record<string, { value: string; description
     description: "Official USDT BEP-20 receiving wallet address for recharges",
     category: "wallet",
   },
+  COMPANY_USDT_QR: {
+    value: "",
+    description: "Official USDT BEP-20 receiving wallet QR code image (Uploaded file or Custom URL)",
+    category: "wallet",
+  },
 
   // 2. Basic Saving Package (Dark PDF Slide 5-9 & 11)
   BASIC_PLAN_DAILY_ROI: {

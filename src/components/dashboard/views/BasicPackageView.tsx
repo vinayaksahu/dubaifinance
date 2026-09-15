@@ -296,25 +296,16 @@ export function BasicPackageView({ user, onRefresh, onRefreshUser }: BasicPackag
               )}
 
               <div>
-                <div className="flex items-center justify-between mb-1.5">
-                  <label className="block text-xs font-semibold text-slate-300">
-                    Security OTP / PIN
-                  </label>
-                  <button
-                    type="button"
-                    onClick={handleSendTxOtp}
-                    disabled={txOtpSending}
-                    className="text-xs font-bold text-amber-400 hover:text-amber-300 underline disabled:opacity-50"
-                  >
-                    {txOtpSending ? "Sending OTP..." : txOtpSent ? "Resend OTP" : "Get OTP on Email"}
-                  </button>
-                </div>
+                <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                  6-Digit Transaction PIN
+                </label>
                 <input
-                  type="text"
+                  type="password"
+                  inputMode="numeric"
                   maxLength={6}
                   value={transactionPin}
                   onChange={(e) => setTransactionPin(e.target.value.replace(/\D/g, ""))}
-                  placeholder="Enter 6-digit OTP code"
+                  placeholder="Enter 6-digit Transaction PIN"
                   className="w-full bg-[#060c1c] border border-[#17274a] text-amber-300 rounded-xl px-4 py-2.5 focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 text-sm font-mono tracking-widest text-center font-bold"
                 />
               </div>

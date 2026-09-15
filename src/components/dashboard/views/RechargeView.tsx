@@ -19,6 +19,9 @@ export function RechargeView({ user, onRefresh }: RechargeViewProps) {
 
   const cfg = user?.systemConfig || {};
   const companyAddress = cfg.COMPANY_USDT_ADDRESS || APP_CONFIG.depositAddress;
+  const qrImage = cfg.COMPANY_USDT_QR && cfg.COMPANY_USDT_QR.trim() !== ""
+    ? cfg.COMPANY_USDT_QR
+    : `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${companyAddress}`;
 
   const copyAddress = () => {
     navigator.clipboard.writeText(companyAddress);
@@ -215,15 +218,18 @@ export function RechargeView({ user, onRefresh }: RechargeViewProps) {
               Send USDT BEP-20 only. Funds credited directly to Fund Wallet upon confirmation.
             </p>
 
-            {/* QR Code Container */}
-            <div className="flex flex-col items-center bg-[#070e20] border border-[#182a50] rounded-2xl p-4 mb-5">
-              <div className="w-44 h-44 bg-white p-2 rounded-xl flex items-center justify-center shadow-lg">
-                <img
-                  src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${companyAddress}`}
-                  alt="USDT Deposit QR"
-                  className="w-full h-full object-contain"
-                />
-              </div>
+              {/* QR Code Container */}
+              <div className="flex flex-col items-center bg-[#070e20] border border-[#182a50] rounded-2xl p-4 mb-5">
+                <div className="w-48 h-48 bg-white p-2.5 rounded-2xl flex items-center justify-center shadow-lg overflow-hidden border border-slate-700">
+                  <img
+                    src={qrImage}
+                    alt="USDT Deposit QR"
+                    className="w-full h-full object-contain"
+                  />
+                </div>
+                <div className="flex items-center gap-1.5 mt-3 text-[10px] text-amber-400 font-bold uppercase tracking-wider bg-amber-500/10 px-2.5 py-0.5 rounded-full border border-amber-500/20">
+                  <span>BEP-20 Network Only</span>
+                </div>
               <p className="text-[11px] font-mono text-slate-300 mt-3 break-all text-center px-2">
                 {companyAddress}
               </p>
