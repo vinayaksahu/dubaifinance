@@ -6,7 +6,7 @@ import { Sparkles, TrendingUp, DollarSign, Calculator as CalcIcon } from "lucide
 export function Calculator() {
   const [calcAmount, setCalcAmount] = useState<number>(100);
 
-  const presets = [5, 10, 20, 50, 100, 500, 1000, 2000, 5000];
+  const presets = [5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000];
 
   // Exact 28-day tenure calculations from Dubai_Finance_Presentation_Dark.pdf Slides 05-09 & 11
   const daily5Percent = calcAmount * 0.05;

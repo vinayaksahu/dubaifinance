@@ -19,7 +19,7 @@ export const APP_CONFIG = {
     timezone: "Asia/Kolkata",
   },
   // Dark PDF Slide 5-9: $5 to $5,000 USDT Packages (28 Days)
-  basicPackagesUsd: [5, 10, 20, 50, 100, 500, 1000, 2000, 5000],
+  basicPackagesUsd: [5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000],
   basicPlan: {
     minUsdt: 5,
     maxUsdt: 5000,

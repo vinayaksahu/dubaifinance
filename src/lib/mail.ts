@@ -281,16 +281,32 @@ export async function sendWelcomeCredentialsEmail({
   fullName,
   customId,
   transactionPin,
+  appUrl,
 }: {
   email: string;
   fullName: string;
   customId: string;
   transactionPin: string;
+  appUrl?: string;
 }) {
   const normalizedEmail = email.toLowerCase().trim();
   const transporter = getGmailTransporter();
   const fromName = process.env.SMTP_FROM_NAME || "Dubai Finance Security";
   const fromEmail = process.env.GMAIL_USER || "dubaifinance.support@gmail.com";
+
+  // Resolve official portal login URL
+  // Prioritize dynamically detected appUrl (from request origin), then NEXT_PUBLIC_APP_URL, with strict fallback to official domain
+  let baseUrl = (appUrl || process.env.NEXT_PUBLIC_APP_URL || "https://dubaifinance.online").trim();
+
+  // Strip trailing slashes
+  baseUrl = baseUrl.replace(/\/+$/, "");
+
+  // Prevent old/obsolete domains (such as nexarise.us) from ever leaking into user emails
+  if (!baseUrl || baseUrl.includes("nexarise") || (baseUrl.includes("localhost") && process.env.NODE_ENV === "production")) {
+    baseUrl = "https://dubaifinance.online";
+  }
+
+  const loginUrl = `${baseUrl}/login`;
 
   const html = `
 <!DOCTYPE html>
@@ -470,7 +486,7 @@ export async function sendWelcomeCredentialsEmail({
       </div>
 
       <div class="btn-container">
-        <a href="${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/login" class="btn">
+        <a href="${loginUrl}" class="btn" target="_blank" rel="noopener noreferrer">
           Sign In to Member Portal &rarr;
         </a>
       </div>
@@ -488,7 +504,7 @@ export async function sendWelcomeCredentialsEmail({
     from: `"${fromName}" <${fromEmail}>`,
     to: normalizedEmail,
     subject: `Account Created: Your Dubai Finance User ID (${customId}) & PIN`,
-    text: `Congratulations ${fullName}! Your Dubai Finance account has been created.\nUser ID: ${customId}\nTransaction PIN: ${transactionPin}\nPlease keep these credentials safe.`,
+    text: `Congratulations ${fullName}!\n\nYour Dubai Finance investor account has been created successfully.\n\nMember / User ID: ${customId}\nRegistered Email: ${normalizedEmail}\n6-Digit Transaction PIN: ${transactionPin}\n\nSign in to your member portal: ${loginUrl}\n\nPlease keep your credentials safe and never share your PIN.`,
     html,
   };
 

@@ -92,12 +92,23 @@ export async function POST(req: NextRequest) {
       description: `Welcome Bonus $${bonusUsdt.toFixed(2)} USDT`,
     });
 
+    // Determine live application domain from request headers
+    const originHeader = req.headers.get("origin") || req.headers.get("referer");
+    let detectedAppUrl: string | undefined = undefined;
+    if (originHeader) {
+      try {
+        const parsed = new URL(originHeader);
+        detectedAppUrl = parsed.origin;
+      } catch {}
+    }
+
     // Send Welcome Email with User ID and PIN to user's Gmail in background
     sendWelcomeCredentialsEmail({
       email: newUser.email,
       fullName: newUser.fullName,
       customId: newUser.customId,
       transactionPin: cleanPin,
+      appUrl: detectedAppUrl,
     }).catch((err) => console.error("[Welcome Email Failed]:", err));
 
     // Create session token

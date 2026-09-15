@@ -15,10 +15,11 @@ const PACKAGE_TEMPLATES = [
   { id: 3, name: "Silver", amount: 20 },
   { id: 4, name: "Gold", amount: 50 },
   { id: 5, name: "Platinum", amount: 100 },
-  { id: 6, name: "Diamond", amount: 500 },
-  { id: 7, name: "Elite", amount: 1000 },
-  { id: 8, name: "Royal", amount: 2000 },
-  { id: 9, name: "Crown", amount: 5000 },
+  { id: 6, name: "Ruby", amount: 200 },
+  { id: 7, name: "Diamond", amount: 500 },
+  { id: 8, name: "Elite", amount: 1000 },
+  { id: 9, name: "Royal", amount: 2000 },
+  { id: 10, name: "Crown", amount: 5000 },
 ];
 
 export function BasicPackageView({ user, onRefresh, onRefreshUser }: BasicPackageViewProps) {

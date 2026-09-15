@@ -8,13 +8,14 @@ export function Packages() {
   const [activePlanType, setActivePlanType] = useState<"basic" | "fd">("basic");
   const [fdActiveTenure, setFdActiveTenure] = useState<180 | 210>(180);
 
-  // Exact 9 Basic Packages from Dubai_Finance_Presentation_Dark.pdf Slides 05-09
+  // Exact 10 Basic Packages from Dubai_Finance_Presentation_Dark.pdf Slides 05-09
   const basicPackages = [
     { amount: 5, dailyProfit: 0.25, day7: 1.75, day14: 3.50, gross: 7.00, netProfit: 2.00, tier: "Micro Starter", category: "Starter" },
     { amount: 10, dailyProfit: 0.50, day7: 3.50, day14: 7.00, gross: 14.00, netProfit: 4.00, tier: "Basic Starter", category: "Starter" },
     { amount: 20, dailyProfit: 1.00, day7: 7.00, day14: 14.00, gross: 28.00, netProfit: 8.00, tier: "Advanced Starter", category: "Starter" },
     { amount: 50, dailyProfit: 2.50, day7: 17.50, day14: 35.00, gross: 70.00, netProfit: 20.00, tier: "Growth Pro", category: "Growth", qualifier: true },
     { amount: 100, dailyProfit: 5.00, day7: 35.00, day14: 70.00, gross: 140.00, netProfit: 40.00, tier: "Growth Standard", category: "Growth", popular: true },
+    { amount: 200, dailyProfit: 10.00, day7: 70.00, day14: 140.00, gross: 280.00, netProfit: 80.00, tier: "Growth Ruby", category: "Growth" },
     { amount: 500, dailyProfit: 25.00, day7: 175.00, day14: 350.00, gross: 700.00, netProfit: 200.00, tier: "Growth Elite", category: "Growth" },
     { amount: 1000, dailyProfit: 50.00, day7: 350.00, day14: 700.00, gross: 1400.00, netProfit: 400.00, tier: "VIP Platinum", category: "VIP" },
     { amount: 2000, dailyProfit: 100.00, day7: 700.00, day14: 1400.00, gross: 2800.00, netProfit: 800.00, tier: "VIP Diamond", category: "VIP" },
@@ -151,11 +152,11 @@ export function Packages() {
               </div>
             </div>
 
-            {/* 9 Complete Packages from Slides 05-09 */}
+            {/* 10 Complete Packages from Slides 05-09 */}
             <div className="max-w-6xl mx-auto">
               <div className="text-center mb-6">
                 <h4 className="font-display text-xl font-bold text-[var(--text-main)]">
-                  All 9 Joining Tiers &bull; 28-Day Projections Matrix (Slide 09)
+                  All 10 Joining Tiers &bull; 28-Day Projections Matrix (Slide 09)
                 </h4>
                 <p className="text-xs text-[var(--text-subtle)]">
                   Full transparent calculation of 7-Day, 14-Day, 28-Day gross payout &amp; net profit
