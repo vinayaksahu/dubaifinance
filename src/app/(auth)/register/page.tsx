@@ -13,7 +13,6 @@ export default function RegisterPage() {
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
-  const [transactionPin, setTransactionPin] = useState("123456");
   const [otp, setOtp] = useState("");
   const [otpSent, setOtpSent] = useState(false);
   const [sendingOtp, setSendingOtp] = useState(false);
@@ -89,7 +88,6 @@ export default function RegisterPage() {
           email,
           phone,
           password,
-          transactionPin,
           otp: otp.trim(),
         }),
       });
@@ -277,44 +275,22 @@ export default function RegisterPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-[11px] font-bold text-slate-300 uppercase tracking-wider mb-1">
-                Password
-              </label>
-              <div className="relative">
-                <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400">
-                  <Lock className="w-3.5 h-3.5" />
-                </span>
-                <input
-                  type="password"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Password"
-                  className="w-full pl-8 pr-3 py-2.5 rounded-xl bg-black/50 border border-slate-700 text-white text-xs outline-none"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-[11px] font-bold text-slate-300 uppercase tracking-wider mb-1">
-                6-Digit PIN
-              </label>
-              <div className="relative">
-                <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-amber-400">
-                  <KeyRound className="w-3.5 h-3.5" />
-                </span>
-                <input
-                  type="password"
-                  maxLength={6}
-                  required
-                  value={transactionPin}
-                  onChange={(e) => setTransactionPin(e.target.value)}
-                  placeholder="e.g. 123456"
-                  className="w-full pl-8 pr-3 py-2.5 rounded-xl bg-black/50 border border-slate-700 text-amber-300 text-xs font-bold outline-none"
-                />
-              </div>
+          <div>
+            <label className="block text-[11px] font-bold text-slate-300 uppercase tracking-wider mb-1">
+              Password
+            </label>
+            <div className="relative">
+              <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400">
+                <Lock className="w-4 h-4" />
+              </span>
+              <input
+                type="password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Create secure password"
+                className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-black/50 border border-slate-700 focus:border-amber-400 text-white text-sm outline-none"
+              />
             </div>
           </div>
 
