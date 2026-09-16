@@ -114,6 +114,7 @@ export default function AdminPage() {
         setIsCollapsed={setSidebarCollapsed}
         pendingDepositsCount={stats?.pendingDeposits || 0}
         pendingWithdrawalsCount={stats?.pendingWithdrawals || 0}
+        userRole={user?.role}
       />
 
       {/* Main Content Area */}

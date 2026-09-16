@@ -62,10 +62,10 @@ export async function GET() {
     }
   }
 
-  // Fetch upcoming cycle forecast for next 12:01 AM Dubai cycle
+  // Fetch upcoming cycle forecast for next 12:01 AM Dubai cycle scoped to this admin's team
   let upcomingCycle = null;
   try {
-    upcomingCycle = await getUpcomingCycleForecast();
+    upcomingCycle = await getUpcomingCycleForecast(adminId);
   } catch (err) {
     console.error("Failed to compute upcoming cycle forecast:", err);
   }

@@ -29,6 +29,7 @@ interface AdminSidebarProps {
   setIsCollapsed: (collapsed: boolean) => void;
   pendingDepositsCount?: number;
   pendingWithdrawalsCount?: number;
+  userRole?: string;
 }
 
 export default function AdminSidebar({ 
@@ -40,7 +41,9 @@ export default function AdminSidebar({
   setIsCollapsed,
   pendingDepositsCount = 0,
   pendingWithdrawalsCount = 0,
+  userRole,
 }: AdminSidebarProps) {
+  const isSuper = userRole === "SUPER_ADMIN" || userRole === "SUPER_ROOT_ADMIN";
   const navItems = [
     { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
     { id: "deposits", label: "Deposit Management", icon: Wallet, badge: pendingDepositsCount > 0 ? pendingDepositsCount : null, badgeColor: "bg-cyan-500/20 text-cyan-400 border-cyan-500/40" },
@@ -49,7 +52,7 @@ export default function AdminSidebar({
     { id: "users", label: "User Management", icon: Users },
     { id: "roi-engine", label: "ROI Engine", icon: Zap },
     { id: "tickets", label: "Support Tickets", icon: Headphones },
-    { id: "config", label: "System Config", icon: Settings },
+    ...(isSuper ? [{ id: "config", label: "System Config", icon: Settings }] : []),
   ];
 
   const handleLogout = async () => {

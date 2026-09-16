@@ -203,14 +203,17 @@ export async function executeDailyRoiDistribution() {
 /**
  * Computes exact upcoming cycle payout forecast for the next 12:01 AM Dubai Time execution.
  */
-export async function getUpcomingCycleForecast() {
+export async function getUpcomingCycleForecast(adminId?: string) {
   const now = new Date();
   const nowInfo = getDubaiTimeInfo(now);
 
+  const whereClause: any = { status: "ACTIVE" };
+  if (adminId) {
+    whereClause.user = { adminId };
+  }
+
   const activeContracts = await db.investmentContract.findMany({
-    where: {
-      status: "ACTIVE",
-    },
+    where: whereClause,
     include: {
       user: {
         select: {
@@ -299,11 +302,16 @@ export async function getUpcomingCycleForecast() {
   }
 
   // Count ledger ROI transactions credited on today's Dubai date
+  const ledgerWhere: any = {
+    type: { in: ["BASIC_ROI", "FD_ROI"] },
+    referenceKey: { contains: nowInfo.dateStr },
+  };
+  if (adminId) {
+    ledgerWhere.user = { adminId };
+  }
+
   const todayRoiTransactionsCount = await db.ledgerEntry.count({
-    where: {
-      type: { in: ["BASIC_ROI", "FD_ROI"] },
-      referenceKey: { contains: nowInfo.dateStr },
-    },
+    where: ledgerWhere,
   });
 
   const isClosingCompleteToday = pendingContractsToday === 0;
