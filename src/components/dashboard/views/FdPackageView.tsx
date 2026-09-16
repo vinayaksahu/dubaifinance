@@ -127,7 +127,7 @@ export function FdPackageView({ user, onRefresh }: FdPackageViewProps) {
           <p className="text-sm font-semibold text-slate-300 mt-1">
             Available Fund Balance :{" "}
             <span className="text-emerald-400 font-bold">
-              ${fundBal.toFixed(4)} USDT
+              ${fundBal.toFixed(2)} USDT
             </span>
           </p>
         </div>

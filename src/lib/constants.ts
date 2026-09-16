@@ -204,7 +204,7 @@ export function isWithdrawalWindowOpen(config?: Record<string, any>): boolean {
 }
 
 export function inrToUsdt(inrAmount: number): number {
-  return Number(Number(inrAmount).toFixed(4));
+  return Number(Number(inrAmount).toFixed(2));
 }
 
 export function usdtToInr(usdtAmount: number): number {

@@ -21,11 +21,11 @@ export function formatUsd(amount: number | string | { toString(): string }): str
 export function formatUsdt(amount: number | string | { toString(): string }): string {
   const num = typeof amount === "number" ? amount : parseFloat(amount.toString());
   if (isNaN(num)) return "0.00 USDT";
-  return `${num.toFixed(4)} USDT`;
+  return `${num.toFixed(2)} USDT`;
 }
 
 export function inrToUsdt(inrAmount: number): number {
-  return Number(Number(inrAmount).toFixed(4));
+  return Number(Number(inrAmount).toFixed(2));
 }
 
 export function usdtToInr(usdtAmount: number): number {

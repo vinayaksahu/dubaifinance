@@ -264,7 +264,7 @@ export async function getUpcomingCycleForecast() {
         packageType: contract.packageType,
         amountInUsdt: Number(contract.amountInUsdt),
         dailyRoiRate: Number(contract.dailyRoiRate),
-        upcomingRoiUsdt: Number(dailyRoiUsdt.toFixed(4)),
+        upcomingRoiUsdt: Number(dailyRoiUsdt.toFixed(2)),
         daysPaid: contract.daysPaid,
         tenureDays: contract.tenureDays,
         nextCycleNumber,

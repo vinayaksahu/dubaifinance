@@ -916,7 +916,7 @@ export function ReportsView({ user, reportType, onRefresh }: ReportsViewProps) {
                                         </span>
                                       </div>
                                       <span className="font-bold text-emerald-400">
-                                        +${num(item.amount).toFixed(4)} USDT
+                                        +${num(item.amount).toFixed(2)} USDT
                                       </span>
                                     </div>
                                   ))}

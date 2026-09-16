@@ -109,7 +109,7 @@ export async function POST(req: NextRequest) {
     const callerFundDec = new Decimal(caller.fundBalance.toString());
     if (callerFundDec.lessThan(amountUsdtDec)) {
       return NextResponse.json({
-        error: `Insufficient Fund Balance. You have $${callerFundDec.toFixed(4)} USDT, but $${amountUsdtDec.toFixed(4)} USDT is required.`,
+        error: `Insufficient Fund Balance. You have $${callerFundDec.toFixed(2)} USDT, but $${amountUsdtDec.toFixed(2)} USDT is required.`,
       }, { status: 400 });
     }
 

@@ -90,7 +90,7 @@ export async function POST(req: NextRequest) {
     const incomeBal = new Decimal(user.incomeBalance.toString());
     if (incomeBal.lessThan(amountUsdtDec)) {
       return NextResponse.json({
-        error: `Insufficient Available Income balance. You have $${incomeBal.toFixed(4)} USDT, required: $${amountUsdtDec.toFixed(4)} USDT.`,
+        error: `Insufficient Available Income balance. You have $${incomeBal.toFixed(2)} USDT, required: $${amountUsdtDec.toFixed(2)} USDT.`,
       }, { status: 400 });
     }
 
