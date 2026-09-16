@@ -285,11 +285,37 @@ export async function getUpcomingCycleForecast() {
   const projectedLevelIncomeUsdt = totalRoiDec.times(0.12);
   const totalProjectedPayoutUsdt = totalRoiDec.plus(projectedLevelIncomeUsdt);
 
+  let pendingContractsToday = 0;
+  for (const contract of activeContracts) {
+    if (contract.daysPaid >= contract.tenureDays) continue;
+    const createdInfo = getDubaiTimeInfo(new Date(contract.createdAt));
+    const msDiff = Math.max(0, nowInfo.startOfDayMs - createdInfo.startOfDayMs);
+    const calendarDaysElapsed = Math.floor(msDiff / (1000 * 60 * 60 * 24));
+    const eligibleDaysTotal = Math.min(calendarDaysElapsed, contract.tenureDays);
+    const daysToPay = Math.max(0, eligibleDaysTotal - contract.daysPaid);
+    if (daysToPay > 0) {
+      pendingContractsToday++;
+    }
+  }
+
+  // Count ledger ROI transactions credited on today's Dubai date
+  const todayRoiTransactionsCount = await db.ledgerEntry.count({
+    where: {
+      type: { in: ["BASIC_ROI", "FD_ROI"] },
+      referenceKey: { contains: nowInfo.dateStr },
+    },
+  });
+
+  const isClosingCompleteToday = pendingContractsToday === 0;
+
   return {
     currentDubaiTime: nowInfo.currentDubaiFormatted,
     nextCycleDubaiTime: nowInfo.nextCycleDubaiFormatted,
     nextCycleUtcTimestamp: nowInfo.nextCycleUtcTimestamp,
     totalScheduledContracts: scheduledContractsCount,
+    pendingContractsToday,
+    isClosingCompleteToday,
+    todayRoiTransactionsCount,
     projectedBasicRoiUsdt: Number(projectedBasicRoiUsdt.toFixed(2)),
     projectedFdRoiUsdt: Number(projectedFdRoiUsdt.toFixed(2)),
     projectedTotalRoiUsdt: Number(totalRoiDec.toFixed(2)),

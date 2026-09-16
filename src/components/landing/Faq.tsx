@@ -17,11 +17,11 @@ export function Faq() {
     },
     {
       q: "Are there any withdrawal fees or administrative deductions?",
-      a: "No. Unlike other platforms, Dubai Finance enforces a strict Zero Deduction Policy: 0% Admin Charge, 0% TDS, and 0% Processing Fees. You receive 100% of your earnings directly into your BEP-20 wallet.",
+      a: "A flat 10% Admin Charge applies on withdrawals to support platform liquidity reserves and server infrastructure. All withdrawals are processed directly to your BEP-20 USDT wallet.",
     },
     {
       q: "What is the difference between Basic Saving and Fix Deposit (FD)?",
-      a: "Basic Saving ($5 to $5,000 USDT) pays 5% Daily ROI (1% profit + 4% principal return) for 25-30 days with daily withdrawal liquidity. Fix Deposit offers higher exponential staking yields of 10% to 15% Daily, with principal and profits unlocked upon 180-day or 210-day maturity.",
+      a: "Basic Saving (10 packages from $5 to $5,000 USDT, including $200 Growth Ruby) pays 5% Daily ROI for a disciplined 28-day contract delivering 140% gross return (40% pure net profit) with daily withdrawal liquidity. Fix Deposit offers exponential yields of 10% to 15% Daily for 180-day or 210-day maturities.",
     },
     {
       q: "When can I place daily withdrawal requests?",
@@ -45,7 +45,7 @@ export function Faq() {
             Got Questions? We Have Answers.
           </h2>
           <p className="text-[var(--text-muted)] text-base sm:text-lg mt-3 font-medium">
-            Everything you need to know about the official Dubai Finance presentation and business plan (Slide 40).
+            Everything you need to know about the official Dubai Finance presentation and business plan (23-Slide Official Deck).
           </p>
         </div>
 

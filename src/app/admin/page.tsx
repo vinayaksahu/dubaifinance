@@ -70,9 +70,15 @@ export default function AdminPage() {
     try {
       const res = await fetch("/api/cron/daily-roi");
       const data = await res.json();
-      setCronMsg(
-        `ROI Cron executed! Distributed $${data.summary?.totalDistributedUsdt || 0} USDT across ${data.summary?.processedCount || 0} contracts.`
-      );
+      if (data.summary?.processedCount === 0) {
+        setCronMsg(
+          "Closing is already complete for today! All active contracts are up to date ($0.00 distributed to prevent duplicate payouts)."
+        );
+      } else {
+        setCronMsg(
+          `ROI Cycle executed successfully! Distributed $${data.summary?.totalDistributedUsdt || 0} USDT across ${data.summary?.processedCount || 0} contracts.`
+        );
+      }
       loadData();
     } catch (e: any) {
       setCronMsg("Cron trigger failed: " + e.message);

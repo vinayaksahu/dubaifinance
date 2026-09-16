@@ -10,7 +10,8 @@ import { APP_CONFIG } from "@/lib/constants";
 export function Footer() {
   const { resolvedTheme } = useTheme();
   const isLight = resolvedTheme === "light";
-  const pdfHref = isLight ? "/Dubai_Finance_Presentation_Light.pdf" : "/Dubai_Finance_Presentation_Dark.pdf";
+  const pdfHref = `/api/download-presentation?theme=${isLight ? "light" : "dark"}&v=20260916`;
+  const pdfFileName = isLight ? "Dubai_Finance_Presentation_Light.pdf" : "Dubai_Finance_Presentation_Dark.pdf";
   const pdfLabel = isLight
     ? "Dubai Finance Presentation (Light PDF)"
     : "Dubai Finance Presentation (Dark PDF)";
@@ -100,7 +101,7 @@ export function Footer() {
 
             <a
               href={pdfHref}
-              download
+              download={pdfFileName}
               className="w-full py-3 px-4 rounded-xl border border-amber-500/30 bg-[var(--bg-card)] hover:border-amber-400 text-[var(--text-main)] text-xs font-bold transition flex items-center justify-between shadow-sm"
             >
               <span className="flex items-center gap-2">

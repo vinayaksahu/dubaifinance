@@ -12,7 +12,8 @@ export function Navbar() {
   const { resolvedTheme } = useTheme();
 
   const isLight = resolvedTheme === "light";
-  const pdfHref = isLight ? "/Dubai_Finance_Presentation_Light.pdf" : "/Dubai_Finance_Presentation_Dark.pdf";
+  const pdfHref = `/api/download-presentation?theme=${isLight ? "light" : "dark"}&v=20260916`;
+  const pdfFileName = isLight ? "Dubai_Finance_Presentation_Light.pdf" : "Dubai_Finance_Presentation_Dark.pdf";
   const pdfPillLabel = isLight ? "Light PDF" : "Dark PDF";
   const pdfDrawerLabel = isLight
     ? "Download Light Presentation PDF (23 Slides)"
@@ -34,6 +35,7 @@ export function Navbar() {
     { name: "Calculator", href: "#calculator" },
     { name: "12-Levels", href: "#referrals" },
     { name: "Milestones", href: "#ranks" },
+    { name: "Presentation", href: "#download" },
     { name: "Rules", href: "#terms" },
     { name: "FAQ", href: "#faq" },
   ];
@@ -93,7 +95,7 @@ export function Navbar() {
           {/* Dynamic Theme PDF Deck Download (Desktop only) */}
           <a
             href={pdfHref}
-            download
+            download={pdfFileName}
             className="hidden lg:inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-amber-500/30 text-amber-500 dark:text-amber-300 hover:bg-amber-400/10 text-xs font-bold transition whitespace-nowrap"
             title={`Download ${isLight ? "Light" : "Dark"} Presentation Deck (23 Slides)`}
           >
@@ -163,7 +165,7 @@ export function Navbar() {
           {/* Dynamic Theme PDF Download Button in Drawer */}
           <a
             href={pdfHref}
-            download
+            download={pdfFileName}
             onClick={() => setMobileMenuOpen(false)}
             className="w-full py-3.5 px-4 rounded-xl border border-amber-500/40 text-amber-500 dark:text-amber-300 font-bold flex items-center justify-center gap-2 text-xs sm:text-sm bg-amber-400/5 hover:bg-amber-400/10 transition shadow-sm"
           >

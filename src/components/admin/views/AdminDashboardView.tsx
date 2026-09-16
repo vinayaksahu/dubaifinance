@@ -23,6 +23,8 @@ export function AdminDashboardView({
   const [showQueuedList, setShowQueuedList] = useState(false);
   const [contractSearch, setContractSearch] = useState("");
   const upcoming = safeStats.upcomingCycle || {};
+  const isClosingComplete = upcoming.isClosingCompleteToday !== false && (upcoming.pendingContractsToday === undefined || upcoming.pendingContractsToday === 0);
+  const pendingContractsCount = upcoming.pendingContractsToday ?? 0;
   const queued = (upcoming.queuedContracts || []) as any[];
 
   const filteredQueued = queued.filter((c: any) => {
@@ -176,24 +178,53 @@ export function AdminDashboardView({
             <div className="text-xs text-slate-500 dark:text-slate-400 bg-black/30 border border-slate-800 px-3 py-1.5 rounded-xl font-mono">
               Dubai Time: <span className="text-amber-400 font-bold">{upcoming.currentDubaiTime || "Loading..."}</span>
             </div>
-            <button
-              type="button"
-              onClick={onTriggerCron}
-              disabled={cronLoading}
-              className="gold-btn px-6 py-3 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg shadow-amber-500/20 whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed transition-all cursor-pointer"
-            >
-              {cronLoading ? (
-                <>
-                  <Activity className="h-4 w-4 animate-spin text-slate-950" />
-                  <span>Executing Cycle...</span>
-                </>
+
+            <div className="flex flex-col items-start lg:items-end gap-1.5">
+              {isClosingComplete ? (
+                <div className="flex flex-col items-start lg:items-end gap-1.5">
+                  <button
+                    type="button"
+                    disabled={true}
+                    className="px-6 py-3 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 bg-emerald-950/40 text-emerald-400 border-2 border-emerald-500/50 shadow-lg shadow-emerald-950/30 whitespace-nowrap cursor-not-allowed opacity-90 transition-all select-none"
+                    title="Today's ROI & Royalty cycle is already complete. Next automated cycle runs at 12:01 AM GST."
+                  >
+                    <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />
+                    <span>Closing Already Complete</span>
+                  </button>
+
+                  <div className="flex items-center gap-1.5 text-[11px] font-semibold text-emerald-400/90 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-lg">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                    <span>Today&apos;s cycle credited &bull; Next: {upcoming.nextCycleDubaiTime || "12:01 AM GST"}</span>
+                  </div>
+                </div>
               ) : (
-                <>
-                  <Play className="h-4 w-4 text-slate-950 fill-slate-950" />
-                  <span>Execute Cycle Now</span>
-                </>
+                <div className="flex flex-col items-start lg:items-end gap-1.5">
+                  <button
+                    type="button"
+                    onClick={onTriggerCron}
+                    disabled={cronLoading}
+                    className="gold-btn px-6 py-3 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg shadow-amber-500/20 whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed transition-all cursor-pointer"
+                  >
+                    {cronLoading ? (
+                      <>
+                        <Activity className="h-4 w-4 animate-spin text-slate-950" />
+                        <span>Executing Cycle...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Play className="h-4 w-4 text-slate-950 fill-slate-950" />
+                        <span>Execute Cycle Now ({pendingContractsCount} Pending)</span>
+                      </>
+                    )}
+                  </button>
+
+                  <div className="flex items-center gap-1.5 text-[11px] font-semibold text-amber-400 bg-amber-500/10 border border-amber-500/30 px-2.5 py-1 rounded-lg">
+                    <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping" />
+                    <span>Closing Pending: {pendingContractsCount} active contract{pendingContractsCount !== 1 ? "s" : ""}</span>
+                  </div>
+                </div>
               )}
-            </button>
+            </div>
           </div>
         </div>
 

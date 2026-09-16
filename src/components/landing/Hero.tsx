@@ -8,7 +8,8 @@ import { useTheme } from "@/components/theme/ThemeProvider";
 export function Hero() {
   const { resolvedTheme } = useTheme();
   const isLight = resolvedTheme === "light";
-  const pdfHref = isLight ? "/Dubai_Finance_Presentation_Light.pdf" : "/Dubai_Finance_Presentation_Dark.pdf";
+  const pdfHref = `/api/download-presentation?theme=${isLight ? "light" : "dark"}&v=20260916`;
+  const pdfFileName = isLight ? "Dubai_Finance_Presentation_Light.pdf" : "Dubai_Finance_Presentation_Dark.pdf";
   const pdfTitle = isLight
     ? "Download Light PDF Deck (23 Slides)"
     : "Download Dark PDF Deck (23 Slides)";
@@ -61,7 +62,7 @@ export function Hero() {
           {/* Theme-Aware Dynamic PDF Download Button */}
           <a
             href={pdfHref}
-            download
+            download={pdfFileName}
             className="w-full sm:w-auto px-6 py-4 rounded-2xl border border-amber-500/30 bg-[var(--bg-card)] hover:border-amber-400 text-[var(--text-main)] text-base font-semibold transition flex items-center justify-center gap-2 shadow-sm"
           >
             <Download className="w-5 h-5 text-amber-500" />

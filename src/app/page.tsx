@@ -5,6 +5,7 @@ import { Packages } from "@/components/landing/Packages";
 import { Calculator } from "@/components/landing/Calculator";
 import { Referrals } from "@/components/landing/Referrals";
 import { Ranks } from "@/components/landing/Ranks";
+import { PresentationDownload } from "@/components/landing/PresentationDownload";
 import { Terms } from "@/components/landing/Terms";
 import { Faq } from "@/components/landing/Faq";
 import { Footer } from "@/components/landing/Footer";
@@ -24,6 +25,7 @@ export default function HomePage() {
         <Calculator />
         <Referrals />
         <Ranks />
+        <PresentationDownload />
         <Terms />
         <Faq />
       </main>
