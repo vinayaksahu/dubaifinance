@@ -42,21 +42,33 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Invalid credentials. User ID or Password incorrect." }, { status: 401 });
     }
 
+    const isSuperRoot = user.role === "SUPER_ROOT_ADMIN";
     const isAdmin = user.role === "SUPER_ADMIN" || user.role === "ADMIN";
+    const isUser = user.role === "USER";
 
     // Strict portal separation
-    if (portal === "admin" && !isAdmin) {
-      return NextResponse.json(
-        { error: "Access Denied. You do not have administrator permissions. Please use Member Login (/login)." },
-        { status: 403 }
-      );
-    }
-
-    if (portal === "member" && isAdmin) {
-      return NextResponse.json(
-        { error: "Admin account detected. Please sign in via the Admin Portal at /adminlogin." },
-        { status: 403 }
-      );
+    if (portal === "super_root") {
+      if (!isSuperRoot) {
+        return NextResponse.json(
+          { error: "Access Denied. Invalid Super Root Administrator credentials." },
+          { status: 403 }
+        );
+      }
+    } else if (portal === "admin") {
+      if (isSuperRoot || !isAdmin) {
+        return NextResponse.json(
+          { error: "Access Denied. You do not have administrator permissions. Please check your credentials." },
+          { status: 403 }
+        );
+      }
+    } else {
+      // Default member portal
+      if (isAdmin || isSuperRoot) {
+        return NextResponse.json(
+          { error: "Administrative account detected. Please sign in via the authorized administrative portal." },
+          { status: 403 }
+        );
+      }
     }
 
     const token = await createSessionToken({
@@ -64,7 +76,15 @@ export async function POST(req: NextRequest) {
       customId: user.customId,
       email: user.email,
       role: user.role,
+      adminId: user.adminId,
     });
+
+    let redirectTo = "/member";
+    if (isSuperRoot) {
+      redirectTo = "/superrootadmin";
+    } else if (isAdmin) {
+      redirectTo = "/admin";
+    }
 
     const response = NextResponse.json({
       success: true,
@@ -74,7 +94,7 @@ export async function POST(req: NextRequest) {
         fullName: user.fullName,
         role: user.role,
       },
-      redirectTo: isAdmin ? "/admin" : "/member",
+      redirectTo,
     });
 
     response.cookies.set("df_session", token, {

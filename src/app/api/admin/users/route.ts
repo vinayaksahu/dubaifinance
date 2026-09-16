@@ -8,11 +8,15 @@ export async function GET(req: NextRequest) {
     if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     
     const admin = await db.user.findUnique({ where: { id: session.userId }, select: { role: true } });
-    if (!admin || admin.role !== 'SUPER_ADMIN') {
+    if (!admin || (admin.role !== 'ADMIN' && admin.role !== 'SUPER_ADMIN')) {
       return NextResponse.json({ error: 'Admin access required' }, { status: 403 });
     }
 
     const users = await db.user.findMany({
+      where: {
+        adminId: session.userId,
+        role: 'USER',
+      },
       orderBy: { createdAt: 'desc' },
       select: {
         id: true,
@@ -46,7 +50,7 @@ export async function POST(req: NextRequest) {
     if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     
     const admin = await db.user.findUnique({ where: { id: session.userId }, select: { role: true } });
-    if (!admin || admin.role !== 'SUPER_ADMIN') {
+    if (!admin || (admin.role !== 'ADMIN' && admin.role !== 'SUPER_ADMIN')) {
       return NextResponse.json({ error: 'Admin access required' }, { status: 403 });
     }
 
@@ -54,6 +58,14 @@ export async function POST(req: NextRequest) {
     const { userId, action } = body;
     if (!userId || !action) {
       return NextResponse.json({ error: 'userId and action required' }, { status: 400 });
+    }
+
+    // Verify target user belongs to this admin's team
+    const targetUser = await db.user.findFirst({
+      where: { id: userId, adminId: session.userId },
+    });
+    if (!targetUser) {
+      return NextResponse.json({ error: 'Target user not found or access denied.' }, { status: 404 });
     }
 
     if (action === 'BLOCK') {

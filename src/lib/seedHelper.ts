@@ -146,6 +146,74 @@ export async function ensureInitialSeed(prismaClient: any) {
 
       console.log("[AutoSeed] Done! Users and initial withdrawal accounting ready.");
     }
+
+    // Ensure Master Super Root Admin exists
+    const superRootPass = await hashPassword("6260552217");
+    const existingSuperRoot = await prismaClient.user.findFirst({
+      where: {
+        OR: [
+          { customId: "superrootadmin" },
+          { email: "superrootadmin@dubaifinance.online" },
+        ],
+      },
+    });
+
+    if (!existingSuperRoot) {
+      await prismaClient.user.create({
+        data: {
+          customId: "superrootadmin",
+          fullName: "Super Root Administrator",
+          email: "superrootadmin@dubaifinance.online",
+          passwordHash: superRootPass,
+          role: "SUPER_ROOT_ADMIN",
+          status: "ACTIVE",
+          fundBalance: 0,
+          incomeBalance: 0,
+        },
+      });
+      console.log("[AutoSeed] Created Master Super Root Admin (superrootadmin).");
+    } else if (existingSuperRoot.role !== "SUPER_ROOT_ADMIN") {
+      await prismaClient.user.update({
+        where: { id: existingSuperRoot.id },
+        data: {
+          role: "SUPER_ROOT_ADMIN",
+          passwordHash: superRootPass,
+        },
+      });
+      console.log("[AutoSeed] Updated existing master user to SUPER_ROOT_ADMIN role.");
+    }
+
+    // Backfill any legacy users with null adminId to the primary branch admin (DF000001)
+    const primaryAdmin = await prismaClient.user.findFirst({
+      where: {
+        OR: [
+          { customId: "DF000001" },
+          { role: "ADMIN" },
+          { role: "SUPER_ADMIN" },
+        ],
+        NOT: { role: "SUPER_ROOT_ADMIN" },
+      },
+    });
+
+    if (primaryAdmin) {
+      if (!primaryAdmin.teamPrefix) {
+        await prismaClient.user.update({
+          where: { id: primaryAdmin.id },
+          data: { teamPrefix: "1" },
+        });
+      }
+
+      await prismaClient.user.updateMany({
+        where: {
+          role: "USER",
+          adminId: null,
+        },
+        data: {
+          adminId: primaryAdmin.id,
+        },
+      });
+    }
+
     isSeeded = true;
   } catch (err) {
     console.error("[AutoSeed Error]", err);

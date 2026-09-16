@@ -594,7 +594,7 @@ export function MemberSidebar({
           </button>
 
           {/* Admin Panel Link */}
-          {userRole === "SUPER_ADMIN" && (
+          {(userRole === "SUPER_ADMIN" || userRole === "ADMIN") && (
             <Link
               href="/admin"
               title={isCollapsed ? "Admin Console" : undefined}

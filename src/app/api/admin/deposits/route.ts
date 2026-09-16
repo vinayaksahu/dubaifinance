@@ -11,6 +11,9 @@ export async function GET() {
   }
 
   const rawDeposits = await db.depositRequest.findMany({
+    where: {
+      user: { adminId: session.userId },
+    },
     orderBy: { createdAt: "desc" },
     include: {
       user: { select: { customId: true, fullName: true, email: true } },
@@ -46,8 +49,11 @@ export async function POST(req: NextRequest) {
 
   const { depositId, action, adminNote } = await req.json();
 
-  const deposit = await db.depositRequest.findUnique({
-    where: { id: depositId },
+  const deposit = await db.depositRequest.findFirst({
+    where: { 
+      id: depositId,
+      user: { adminId: session.userId },
+    },
     include: { user: true },
   });
 

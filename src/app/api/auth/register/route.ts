@@ -27,22 +27,65 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Email already registered." }, { status: 400 });
     }
 
-    // Resolve sponsor
+    // Resolve sponsor and assigned branch admin
     let sponsor = null;
+    let assignedAdminId: string | null = null;
+
     if (sponsorCode) {
-      sponsor = await db.user.findUnique({ where: { customId: sponsorCode } });
-    }
-    if (!sponsor) {
-      // Default to root admin
-      sponsor = await db.user.findFirst({ where: { role: "SUPER_ADMIN" } });
+      sponsor = await db.user.findFirst({
+        where: {
+          OR: [
+            { customId: { equals: sponsorCode.trim(), mode: "insensitive" } },
+            { id: sponsorCode.trim() },
+          ],
+        },
+      });
     }
 
-    // Generate unique customId like DF836419
+    if (!sponsor) {
+      // Default to first active branch admin
+      sponsor = await db.user.findFirst({
+        where: {
+          role: { in: ["ADMIN", "SUPER_ADMIN"] },
+          status: "ACTIVE",
+        },
+      });
+    }
+
+    if (sponsor) {
+      if (sponsor.role === "ADMIN" || sponsor.role === "SUPER_ADMIN") {
+        assignedAdminId = sponsor.id;
+      } else {
+        assignedAdminId = sponsor.adminId || null;
+      }
+    }
+
+    // Final fallback if needed
+    if (!assignedAdminId) {
+      const fallbackAdmin = await db.user.findFirst({
+        where: { role: { in: ["ADMIN", "SUPER_ADMIN"] } },
+      });
+      assignedAdminId = fallbackAdmin?.id || null;
+    }
+
+    // Resolve teamPrefix from assigned branch admin (e.g. "1" for DF1xxxxx, "2" for DF2xxxxx, "3" for DF3xxxxx)
+    let teamPrefix = "1";
+    if (assignedAdminId) {
+      const adminRecord = await db.user.findUnique({
+        where: { id: assignedAdminId },
+        select: { teamPrefix: true },
+      });
+      if (adminRecord?.teamPrefix) {
+        teamPrefix = adminRecord.teamPrefix.trim();
+      }
+    }
+
+    // Generate unique customId like DF123456, DF223456, DF323456
     let customId = "";
     let isUnique = false;
     while (!isUnique) {
-      const rand = Math.floor(100000 + Math.random() * 900000);
-      customId = `DF${rand}`;
+      const rand5 = Math.floor(10000 + Math.random() * 90000); // 5 random digits
+      customId = `DF${teamPrefix}${rand5}`;
       const found = await db.user.findUnique({ where: { customId } });
       if (!found) isUnique = true;
     }
@@ -60,6 +103,7 @@ export async function POST(req: NextRequest) {
         passwordHash,
         transactionPin: pinHash,
         sponsorId: sponsor?.id || null,
+        adminId: assignedAdminId,
         status: "INACTIVE",
         role: "USER",
       },

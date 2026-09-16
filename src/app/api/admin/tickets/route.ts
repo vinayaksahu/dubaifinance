@@ -8,11 +8,14 @@ export async function GET(req: NextRequest) {
     if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     
     const admin = await db.user.findUnique({ where: { id: session.userId }, select: { role: true } });
-    if (!admin || admin.role !== 'SUPER_ADMIN') {
+    if (!admin || (admin.role !== 'ADMIN' && admin.role !== 'SUPER_ADMIN')) {
       return NextResponse.json({ error: 'Admin access required' }, { status: 403 });
     }
 
     const tickets = await db.supportTicket.findMany({
+      where: {
+        user: { adminId: session.userId },
+      },
       orderBy: { createdAt: 'desc' },
       include: {
         user: { select: { customId: true, fullName: true, email: true } },
@@ -31,13 +34,23 @@ export async function POST(req: NextRequest) {
     if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     
     const admin = await db.user.findUnique({ where: { id: session.userId }, select: { role: true } });
-    if (!admin || admin.role !== 'SUPER_ADMIN') {
+    if (!admin || (admin.role !== 'ADMIN' && admin.role !== 'SUPER_ADMIN')) {
       return NextResponse.json({ error: 'Admin access required' }, { status: 403 });
     }
 
     const { ticketId, action, reply } = await req.json();
     if (!ticketId || !action) {
       return NextResponse.json({ error: 'ticketId and action required' }, { status: 400 });
+    }
+
+    const ticket = await db.supportTicket.findFirst({
+      where: {
+        id: ticketId,
+        user: { adminId: session.userId },
+      },
+    });
+    if (!ticket) {
+      return NextResponse.json({ error: 'Ticket not found or access denied.' }, { status: 404 });
     }
 
     if (action === 'REPLY') {

@@ -11,6 +11,9 @@ export async function GET() {
   }
 
   const rawWithdrawals = await db.withdrawalRequest.findMany({
+    where: {
+      user: { adminId: session.userId },
+    },
     orderBy: { createdAt: "desc" },
     include: {
       user: { select: { customId: true, fullName: true, email: true } },
@@ -95,8 +98,11 @@ export async function POST(req: NextRequest) {
 
   const { withdrawalId, action, txHash, adminNote } = await req.json();
 
-  const withdrawal = await db.withdrawalRequest.findUnique({
-    where: { id: withdrawalId },
+  const withdrawal = await db.withdrawalRequest.findFirst({
+    where: { 
+      id: withdrawalId,
+      user: { adminId: session.userId },
+    },
     include: { user: true },
   });
 

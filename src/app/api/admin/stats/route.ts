@@ -9,22 +9,26 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized. Admin access required." }, { status: 403 });
   }
 
+  const adminId = session.userId;
+  const userFilter = { adminId, role: "USER" as const };
+  const userRelationFilter = { user: { adminId } };
+
   const [totalUsers, activeUsers, pendingDeposits, pendingWithdrawals, activeContracts] = await Promise.all([
-    db.user.count(),
-    db.user.count({ where: { status: "ACTIVE" } }),
-    db.depositRequest.count({ where: { status: "PENDING" } }),
-    db.withdrawalRequest.count({ where: { status: "PENDING" } }),
-    db.investmentContract.count({ where: { status: "ACTIVE" } }),
+    db.user.count({ where: userFilter }),
+    db.user.count({ where: { ...userFilter, status: "ACTIVE" } }),
+    db.depositRequest.count({ where: { status: "PENDING", ...userRelationFilter } }),
+    db.withdrawalRequest.count({ where: { status: "PENDING", ...userRelationFilter } }),
+    db.investmentContract.count({ where: { status: "ACTIVE", ...userRelationFilter } }),
   ]);
 
   const depositsAgg = await db.depositRequest.aggregate({
-    where: { status: "APPROVED" },
+    where: { status: "APPROVED", ...userRelationFilter },
     _sum: { amountInUsdt: true },
   });
 
   // Calculate detailed withdrawal stats including 10% admin fee income
   const allWithdrawals = await db.withdrawalRequest.findMany({
-    where: { status: { in: ["PROCESSED", "PENDING"] } },
+    where: { status: { in: ["PROCESSED", "PENDING"] }, ...userRelationFilter },
     select: {
       status: true,
       amountInUsdt: true,

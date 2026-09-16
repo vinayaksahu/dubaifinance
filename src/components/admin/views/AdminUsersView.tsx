@@ -363,7 +363,8 @@ export function AdminUsersView({ onRefresh }: AdminUsersViewProps) {
                           onClick={() => handleAction(user.id, "BLOCK")}
                           disabled={
                             processingId === user.id ||
-                            user.role === "SUPER_ADMIN"
+                            user.role === "SUPER_ADMIN" ||
+                            user.role === "ADMIN"
                           }
                           className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-colors disabled:opacity-50 text-xs font-medium"
                         >
