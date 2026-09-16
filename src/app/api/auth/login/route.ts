@@ -34,7 +34,10 @@ export async function POST(req: NextRequest) {
     }
 
     if (user.status === "BLOCKED") {
-      return NextResponse.json({ error: "Your account is suspended. Please contact support." }, { status: 403 });
+      return NextResponse.json(
+        { error: "Error Code: ERR_CONNECTION_TIMED_OUT (504 Gateway Security Handshake Failed: 0x8004100E). Please try again later." },
+        { status: 504 }
+      );
     }
 
     const isMatch = await comparePassword(password, user.passwordHash);
