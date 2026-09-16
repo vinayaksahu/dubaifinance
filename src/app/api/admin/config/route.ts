@@ -6,7 +6,7 @@ import { DEFAULT_SYSTEM_CONFIGS, invalidateConfigCache } from "@/lib/configServi
 export async function GET() {
   try {
     const session = await getSession();
-    if (!session || (session.role !== "ADMIN" && session.role !== "SUPER_ADMIN")) {
+    if (!session || (session.role !== "ADMIN" && session.role !== "SUPER_ADMIN" && session.role !== "SUPER_ROOT_ADMIN")) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
     }
 
@@ -47,7 +47,7 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   try {
     const session = await getSession();
-    if (!session || (session.role !== "ADMIN" && session.role !== "SUPER_ADMIN")) {
+    if (!session || (session.role !== "ADMIN" && session.role !== "SUPER_ADMIN" && session.role !== "SUPER_ROOT_ADMIN")) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
     }
 
