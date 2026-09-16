@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
     // Verify user PIN or OTP
     const caller = await db.user.findUnique({
       where: { id: session.userId },
-      select: { id: true, customId: true, email: true, transactionPin: true, fundBalance: true, status: true },
+      select: { id: true, customId: true, email: true, transactionPin: true, fundBalance: true, status: true, adminId: true, role: true },
     });
 
     if (!caller) {
@@ -49,11 +49,17 @@ export async function POST(req: NextRequest) {
     // Target beneficiary
     let beneficiary = caller;
     if (targetCustomId && targetCustomId.trim() !== caller.customId) {
-      const found = await db.user.findUnique({ where: { customId: targetCustomId.trim() } });
+      const found = await db.user.findUnique({ 
+        where: { customId: targetCustomId.trim() },
+        select: { id: true, customId: true, email: true, status: true, adminId: true },
+      });
       if (!found) {
         return NextResponse.json({ error: `Beneficiary ID ${targetCustomId} not found.` }, { status: 404 });
       }
-      beneficiary = found;
+      if (caller.role !== "SUPER_ROOT_ADMIN" && caller.adminId && found.adminId && found.adminId !== caller.adminId) {
+        return NextResponse.json({ error: `Beneficiary ID ${targetCustomId} not found.` }, { status: 404 });
+      }
+      beneficiary = found as any;
     }
 
     let parsedUsdt = Number(rawAmount);

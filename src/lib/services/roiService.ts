@@ -61,17 +61,20 @@ export function getDubaiTimeInfo(date: Date = new Date()) {
  * Distributes daily ROI for all eligible active contracts based on Dubai midnight cycle (12:01 AM GST).
  * New contracts activated today do NOT receive Day 1 ROI immediately; Day 1 is credited at the first 12:01 AM cycle.
  */
-export async function executeDailyRoiDistribution() {
+export async function executeDailyRoiDistribution(adminId?: string) {
   const now = new Date();
   const nowInfo = getDubaiTimeInfo(now);
 
-  // Find all active investment contracts
+  const whereClause: any = { status: "ACTIVE" };
+  if (adminId) {
+    whereClause.user = { adminId };
+  }
+
+  // Find active investment contracts
   const activeContracts = await db.investmentContract.findMany({
-    where: {
-      status: "ACTIVE",
-    },
+    where: whereClause,
     include: {
-      user: { select: { id: true, customId: true, status: true } },
+      user: { select: { id: true, customId: true, status: true, adminId: true } },
     },
   });
 

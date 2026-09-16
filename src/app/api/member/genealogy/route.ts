@@ -39,6 +39,7 @@ export async function GET(req: NextRequest) {
         email: true,
         status: true,
         role: true,
+        adminId: true,
         createdAt: true,
         sponsor: { select: { customId: true, fullName: true } },
         contracts: {
@@ -122,8 +123,17 @@ export async function GET(req: NextRequest) {
     // Determine root user
     let rootUser = currentUser;
     if (targetUserId !== session.userId) {
-      const found = await db.user.findUnique({
-        where: { id: targetUserId },
+      const effectiveAdminId = currentUser.role === "ADMIN" || currentUser.role === "SUPER_ADMIN"
+        ? currentUser.id
+        : currentUser.adminId;
+
+      const whereTarget: any = { id: targetUserId };
+      if (currentUser.role !== "SUPER_ROOT_ADMIN" && effectiveAdminId) {
+        whereTarget.adminId = effectiveAdminId;
+      }
+
+      const found = await db.user.findFirst({
+        where: whereTarget,
         select: {
           id: true,
           customId: true,
@@ -131,6 +141,7 @@ export async function GET(req: NextRequest) {
           email: true,
           status: true,
           role: true,
+          adminId: true,
           createdAt: true,
           sponsor: { select: { customId: true, fullName: true } },
           contracts: {

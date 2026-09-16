@@ -10,9 +10,11 @@ export async function GET(req: NextRequest) {
 
     const session = await getSession();
     const isAdmin = session?.role === "ADMIN" || session?.role === "SUPER_ADMIN";
+    const isSuperRoot = session?.role === "SUPER_ROOT_ADMIN";
 
     const isAuthorized =
       isAdmin ||
+      isSuperRoot ||
       authHeader === `Bearer ${validSecret}` ||
       secretParam === validSecret ||
       process.env.NODE_ENV !== "production";
@@ -21,7 +23,13 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized cron execution." }, { status: 401 });
     }
 
-    const result = await executeDailyRoiDistribution();
+    // If an isolated sub-admin triggers this, ONLY process their own branch!
+    // If super root or external automated cron secret runs, process platform-wide.
+    const adminId = (isSuperRoot || authHeader === `Bearer ${validSecret}` || secretParam === validSecret)
+      ? undefined
+      : (isAdmin ? session.userId : undefined);
+
+    const result = await executeDailyRoiDistribution(adminId);
 
     return NextResponse.json({
       success: true,

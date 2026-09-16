@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
 
     const sender = await db.user.findUnique({
       where: { id: session.userId },
-      select: { id: true, customId: true, email: true, transactionPin: true, fundBalance: true },
+      select: { id: true, customId: true, email: true, transactionPin: true, fundBalance: true, adminId: true, role: true },
     });
 
     if (!sender) {
@@ -48,10 +48,14 @@ export async function POST(req: NextRequest) {
 
     const recipient = await db.user.findUnique({
       where: { customId: recipientCustomId.trim().toUpperCase() },
-      select: { id: true, customId: true, fullName: true },
+      select: { id: true, customId: true, fullName: true, adminId: true },
     });
 
     if (!recipient) {
+      return NextResponse.json({ error: `Recipient with ID ${recipientCustomId} not found.` }, { status: 404 });
+    }
+
+    if (sender.role !== "SUPER_ROOT_ADMIN" && sender.adminId && recipient.adminId && sender.adminId !== recipient.adminId) {
       return NextResponse.json({ error: `Recipient with ID ${recipientCustomId} not found.` }, { status: 404 });
     }
 
