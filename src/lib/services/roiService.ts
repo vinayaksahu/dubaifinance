@@ -77,7 +77,6 @@ export async function executeDailyRoiDistribution() {
 
   let processedCount = 0;
   let totalDistributedUsdt = new Decimal(0);
-  const contractDetails: any[] = [];
 
   for (const contract of activeContracts) {
     if (contract.daysPaid >= contract.tenureDays) {
@@ -98,17 +97,6 @@ export async function executeDailyRoiDistribution() {
     // Eligible days strictly capped at tenureDays
     const eligibleDaysTotal = Math.min(calendarDaysElapsed, contract.tenureDays);
     const daysToPay = Math.max(0, eligibleDaysTotal - contract.daysPaid);
-
-    contractDetails.push({
-      id: contract.id,
-      user: contract.user?.customId,
-      createdAt: contract.createdAt,
-      daysPaid: contract.daysPaid,
-      tenureDays: contract.tenureDays,
-      calendarDaysElapsed,
-      eligibleDaysTotal,
-      daysToPay,
-    });
 
     if (daysToPay <= 0) {
       continue;
@@ -209,7 +197,6 @@ export async function executeDailyRoiDistribution() {
     totalContracts: activeContracts.length,
     processedCount,
     totalDistributedUsdt: totalDistributedUsdt.toFixed(8),
-    contractDetails,
   };
 }
 

@@ -23,17 +23,9 @@ export async function GET(req: NextRequest) {
 
     const result = await executeDailyRoiDistribution();
 
-    const recentLedgers = await db.ledgerEntry.findMany({
-      where: { type: { in: ["BASIC_ROI", "BASIC_LEVEL_INCOME", "FD_ROI", "FD_LEVEL_INCOME"] } },
-      orderBy: { createdAt: "desc" },
-      take: 20,
-      select: { id: true, userId: true, type: true, amount: true, referenceKey: true, description: true, createdAt: true },
-    });
-
     return NextResponse.json({
       success: true,
       summary: result,
-      recentLedgers,
     });
   } catch (error: any) {
     console.error("Daily ROI Cron failed:", error);
