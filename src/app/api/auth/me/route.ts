@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { getAllSystemConfigs } from "@/lib/configService";
-import { executeDailyRoiDistribution } from "@/lib/services/roiService";
+import { executeDailyRoiDistribution, getDubaiTimeInfo } from "@/lib/services/roiService";
 import Decimal from "decimal.js";
 
 let lastAutoRoiCheck = 0;
@@ -13,9 +13,9 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  // Auto-distribute pending ROI on portal load (throttled to at most once per 60 seconds)
+  // Auto-distribute pending ROI on portal load (throttled to at most once per 20 seconds)
   const nowMs = Date.now();
-  if (nowMs - lastAutoRoiCheck > 60000) {
+  if (nowMs - lastAutoRoiCheck > 20000) {
     lastAutoRoiCheck = nowMs;
     try {
       await executeDailyRoiDistribution();
@@ -178,9 +178,11 @@ export async function GET() {
     .plus(user.totalWithdrawn.toString())
     .toNumber();
 
-  // Calculate detailed income breakdown stats from ledgers
-  const todayStart = new Date();
-  todayStart.setHours(0, 0, 0, 0);
+  // Calculate detailed income breakdown stats from ledgers using Dubai Time (GST = UTC+4)
+  const dubaiInfo = getDubaiTimeInfo();
+  const dubaiTodayDateStr = dubaiInfo.dateStr;
+  const startOfDubaiDay = new Date(dubaiInfo.startOfDayMs);
+  const endOfDubaiDay = new Date(dubaiInfo.endOfDayMs);
 
   let joiningBonus = 0;
   let basicReferralIncome = 0;
@@ -200,7 +202,10 @@ export async function GET() {
 
   for (const entry of user.ledgers) {
     const amt = Number(entry.amount.toString());
-    const isToday = new Date(entry.createdAt) >= todayStart;
+    const entryDate = new Date(entry.createdAt);
+    const isToday =
+      (entryDate >= startOfDubaiDay && entryDate < endOfDubaiDay) ||
+      Boolean(entry.referenceKey?.endsWith(`_${dubaiTodayDateStr}`));
 
     if (entry.type === "SIGNUP_BONUS") {
       joiningBonus += amt;

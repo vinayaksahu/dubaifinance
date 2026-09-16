@@ -18,7 +18,9 @@ export function getDubaiTimeInfo(date: Date = new Date()) {
   const seconds = gstDate.getUTCSeconds();
 
   const dateStr = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-  const startOfDayMs = Date.UTC(year, month, day, 0, 0, 0);
+  // Exact UTC timestamp when 00:00:00 GST started on this Dubai calendar day
+  const startOfDayMs = Date.UTC(year, month, day, 0, 0, 0) - 4 * 60 * 60 * 1000;
+  const endOfDayMs = startOfDayMs + 24 * 60 * 60 * 1000;
 
   // Next cycle is at 12:01 AM GST
   // If current Dubai time is 00:00, next cycle is at 00:01 today.
@@ -47,6 +49,7 @@ export function getDubaiTimeInfo(date: Date = new Date()) {
     minutes,
     seconds,
     startOfDayMs,
+    endOfDayMs,
     currentDubaiFormatted,
     nextCycleUtc,
     nextCycleUtcTimestamp,
@@ -85,11 +88,11 @@ export async function executeDailyRoiDistribution() {
     }
 
     // Dubai calendar day calculation:
-    // If contract was created today in Dubai, calendarDaysElapsed = 0.
-    // Day 1 ROI will only be paid once Dubai time reaches 12:01 AM of the next calendar day (calendarDaysElapsed = 1).
+    // A contract is active starting on its activation day (Day 1).
+    // Each calendar day in Dubai (at 12:01 AM GST or on demand), 1 daily ROI cycle is credited up to tenureDays.
     const createdInfo = getDubaiTimeInfo(new Date(contract.createdAt));
     const msDiff = Math.max(0, nowInfo.startOfDayMs - createdInfo.startOfDayMs);
-    const calendarDaysElapsed = Math.floor(msDiff / (1000 * 60 * 60 * 24));
+    const calendarDaysElapsed = Math.floor(msDiff / (1000 * 60 * 60 * 24)) + 1;
 
     // Eligible days strictly capped at tenureDays
     const eligibleDaysTotal = Math.min(calendarDaysElapsed, contract.tenureDays);
@@ -113,8 +116,8 @@ export async function executeDailyRoiDistribution() {
     // Process each unpaid cycle
     for (let i = 0; i < daysToPay; i++) {
       const currentDayNumber = contractDaysPaid + 1;
-      const targetDateMs = createdInfo.startOfDayMs + currentDayNumber * 24 * 60 * 60 * 1000;
-      const targetDate = new Date(targetDateMs);
+      const dayOffsetMs = (currentDayNumber - 1) * 24 * 60 * 60 * 1000;
+      const targetDate = new Date(createdInfo.startOfDayMs + dayOffsetMs + 4 * 60 * 60 * 1000);
       const targetDateStr = `${targetDate.getUTCFullYear()}-${String(targetDate.getUTCMonth() + 1).padStart(2, "0")}-${String(targetDate.getUTCDate()).padStart(2, "0")}`;
       const referenceKey = `ROI_${contract.id}_${targetDateStr}`;
 
@@ -233,7 +236,7 @@ export async function getUpcomingCycleForecast() {
 
     const createdInfo = getDubaiTimeInfo(new Date(contract.createdAt));
     const msDiff = Math.max(0, nowInfo.startOfDayMs - createdInfo.startOfDayMs);
-    const currentDaysElapsed = Math.floor(msDiff / (1000 * 60 * 60 * 24));
+    const currentDaysElapsed = Math.floor(msDiff / (1000 * 60 * 60 * 24)) + 1;
     const nextDaysElapsed = currentDaysElapsed + 1;
     const nextEligibleDays = Math.min(nextDaysElapsed, contract.tenureDays);
 

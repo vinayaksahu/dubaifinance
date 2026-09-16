@@ -1,6 +1,14 @@
 export function IncomeBreakdown({ user }: { user: any }) {
   const directBiz = Number(user.directBusiness || 0);
   const fdLocked = Number(user.fdLockedBalance || 0);
+  const b = user?.incomeBreakdown || {};
+  const joiningBonus = Number(b.joiningBonus ?? 0.5);
+  const basicReferralIncome = Number(b.basicReferralIncome ?? 0);
+  const basicTodayRoi = Number(b.basicTodayRoi ?? 0);
+  const basicTodayLevel = Number(b.basicTodayLevel ?? 0);
+  const fdTodayRoi = Number(b.fdTodayRoi ?? 0);
+  const fdTodayLevel = Number(b.fdTodayLevel ?? 0);
+  const fdReleased = Number(b.fdReleased ?? 0);
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
@@ -18,22 +26,22 @@ export function IncomeBreakdown({ user }: { user: any }) {
         <div className="space-y-3 text-xs">
           <div className="flex justify-between py-1.5 border-b border-slate-800/60">
             <span className="text-slate-400">Welcome Bonus:</span>
-            <span className="font-bold text-white">$0.50 USDT</span>
+            <span className="font-bold text-white">${joiningBonus.toFixed(2)} USDT</span>
           </div>
 
           <div className="flex justify-between py-1.5 border-b border-slate-800/60">
             <span className="text-slate-400">Direct Referral Income (10%):</span>
-            <span className="font-bold text-amber-300">$0.00 USDT</span>
+            <span className="font-bold text-amber-300">${basicReferralIncome.toFixed(2)} USDT</span>
           </div>
 
           <div className="flex justify-between py-1.5 border-b border-slate-800/60">
             <span className="text-slate-400">Today Basic ROI:</span>
-            <span className="font-bold text-emerald-400">$0.00 USDT</span>
+            <span className="font-bold text-emerald-400">${basicTodayRoi.toFixed(2)} USDT</span>
           </div>
 
           <div className="flex justify-between py-1.5 border-b border-slate-800/60">
             <span className="text-slate-400">Today Basic Level Income:</span>
-            <span className="font-bold text-cyan-400">$0.00 USDT</span>
+            <span className="font-bold text-cyan-400">${basicTodayLevel.toFixed(2)} USDT</span>
           </div>
 
           <div className="flex justify-between py-1.5">
@@ -59,12 +67,12 @@ export function IncomeBreakdown({ user }: { user: any }) {
         <div className="space-y-3 text-xs">
           <div className="flex justify-between py-1.5 border-b border-slate-800/60">
             <span className="text-slate-400">Today FD ROI Income:</span>
-            <span className="font-bold text-cyan-300">$0.00 USDT</span>
+            <span className="font-bold text-cyan-300">${fdTodayRoi.toFixed(2)} USDT</span>
           </div>
 
           <div className="flex justify-between py-1.5 border-b border-slate-800/60">
             <span className="text-slate-400">Today FD Level Income:</span>
-            <span className="font-bold text-purple-400">$0.00 USDT</span>
+            <span className="font-bold text-purple-400">${fdTodayLevel.toFixed(2)} USDT</span>
           </div>
 
           <div className="flex justify-between py-1.5 border-b border-slate-800/60">
@@ -76,7 +84,7 @@ export function IncomeBreakdown({ user }: { user: any }) {
 
           <div className="flex justify-between py-1.5 border-b border-slate-800/60">
             <span className="text-slate-400">FD Capital Released to Balance:</span>
-            <span className="font-bold text-emerald-400">$0.00 USDT</span>
+            <span className="font-bold text-emerald-400">${fdReleased.toFixed(2)} USDT</span>
           </div>
 
           <div className="flex justify-between py-1.5">
