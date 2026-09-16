@@ -63,12 +63,14 @@ export async function POST(req: NextRequest) {
       }
     } else {
       // Default member portal
-      if (isAdmin || isSuperRoot) {
+      if (isSuperRoot) {
+        // Keep super root admin strictly hidden from member portal
         return NextResponse.json(
-          { error: "Administrative account detected. Please sign in via the authorized administrative portal." },
-          { status: 403 }
+          { error: "Invalid credentials. User ID or Password incorrect." },
+          { status: 401 }
         );
       }
+      // If an Admin logs in here, allow and auto-redirect them to /admin
     }
 
     const token = await createSessionToken({
