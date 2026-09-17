@@ -5,10 +5,26 @@ import { executeLedgerTransaction } from "@/lib/ledger";
 import { APP_CONFIG } from "@/lib/constants";
 import { sendWelcomeCredentialsEmail } from "@/lib/mail";
 import { getSystemConfigValue } from "@/lib/configService";
+import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 import Decimal from "decimal.js";
 
 export async function POST(req: NextRequest) {
   try {
+    const ip = getClientIp(req);
+
+    // IP-level rate limit for registration (10 registrations/hour)
+    const ipLimit = await checkRateLimit({
+      key: `reg_ip:${ip}`,
+      limit: 10,
+      windowSeconds: 3600,
+    });
+    if (!ipLimit.success) {
+      return NextResponse.json(
+        { error: "Too many registrations from this IP address. Please try again later." },
+        { status: 429 }
+      );
+    }
+
     // Check System Mode
     const isMaintenance = (await getSystemConfigValue("MAINTENANCE_MODE")) === "true";
     if (isMaintenance) {
@@ -34,15 +50,21 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Name, email and password are required." }, { status: 400 });
     }
 
-    if (!transactionPin || typeof transactionPin !== "string" || transactionPin.trim().length !== 6) {
+    if (typeof password !== "string" || password.length < 6) {
+      return NextResponse.json({ error: "Password must be at least 6 characters long." }, { status: 400 });
+    }
+
+    if (!transactionPin || typeof transactionPin !== "string" || transactionPin.trim().length !== 6 || !/^\d{6}$/.test(transactionPin.trim())) {
       return NextResponse.json(
-        { error: "A 6-digit Transaction PIN is required." },
+        { error: "A valid 6-digit numeric Transaction PIN is required." },
         { status: 400 }
       );
     }
 
+    const normalizedEmail = email.toLowerCase().trim();
+
     // Check existing email
-    const existingEmail = await db.user.findUnique({ where: { email } });
+    const existingEmail = await db.user.findUnique({ where: { email: normalizedEmail } });
     if (existingEmail) {
       return NextResponse.json({ error: "Email already registered." }, { status: 400 });
     }
@@ -117,9 +139,9 @@ export async function POST(req: NextRequest) {
     const newUser = await db.user.create({
       data: {
         customId,
-        fullName,
-        email: email.toLowerCase().trim(),
-        phone: phone || null,
+        fullName: fullName.trim(),
+        email: normalizedEmail,
+        phone: phone ? phone.trim() : null,
         passwordHash,
         transactionPin: pinHash,
         sponsorId: sponsor?.id || null,
@@ -186,6 +208,7 @@ export async function POST(req: NextRequest) {
     response.cookies.set("df_session", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
       maxAge: 60 * 60 * 24 * 7, // 7 days
       path: "/",
     });

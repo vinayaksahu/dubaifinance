@@ -2,9 +2,25 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { sendOtpEmail } from "@/lib/mail";
 import { getSession } from "@/lib/auth";
+import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 
 export async function POST(req: NextRequest) {
   try {
+    const ip = getClientIp(req);
+
+    // IP-level rate limit for OTP sending (6 requests per 10 minutes)
+    const ipLimit = await checkRateLimit({
+      key: `otp_req_ip:${ip}`,
+      limit: 6,
+      windowSeconds: 600,
+    });
+    if (!ipLimit.success) {
+      return NextResponse.json(
+        { error: "Too many verification code requests from your IP. Please wait a few minutes." },
+        { status: 429 }
+      );
+    }
+
     const body = await req.json().catch(() => ({}));
     const { purpose = "REGISTRATION" } = body;
     let rawEmail = body.email;
@@ -39,6 +55,19 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Email-level rate limit (3 OTP requests per 10 minutes)
+    const emailLimit = await checkRateLimit({
+      key: `otp_req_email:${normalizedEmail}`,
+      limit: 3,
+      windowSeconds: 600,
+    });
+    if (!emailLimit.success) {
+      return NextResponse.json(
+        { error: "Too many verification attempts for this email address. Please wait a few minutes." },
+        { status: 429 }
+      );
+    }
+
     // Check if email already registered for REGISTRATION purpose
     if (purpose === "REGISTRATION") {
       const existingUser = await db.user.findUnique({
@@ -52,16 +81,17 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Check if user exists for FORGOT_PASSWORD purpose
+    // Check if user exists for FORGOT_PASSWORD purpose with uniform response to prevent user enumeration
     if (purpose === "FORGOT_PASSWORD") {
       const existingUser = await db.user.findUnique({
         where: { email: normalizedEmail },
       });
       if (!existingUser) {
-        return NextResponse.json(
-          { error: "No Dubai Finance account found with this email address." },
-          { status: 404 }
-        );
+        // Uniform message prevents account enumeration
+        return NextResponse.json({
+          success: true,
+          message: `If an active account exists with that email address, a verification code has been sent. Please check your inbox and spam folder.`,
+        });
       }
     }
 
@@ -88,20 +118,20 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Resolve Gmail credentials with default fallback
-    const gmailUser = process.env.GMAIL_USER || "dubaifinance.support@gmail.com";
-    const gmailPass = process.env.GMAIL_APP_PASSWORD || "afod ydtb adop milg";
+    // Resolve Gmail / SMTP credentials safely
+    const gmailUser = process.env.GMAIL_USER || process.env.SMTP_USER;
+    const gmailPass = process.env.GMAIL_APP_PASSWORD || process.env.SMTP_PASSWORD;
 
     if (!gmailUser || !gmailPass) {
-      return NextResponse.json(
-        {
-          error: "Gmail SMTP is not configured.",
-        },
-        { status: 500 }
-      );
+      if (process.env.NODE_ENV === "production") {
+        return NextResponse.json(
+          { error: "Email notification service is temporarily unavailable." },
+          { status: 500 }
+        );
+      }
     }
 
-    // Send the OTP via Gmail
+    // Send the OTP via mailer
     await sendOtpEmail(normalizedEmail, purpose);
 
     return NextResponse.json({

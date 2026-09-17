@@ -37,6 +37,18 @@ export async function copyTableToClipboard(
 }
 
 /**
+ * Sanitizes CSV cell values to prevent CSV / Spreadsheet formula injection attacks
+ * Prefixes dangerous initial characters (=, +, -, @, \t, \r) with a single quote.
+ */
+export function sanitizeCsvCell(val: string | number | null | undefined): string {
+  let str = (val === null || val === undefined ? "" : String(val)).replace(/"/g, '""');
+  if (/^[\=\+\-\@\t\r]/.test(str)) {
+    str = `'${str}`;
+  }
+  return `"${str}"`;
+}
+
+/**
  * Generates and downloads a CSV spreadsheet that opens directly in Microsoft Excel.
  * Includes UTF-8 Byte Order Mark (\uFEFF) for proper currency and symbol rendering.
  */
@@ -46,15 +58,14 @@ export function exportToExcel(
   data: any[]
 ): void {
   const headers = columns
-    .map((c) => `"${c.header.replace(/"/g, '""')}"`)
+    .map((c) => sanitizeCsvCell(c.header))
     .join(",");
 
   const rows = data.map((row, rIdx) =>
     columns
       .map((c) => {
         const val = c.format ? c.format(row, rIdx) : (row[c.key] ?? "");
-        const cleanVal = String(val).replace(/"/g, '""');
-        return `"${cleanVal}"`;
+        return sanitizeCsvCell(val);
       })
       .join(",")
   );

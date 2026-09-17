@@ -4,8 +4,9 @@ import { db } from "@/lib/db";
 import { executeLedgerTransaction } from "@/lib/ledger";
 import { processDirectReferralReward } from "@/lib/services/referralService";
 import { getNumericConfig } from "@/lib/configService";
-import { APP_CONFIG, inrToUsdt } from "@/lib/constants";
+import { APP_CONFIG } from "@/lib/constants";
 import { verifyOtp } from "@/lib/mail";
+import { checkRateLimit } from "@/lib/rate-limit";
 import Decimal from "decimal.js";
 
 export async function POST(req: NextRequest) {
@@ -15,6 +16,19 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    // Rate limit: 10 package activations per 5 minutes per user
+    const rateLimitRes = await checkRateLimit({
+      key: `activate_usr:${session.userId}`,
+      limit: 10,
+      windowSeconds: 300,
+    });
+    if (!rateLimitRes.success) {
+      return NextResponse.json(
+        { error: "Too many activation requests. Please wait a few minutes before trying again." },
+        { status: 429 }
+      );
+    }
+
     const { packageType, amountInInr, amountInUsdt, amount, targetCustomId, transactionPin, otp, fdTenureDays } = await req.json();
 
     const rawAmount = amountInUsdt ?? amount ?? amountInInr;
@@ -22,6 +36,16 @@ export async function POST(req: NextRequest) {
 
     if (!packageType || !rawAmount || !verificationCode) {
       return NextResponse.json({ error: "Package type, amount and Security OTP / PIN are required." }, { status: 400 });
+    }
+
+    let parsedUsdt = Number(rawAmount);
+    if (!amountInUsdt && !amount && Number(amountInInr) > 5000) {
+      parsedUsdt = Number(amountInInr) / 110;
+    }
+
+    // Strict boundary & NaN validation against financial tampering
+    if (!Number.isFinite(parsedUsdt) || isNaN(parsedUsdt) || parsedUsdt <= 0) {
+      return NextResponse.json({ error: "Please enter a valid positive package investment amount." }, { status: 400 });
     }
 
     // Verify user PIN or OTP
@@ -62,10 +86,6 @@ export async function POST(req: NextRequest) {
       beneficiary = found as any;
     }
 
-    let parsedUsdt = Number(rawAmount);
-    if (!amountInUsdt && !amount && Number(amountInInr) > 5000) {
-      parsedUsdt = Number(amountInInr) / 110;
-    }
     const amountUsdtDec = new Decimal(parsedUsdt.toString());
     const amountInrDec = amountUsdtDec; // 1:1 Pure USDT throughout
 

@@ -2,8 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSession, comparePin } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { executeLedgerTransaction } from "@/lib/ledger";
-import { inrToUsdt } from "@/lib/constants";
 import { verifyOtp } from "@/lib/mail";
+import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 import Decimal from "decimal.js";
 
 export async function POST(req: NextRequest) {
@@ -13,12 +13,35 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    // Rate limit: 8 P2P transfers per 5 minutes
+    const rateLimitRes = await checkRateLimit({
+      key: `p2p_usr:${session.userId}`,
+      limit: 8,
+      windowSeconds: 300,
+    });
+    if (!rateLimitRes.success) {
+      return NextResponse.json(
+        { error: "Too many transfer attempts. Please wait a few minutes before trying again." },
+        { status: 429 }
+      );
+    }
+
     const { recipientCustomId, amountInInr, amountInUsdt, amount, transactionPin, otp } = await req.json();
     const rawAmount = amountInUsdt ?? amount ?? amountInInr;
     const verificationCode = (otp || transactionPin || "").trim();
 
     if (!recipientCustomId || !rawAmount || !verificationCode) {
       return NextResponse.json({ error: "Recipient ID, Amount, and Security OTP / PIN are required." }, { status: 400 });
+    }
+
+    let parsedUsdt = Number(rawAmount);
+    if (!amountInUsdt && !amount && Number(amountInInr) > 5000) {
+      parsedUsdt = Number(amountInInr) / 110;
+    }
+
+    // Strict boundary & negative balance exploit prevention
+    if (!Number.isFinite(parsedUsdt) || isNaN(parsedUsdt) || parsedUsdt <= 0) {
+      return NextResponse.json({ error: "Please enter a valid positive transfer amount." }, { status: 400 });
     }
 
     const sender = await db.user.findUnique({
@@ -59,10 +82,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: `Recipient with ID ${recipientCustomId} not found.` }, { status: 404 });
     }
 
-    let parsedUsdt = Number(rawAmount);
-    if (!amountInUsdt && !amount && Number(amountInInr) > 5000) {
-      parsedUsdt = Number(amountInInr) / 110;
-    }
     const amountUsdtDec = new Decimal(parsedUsdt.toString());
 
     const senderFund = new Decimal(sender.fundBalance.toString());

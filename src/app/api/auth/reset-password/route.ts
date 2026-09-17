@@ -2,9 +2,25 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { verifyOtp } from "@/lib/mail";
 import { hashPassword } from "@/lib/auth";
+import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 
 export async function POST(req: NextRequest) {
   try {
+    const ip = getClientIp(req);
+
+    // IP-level rate limit for password reset attempts
+    const ipLimit = await checkRateLimit({
+      key: `reset_pwd_ip:${ip}`,
+      limit: 10,
+      windowSeconds: 900,
+    });
+    if (!ipLimit.success) {
+      return NextResponse.json(
+        { error: "Too many password reset attempts from this IP. Please wait 15 minutes." },
+        { status: 429 }
+      );
+    }
+
     const { email, otp, newPassword } = await req.json();
 
     if (!email || !otp || !newPassword) {
@@ -29,6 +45,19 @@ export async function POST(req: NextRequest) {
     }
 
     const normalizedEmail = email.toLowerCase().trim();
+
+    // Account-level rate limit for brute-forcing OTPs
+    const emailLimit = await checkRateLimit({
+      key: `reset_pwd_email:${normalizedEmail}`,
+      limit: 5,
+      windowSeconds: 900,
+    });
+    if (!emailLimit.success) {
+      return NextResponse.json(
+        { error: "Too many failed attempts for this account. Please wait 15 minutes or request a new code." },
+        { status: 429 }
+      );
+    }
 
     // Verify OTP for FORGOT_PASSWORD
     const isValid = await verifyOtp(normalizedEmail, otp, "FORGOT_PASSWORD");
@@ -59,6 +88,14 @@ export async function POST(req: NextRequest) {
         passwordHash: newPasswordHash,
       },
     });
+
+    // Invalidate all past OTPs for this user to prevent replay
+    await (db as any).otpVerification.deleteMany({
+      where: {
+        email: normalizedEmail,
+        purpose: "FORGOT_PASSWORD",
+      },
+    }).catch(() => {});
 
     return NextResponse.json({
       success: true,

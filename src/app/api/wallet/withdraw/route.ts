@@ -5,6 +5,7 @@ import { executeLedgerTransaction } from "@/lib/ledger";
 import { getNumericConfig, getAllSystemConfigs } from "@/lib/configService";
 import { APP_CONFIG, getWithdrawalWindowStatus } from "@/lib/constants";
 import { verifyOtp } from "@/lib/mail";
+import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 import Decimal from "decimal.js";
 
 export async function POST(req: NextRequest) {
@@ -12,6 +13,20 @@ export async function POST(req: NextRequest) {
     const session = await getSession();
     if (!session) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const ip = getClientIp(req);
+    // Rate limit: 5 withdrawal attempts per 5 minutes per user/IP
+    const rateLimitRes = await checkRateLimit({
+      key: `withdraw_usr:${session.userId}`,
+      limit: 5,
+      windowSeconds: 300,
+    });
+    if (!rateLimitRes.success) {
+      return NextResponse.json(
+        { error: "Too many withdrawal requests. Please wait a few minutes before trying again." },
+        { status: 429 }
+      );
     }
 
     // Dynamic withdrawal window check using complete system configs
@@ -33,6 +48,16 @@ export async function POST(req: NextRequest) {
 
     if (!rawAmount || !verificationCode) {
       return NextResponse.json({ error: "Amount and Security OTP / PIN are required." }, { status: 400 });
+    }
+
+    let parsedUsdt = Number(rawAmount);
+    if (!amountInUsdt && !amount && Number(amountInInr) > 5000) {
+      parsedUsdt = Number(amountInInr) / 110;
+    }
+
+    // Strict boundary & NaN validation against financial tampering
+    if (!Number.isFinite(parsedUsdt) || isNaN(parsedUsdt) || parsedUsdt <= 0) {
+      return NextResponse.json({ error: "Please enter a valid positive withdrawal amount." }, { status: 400 });
     }
 
     const user = await db.user.findUnique({
@@ -64,15 +89,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Invalid or expired Security OTP code." }, { status: 401 });
     }
 
-    const payoutAddress = toAddress || user.usdtAddress;
-    if (!payoutAddress) {
+    const payoutAddress = (toAddress || user.usdtAddress || "").trim();
+    if (!payoutAddress || payoutAddress.length < 10 || payoutAddress.length > 128) {
       return NextResponse.json({ error: "Please bind a valid USDT BEP-20 payout address." }, { status: 400 });
     }
 
-    let parsedUsdt = Number(rawAmount);
-    if (!amountInUsdt && !amount && Number(amountInInr) > 5000) {
-      parsedUsdt = Number(amountInInr) / 110;
-    }
     const amountUsdtDec = new Decimal(parsedUsdt.toString());
 
     // Validate dynamic limits

@@ -18,12 +18,17 @@ export async function POST(req: NextRequest) {
     }
 
     const numAmount = Number(amount);
-    if (isNaN(numAmount) || numAmount <= 0) {
-      return NextResponse.json({ error: "Amount must be a positive number." }, { status: 400 });
+    if (!Number.isFinite(numAmount) || isNaN(numAmount) || numAmount <= 0) {
+      return NextResponse.json({ error: "Amount must be a positive finite number." }, { status: 400 });
     }
 
-    const targetUser = await db.user.findUnique({
-      where: { id: userId },
+    const targetUser = await db.user.findFirst({
+      where: {
+        OR: [
+          { id: userId },
+          { customId: { equals: String(userId).trim(), mode: "insensitive" } },
+        ],
+      },
     });
 
     if (!targetUser) {

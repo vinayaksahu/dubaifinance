@@ -47,8 +47,11 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   try {
     const session = await getSession();
-    if (!session || (session.role !== "ADMIN" && session.role !== "SUPER_ADMIN" && session.role !== "SUPER_ROOT_ADMIN")) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
+    if (!session || (session.role !== "SUPER_ADMIN" && session.role !== "SUPER_ROOT_ADMIN")) {
+      return NextResponse.json(
+        { error: "Access Denied. Only Super Administrator or Super Root Administrator can modify system configurations." },
+        { status: 403 }
+      );
     }
 
     const body = await req.json();
