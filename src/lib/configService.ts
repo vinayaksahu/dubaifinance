@@ -220,7 +220,7 @@ export const DEFAULT_SYSTEM_CONFIGS: Record<string, { value: string; description
 
   // 9. Platform Status & Operational Mode Control
   PRELAUNCH_MODE: {
-    value: "false",
+    value: "true",
     description: "Enable Pre-launching phase mode (pauses member registration & login, shows pre-launch banner)",
     category: "system_mode",
   },
