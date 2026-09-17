@@ -12,6 +12,8 @@ import { Footer } from "@/components/landing/Footer";
 import { getAllSystemConfigs } from "@/lib/configService";
 import { CountdownBanner } from "@/components/landing/CountdownBanner";
 
+export const dynamic = "force-dynamic";
+
 export default async function HomePage() {
   const configs = await getAllSystemConfigs();
   const isPrelaunch = configs.PRELAUNCH_MODE === "true";
