@@ -9,7 +9,7 @@ interface CountdownBannerProps {
 }
 
 export function CountdownBanner({
-  targetDateStr = "2026-09-21T10:00",
+  targetDateStr = "2026-09-21T20:00",
   title = "OFFICIAL GLOBAL PLATFORM LAUNCH • SEPTEMBER 21, 2026",
 }: CountdownBannerProps) {
   const [timeLeft, setTimeLeft] = useState<{
@@ -28,7 +28,16 @@ export function CountdownBanner({
 
   useEffect(() => {
     const calculateTime = () => {
-      const targetTime = new Date(targetDateStr).getTime();
+      // Parse target time with Dubai timezone (GST, UTC+04:00) support
+      let targetTime: number;
+      if (!targetDateStr) {
+        targetTime = NaN;
+      } else if (/[+-]\d{2}(:\d{2})?$|Z$/i.test(targetDateStr)) {
+        targetTime = new Date(targetDateStr).getTime();
+      } else {
+        // Standardize YYYY-MM-DDTHH:MM to Dubai timezone (UTC+4)
+        targetTime = new Date(`${targetDateStr}:00+04:00`).getTime();
+      }
       const now = Date.now();
       const diff = targetTime - now;
 
@@ -155,7 +164,7 @@ export function CountdownBanner({
             <span className="hidden sm:inline text-slate-600">&bull;</span>
             <span className="flex items-center gap-1.5">
               <Clock className="w-3.5 h-3.5 text-cyan-400" />
-              <span>10:00 AM IST Live Activation</span>
+              <span>08:00 PM GST (Dubai Time) Live Activation</span>
             </span>
             <span className="hidden sm:inline text-slate-600">&bull;</span>
             <span className="flex items-center gap-1.5">

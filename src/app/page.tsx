@@ -18,7 +18,7 @@ export default async function HomePage() {
   const configs = await getAllSystemConfigs();
   const isPrelaunch = configs.PRELAUNCH_MODE === "true";
   const timerEnabled = configs.PRELAUNCH_TIMER_ENABLED !== "false";
-  const targetDate = configs.PRELAUNCH_TARGET_DATE || "2026-09-21T10:00";
+  const targetDate = configs.PRELAUNCH_TARGET_DATE || "2026-09-21T20:00";
   const timerTitle = configs.PRELAUNCH_TIMER_TITLE || "OFFICIAL GLOBAL PLATFORM LAUNCH • SEPTEMBER 21, 2026";
 
   return (

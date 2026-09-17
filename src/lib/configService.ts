@@ -240,8 +240,8 @@ export const DEFAULT_SYSTEM_CONFIGS: Record<string, { value: string; description
     category: "system_mode",
   },
   PRELAUNCH_TARGET_DATE: {
-    value: "2026-09-21T10:00",
-    description: "Official launch target date and time in YYYY-MM-DDTHH:MM (e.g. 2026-09-21T10:00 for September 21, 2026)",
+    value: "2026-09-21T20:00",
+    description: "Official launch target date and time in Dubai Time / GST (e.g. 2026-09-21T20:00 for 08:00 PM Dubai Time on September 21, 2026)",
     category: "system_mode",
   },
   PRELAUNCH_TIMER_TITLE: {

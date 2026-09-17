@@ -63,7 +63,7 @@ const FRIENDLY_NAMES: Record<string, string> = {
   PRELAUNCH_NOTICE_TEXT: "Pre-Launching Phase Public Visitor Notice",
   MAINTENANCE_NOTICE_TEXT: "System Maintenance Public Visitor Notice",
   PRELAUNCH_TIMER_ENABLED: "Homescreen Big Countdown Timer (true / false)",
-  PRELAUNCH_TARGET_DATE: "Official Launch Target Date & Time (IST)",
+  PRELAUNCH_TARGET_DATE: "Official Launch Target Date & Time (Dubai Time / GST)",
   PRELAUNCH_TIMER_TITLE: "Countdown Timer Header Title",
 
   // Financial & Wallet
@@ -778,16 +778,16 @@ export function AdminConfigView() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="text-xs font-bold text-amber-300 block mb-1">
-                  Target Launch Date &amp; Time
+                  Target Launch Date &amp; Time (Dubai Time / GST)
                 </label>
                 <input
                   type="datetime-local"
-                  value={formValues.PRELAUNCH_TARGET_DATE || "2026-09-21T10:00"}
+                  value={formValues.PRELAUNCH_TARGET_DATE || "2026-09-21T20:00"}
                   onChange={(e) => handleInputChange("PRELAUNCH_TARGET_DATE", e.target.value)}
                   className="w-full bg-[#050b18] border border-slate-700 rounded-xl px-3 py-2 text-white font-mono text-xs focus:outline-none focus:border-amber-500 transition"
                 />
                 <span className="text-[10px] text-slate-500 mt-1 block">
-                  Set to <strong>2026-09-21 10:00 AM</strong> for September 21 launch
+                  Set to <strong>2026-09-21 20:00 (08:00 PM Dubai Time)</strong> for September 21 launch
                 </span>
               </div>
 
