@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { User, Mail, Phone, Lock, KeyRound, Users, ArrowRight, Copy, Check, Sparkles } from "lucide-react";
+import { User, Mail, Phone, Lock, KeyRound, Users, ArrowRight, Copy, Check, Sparkles, ShieldCheck, Database, Clock } from "lucide-react";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 
 export default function RegisterPage() {
@@ -24,6 +24,33 @@ export default function RegisterPage() {
   const [copiedPin, setCopiedPin] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [systemMode, setSystemMode] = useState<"LIVE" | "PRELAUNCH" | "MAINTENANCE">("LIVE");
+  const [noticeText, setNoticeText] = useState("");
+
+  useEffect(() => {
+    fetch("/api/config")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data?.configs) {
+          if (data.configs.MAINTENANCE_MODE === "true") {
+            setSystemMode("MAINTENANCE");
+            setNoticeText(
+              data.configs.MAINTENANCE_NOTICE_TEXT ||
+                "Dubai Finance is currently undergoing scheduled infrastructure upgrades. Public registration will resume shortly."
+            );
+          } else if (data.configs.PRELAUNCH_MODE === "true") {
+            setSystemMode("PRELAUNCH");
+            setNoticeText(
+              data.configs.PRELAUNCH_NOTICE_TEXT ||
+                "Dubai Finance is currently in its official Pre-Launch phase. Public registration will open upon launch."
+            );
+          } else {
+            setSystemMode("LIVE");
+          }
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -85,6 +112,122 @@ export default function RegisterPage() {
       setLoading(false);
     }
   };
+
+  if (systemMode === "MAINTENANCE") {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-[var(--bg-main)] text-[var(--text-main)] transition-colors duration-200">
+        <div className="bg-glow-gold -top-32 -right-32" />
+        <div className="bg-glow-blue -bottom-32 -left-32" />
+
+        <div className="absolute top-6 left-6 right-6 flex items-center justify-between z-20">
+          <Link
+            href="/"
+            className="text-xs font-bold text-amber-500 hover:text-amber-400 flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-amber-500/20 bg-[var(--bg-card)] backdrop-blur-md"
+          >
+            &larr; Back to Home
+          </Link>
+          <ThemeToggle variant="compact" />
+        </div>
+
+        <div className="w-full max-w-lg glass-card-gold p-8 sm:p-10 rounded-3xl relative z-10 shadow-2xl text-center">
+          <div className="w-14 h-14 rounded-2xl overflow-hidden bg-gradient-to-br from-amber-400 via-amber-500 to-amber-700 p-0.5 shadow-lg shadow-amber-500/30 mx-auto mb-5">
+            <div className="w-full h-full rounded-[14px] bg-slate-950 flex items-center justify-center">
+              <img src="/dubaiLogo.png" alt="Dubai Finance Logo" className="w-10 h-10 object-contain" />
+            </div>
+          </div>
+
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs font-bold uppercase tracking-wider mb-4">
+            <span className="w-2 h-2 rounded-full bg-rose-500 animate-ping" />
+            <span>System Maintenance Active</span>
+          </div>
+
+          <h2 className="font-display text-2xl sm:text-3xl font-black text-[var(--text-main)]">
+            Registration Temporarily Paused
+          </h2>
+          <p className="text-xs sm:text-sm text-[var(--text-muted)] mt-2 leading-relaxed">
+            {noticeText}
+          </p>
+
+          <div className="grid grid-cols-3 gap-3 my-6 text-left">
+            <div className="p-3 rounded-xl bg-inner-panel">
+              <ShieldCheck className="w-4 h-4 text-emerald-500 mb-1" />
+              <div className="text-[11px] font-bold text-[var(--text-main)]">Funds Safe</div>
+              <div className="text-[10px] text-[var(--text-subtle)] leading-snug">100% security</div>
+            </div>
+            <div className="p-3 rounded-xl bg-inner-panel">
+              <Database className="w-4 h-4 text-cyan-500 mb-1" />
+              <div className="text-[11px] font-bold text-[var(--text-main)]">Upgrades</div>
+              <div className="text-[10px] text-[var(--text-subtle)] leading-snug">Node optimization</div>
+            </div>
+            <div className="p-3 rounded-xl bg-inner-panel">
+              <Clock className="w-4 h-4 text-amber-500 mb-1" />
+              <div className="text-[11px] font-bold text-[var(--text-main)]">Resuming</div>
+              <div className="text-[10px] text-[var(--text-subtle)] leading-snug">Short downtime</div>
+            </div>
+          </div>
+
+          <Link
+            href="/"
+            className="w-full py-3 rounded-xl gold-btn text-xs font-bold flex items-center justify-center gap-2 shadow-md"
+          >
+            <span>Return to Homepage</span>
+            <ArrowRight className="w-4 h-4" />
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  if (systemMode === "PRELAUNCH") {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-[var(--bg-main)] text-[var(--text-main)] transition-colors duration-200">
+        <div className="bg-glow-gold -top-32 -right-32" />
+        <div className="bg-glow-blue -bottom-32 -left-32" />
+
+        <div className="absolute top-6 left-6 right-6 flex items-center justify-between z-20">
+          <Link
+            href="/"
+            className="text-xs font-bold text-amber-500 hover:text-amber-400 flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-amber-500/20 bg-[var(--bg-card)] backdrop-blur-md"
+          >
+            &larr; Back to Home
+          </Link>
+          <ThemeToggle variant="compact" />
+        </div>
+
+        <div className="w-full max-w-lg glass-card-gold p-8 sm:p-10 rounded-3xl relative z-10 shadow-2xl text-center">
+          <div className="w-14 h-14 rounded-2xl overflow-hidden bg-gradient-to-br from-amber-400 via-amber-500 to-amber-700 p-0.5 shadow-lg shadow-amber-500/30 mx-auto mb-5">
+            <div className="w-full h-full rounded-[14px] bg-slate-950 flex items-center justify-center">
+              <img src="/dubaiLogo.png" alt="Dubai Finance Logo" className="w-10 h-10 object-contain" />
+            </div>
+          </div>
+
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-500 dark:text-amber-400 text-xs font-bold uppercase tracking-wider mb-4">
+            <Sparkles className="w-3.5 h-3.5 text-amber-400 animate-pulse" />
+            <span>Pre-Launching Phase</span>
+          </div>
+
+          <h2 className="font-display text-2xl sm:text-3xl font-black text-[var(--text-main)]">
+            Registration Opening Shortly
+          </h2>
+          <p className="text-xs sm:text-sm text-[var(--text-muted)] mt-2 leading-relaxed">
+            {noticeText}
+          </p>
+
+          <div className="my-6 p-4 rounded-2xl bg-inner-panel border border-[var(--border-subtle)] text-xs text-[var(--text-muted)] leading-relaxed">
+            Dubai Finance is in its pre-launching phase. Smart contracts, liquidity reserve pools, and institutional nodes are being prepared. Public registration opens upon launch.
+          </div>
+
+          <Link
+            href="/"
+            className="w-full py-3 rounded-xl gold-btn text-xs font-bold flex items-center justify-center gap-2 shadow-md"
+          >
+            <span>Explore Dubai Finance Platform</span>
+            <ArrowRight className="w-4 h-4" />
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-[var(--bg-main)] text-[var(--text-main)] transition-colors duration-200">

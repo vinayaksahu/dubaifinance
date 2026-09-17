@@ -9,6 +9,7 @@ import { useTheme } from "@/components/theme/ThemeProvider";
 
 export function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [systemMode, setSystemMode] = useState<"LIVE" | "PRELAUNCH" | "MAINTENANCE">("LIVE");
   const { resolvedTheme } = useTheme();
 
   const isLight = resolvedTheme === "light";
@@ -18,6 +19,24 @@ export function Navbar() {
   const pdfDrawerLabel = isLight
     ? "Download Light Presentation PDF (23 Slides)"
     : "Download Dark Presentation PDF (23 Slides)";
+
+  // Fetch live system mode
+  useEffect(() => {
+    fetch("/api/config")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data?.configs) {
+          if (data.configs.MAINTENANCE_MODE === "true") {
+            setSystemMode("MAINTENANCE");
+          } else if (data.configs.PRELAUNCH_MODE === "true") {
+            setSystemMode("PRELAUNCH");
+          } else {
+            setSystemMode("LIVE");
+          }
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   // Lock body scroll when mobile menu is open
   useEffect(() => {
@@ -103,24 +122,41 @@ export function Navbar() {
             <span>{pdfPillLabel}</span>
           </a>
 
-          {/* Login Button - VISIBLE ON ALL SCREENS, INCLUDING MOBILE */}
-          <Link
-            href="/login"
-            className="flex items-center px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl border border-amber-500/40 text-amber-500 dark:text-amber-300 text-xs font-bold hover:bg-amber-400/10 transition whitespace-nowrap shadow-sm"
-          >
-            <span className="sm:hidden">Login</span>
-            <span className="hidden sm:inline">Sign In</span>
-          </Link>
+          {/* Auth Buttons or Mode Badges */}
+          {systemMode === "MAINTENANCE" ? (
+            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs font-bold whitespace-nowrap shadow-sm">
+              <span className="w-2 h-2 rounded-full bg-rose-500 animate-ping" />
+              <span className="hidden sm:inline">System Maintenance</span>
+              <span className="sm:hidden">Maintenance</span>
+            </div>
+          ) : systemMode === "PRELAUNCH" ? (
+            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-500 dark:text-amber-400 text-xs font-bold whitespace-nowrap shadow-sm">
+              <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
+              <span className="hidden sm:inline">Pre-Launching Phase</span>
+              <span className="sm:hidden">Pre-Launch</span>
+            </div>
+          ) : (
+            <>
+              {/* Login Button */}
+              <Link
+                href="/login"
+                className="flex items-center px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl border border-amber-500/40 text-amber-500 dark:text-amber-300 text-xs font-bold hover:bg-amber-400/10 transition whitespace-nowrap shadow-sm"
+              >
+                <span className="sm:hidden">Login</span>
+                <span className="hidden sm:inline">Sign In</span>
+              </Link>
 
-          {/* Get Started / Join Button */}
-          <Link
-            href="/register"
-            className="gold-btn px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-xl text-xs font-bold flex items-center gap-1 shadow-md whitespace-nowrap"
-          >
-            <span className="sm:hidden">Join</span>
-            <span className="hidden sm:inline">Get Started</span>
-            <ArrowRight className="w-3.5 h-3.5 hidden sm:inline" />
-          </Link>
+              {/* Get Started / Join Button */}
+              <Link
+                href="/register"
+                className="gold-btn px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-xl text-xs font-bold flex items-center gap-1 shadow-md whitespace-nowrap"
+              >
+                <span className="sm:hidden">Join</span>
+                <span className="hidden sm:inline">Get Started</span>
+                <ArrowRight className="w-3.5 h-3.5 hidden sm:inline" />
+              </Link>
+            </>
+          )}
 
           {/* Mobile / Tablet Hamburger Button (< xl screens) */}
           <button
@@ -173,23 +209,33 @@ export function Navbar() {
             {pdfDrawerLabel}
           </a>
 
-          {/* Auth Buttons */}
-          <div className="grid grid-cols-2 gap-3 pt-2">
-            <Link
-              href="/login"
-              onClick={() => setMobileMenuOpen(false)}
-              className="py-3 px-4 rounded-xl border border-amber-500/30 text-center font-bold text-xs sm:text-sm text-amber-500 dark:text-amber-300 hover:bg-amber-400/10 transition"
-            >
-              Login / Sign In
-            </Link>
-            <Link
-              href="/register"
-              onClick={() => setMobileMenuOpen(false)}
-              className="gold-btn py-3 px-4 rounded-xl text-center font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 shadow-md"
-            >
-              Join Now <ArrowRight className="w-4 h-4" />
-            </Link>
-          </div>
+          {/* Auth Buttons or Mode Status in Drawer */}
+          {systemMode === "MAINTENANCE" ? (
+            <div className="p-3.5 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-center text-xs text-rose-300 font-bold">
+              System Maintenance in Progress &bull; Member Login Paused
+            </div>
+          ) : systemMode === "PRELAUNCH" ? (
+            <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-center text-xs text-amber-400 font-bold">
+              Pre-Launching Phase Active &bull; Public Access Opening Soon
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 gap-3 pt-2">
+              <Link
+                href="/login"
+                onClick={() => setMobileMenuOpen(false)}
+                className="py-3 px-4 rounded-xl border border-amber-500/30 text-center font-bold text-xs sm:text-sm text-amber-500 dark:text-amber-300 hover:bg-amber-400/10 transition"
+              >
+                Login / Sign In
+              </Link>
+              <Link
+                href="/register"
+                onClick={() => setMobileMenuOpen(false)}
+                className="gold-btn py-3 px-4 rounded-xl text-center font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 shadow-md"
+              >
+                Join Now <ArrowRight className="w-4 h-4" />
+              </Link>
+            </div>
+          )}
 
           {/* Trust footer */}
           <div className="pt-4 text-center">

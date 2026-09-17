@@ -217,6 +217,28 @@ export const DEFAULT_SYSTEM_CONFIGS: Record<string, { value: string; description
     description: "Registered office and headquarters address",
     category: "company",
   },
+
+  // 9. Platform Status & Operational Mode Control
+  PRELAUNCH_MODE: {
+    value: "false",
+    description: "Enable Pre-launching phase mode (pauses member registration & login, shows pre-launch banner)",
+    category: "system_mode",
+  },
+  MAINTENANCE_MODE: {
+    value: "false",
+    description: "Enable System Maintenance mode (locks member access, shows maintenance screen, admin can still login via /adminlogin)",
+    category: "system_mode",
+  },
+  PRELAUNCH_NOTICE_TEXT: {
+    value: "Dubai Finance is currently in its official Pre-Launch phase. Public member registration and user dashboards will open shortly. Stay tuned!",
+    description: "Notice message displayed to visitors when Pre-launch mode is active",
+    category: "system_mode",
+  },
+  MAINTENANCE_NOTICE_TEXT: {
+    value: "Our engineers are performing scheduled system upgrades and database optimizations to maximize platform security and network throughput. All user funds and records are 100% safe.",
+    description: "Notice message displayed to visitors when Maintenance mode is active",
+    category: "system_mode",
+  },
 };
 
 // In-memory cache with 15-second TTL

@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Download, ShieldCheck, Mail, MapPin, Sparkles } from "lucide-react";
@@ -9,6 +10,25 @@ import { APP_CONFIG } from "@/lib/constants";
 
 export function Footer() {
   const { resolvedTheme } = useTheme();
+  const [systemMode, setSystemMode] = useState<"LIVE" | "PRELAUNCH" | "MAINTENANCE">("LIVE");
+
+  useEffect(() => {
+    fetch("/api/config")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data?.configs) {
+          if (data.configs.MAINTENANCE_MODE === "true") {
+            setSystemMode("MAINTENANCE");
+          } else if (data.configs.PRELAUNCH_MODE === "true") {
+            setSystemMode("PRELAUNCH");
+          } else {
+            setSystemMode("LIVE");
+          }
+        }
+      })
+      .catch(() => {});
+  }, []);
+
   const isLight = resolvedTheme === "light";
   const pdfHref = `/api/download-presentation?theme=${isLight ? "light" : "dark"}&v=20260916`;
   const pdfFileName = isLight ? "Dubai_Finance_Presentation_Light.pdf" : "Dubai_Finance_Presentation_Dark.pdf";
@@ -113,20 +133,30 @@ export function Footer() {
               </span>
             </a>
 
-            <div className="grid grid-cols-2 gap-3">
-              <Link
-                href="/login"
-                className="py-2.5 px-3 rounded-xl border border-[var(--border-subtle)] text-center text-xs font-bold text-[var(--text-main)] hover:border-amber-400 transition"
-              >
-                Sign In Portal
-              </Link>
-              <Link
-                href="/register"
-                className="gold-btn py-2.5 px-3 rounded-xl text-center text-xs font-bold"
-              >
-                Join with $5 USDT
-              </Link>
-            </div>
+            {systemMode === "MAINTENANCE" ? (
+              <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-center text-xs text-rose-300 font-bold">
+                System Maintenance Active &bull; Member Login Paused
+              </div>
+            ) : systemMode === "PRELAUNCH" ? (
+              <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-center text-xs text-amber-400 font-bold">
+                Pre-Launching Phase Active &bull; Public Access Opening Soon
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-3">
+                <Link
+                  href="/login"
+                  className="py-2.5 px-3 rounded-xl border border-[var(--border-subtle)] text-center text-xs font-bold text-[var(--text-main)] hover:border-amber-400 transition"
+                >
+                  Sign In Portal
+                </Link>
+                <Link
+                  href="/register"
+                  className="gold-btn py-2.5 px-3 rounded-xl text-center text-xs font-bold"
+                >
+                  Join with $5 USDT
+                </Link>
+              </div>
+            )}
 
             <div className="p-3 rounded-xl bg-inner-panel flex items-center justify-between text-xs">
               <span className="font-bold text-[var(--text-main)]">Theme Preference</span>

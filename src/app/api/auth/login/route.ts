@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { comparePassword, createSessionToken } from "@/lib/auth";
 import { ensureInitialSeed } from "@/lib/seedHelper";
+import { getSystemConfigValue } from "@/lib/configService";
 
 export async function POST(req: NextRequest) {
   try {
@@ -78,6 +79,25 @@ export async function POST(req: NextRequest) {
           { error: "Access Denied. Administrator accounts cannot log in through the Member Portal. Please use the official Admin Portal at /adminlogin." },
           { status: 403 }
         );
+      }
+
+      // Check System Mode for Member Portal
+      const isMaintenance = (await getSystemConfigValue("MAINTENANCE_MODE")) === "true";
+      if (isMaintenance) {
+        const msg = await getSystemConfigValue(
+          "MAINTENANCE_NOTICE_TEXT",
+          "Dubai Finance is currently undergoing scheduled system maintenance. Member login is temporarily paused."
+        );
+        return NextResponse.json({ error: msg, mode: "MAINTENANCE" }, { status: 503 });
+      }
+
+      const isPrelaunch = (await getSystemConfigValue("PRELAUNCH_MODE")) === "true";
+      if (isPrelaunch) {
+        const msg = await getSystemConfigValue(
+          "PRELAUNCH_NOTICE_TEXT",
+          "Dubai Finance is currently in its official Pre-Launch phase. Member login will open upon launch."
+        );
+        return NextResponse.json({ error: msg, mode: "PRE_LAUNCH" }, { status: 403 });
       }
     }
 

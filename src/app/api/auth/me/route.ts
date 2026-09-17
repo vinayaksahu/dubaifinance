@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { getAllSystemConfigs } from "@/lib/configService";
+import { getAllSystemConfigs, getSystemConfigValue } from "@/lib/configService";
 import { executeDailyRoiDistribution, getDubaiTimeInfo } from "@/lib/services/roiService";
 import Decimal from "decimal.js";
 
@@ -11,6 +11,26 @@ export async function GET() {
   const session = await getSession();
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  // Block member dashboard access if Maintenance or Prelaunch is active
+  if (session.role === "USER") {
+    const isMaintenance = (await getSystemConfigValue("MAINTENANCE_MODE")) === "true";
+    if (isMaintenance) {
+      const msg = await getSystemConfigValue(
+        "MAINTENANCE_NOTICE_TEXT",
+        "Dubai Finance is currently undergoing scheduled system maintenance."
+      );
+      return NextResponse.json({ error: msg, isLocked: true, mode: "MAINTENANCE" }, { status: 503 });
+    }
+    const isPrelaunch = (await getSystemConfigValue("PRELAUNCH_MODE")) === "true";
+    if (isPrelaunch) {
+      const msg = await getSystemConfigValue(
+        "PRELAUNCH_NOTICE_TEXT",
+        "Dubai Finance is currently in its official Pre-Launch phase."
+      );
+      return NextResponse.json({ error: msg, isLocked: true, mode: "PRE_LAUNCH" }, { status: 403 });
+    }
   }
 
   // Auto-distribute pending ROI on portal load (throttled to at most once per 20 seconds)

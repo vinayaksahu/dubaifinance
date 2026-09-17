@@ -21,7 +21,10 @@ import {
   QrCode,
   Trash2,
   Copy,
-  Check
+  Check,
+  ShieldAlert,
+  Power,
+  Activity
 } from "lucide-react";
 import { getWithdrawalWindowStatus } from "@/lib/constants";
 
@@ -33,6 +36,7 @@ interface ConfigItem {
 }
 
 const CATEGORY_ICONS: Record<string, any> = {
+  system_mode: Power,
   wallet: Wallet,
   withdrawal: Clock,
   plan: TrendingUp,
@@ -43,6 +47,7 @@ const CATEGORY_ICONS: Record<string, any> = {
 
 const CATEGORY_NAMES: Record<string, string> = {
   all: "All Configurations",
+  system_mode: "Platform Status & Operational Mode",
   wallet: "USDT Wallet Settings",
   withdrawal: "Withdrawal Window & Limits",
   plan: "Basic & FD Staking Plans",
@@ -52,6 +57,12 @@ const CATEGORY_NAMES: Record<string, string> = {
 };
 
 const FRIENDLY_NAMES: Record<string, string> = {
+  // Platform Status & Operational Mode Control
+  PRELAUNCH_MODE: "Pre-Launching Phase Mode (true / false)",
+  MAINTENANCE_MODE: "System Maintenance Mode (true / false)",
+  PRELAUNCH_NOTICE_TEXT: "Pre-Launching Phase Public Visitor Notice",
+  MAINTENANCE_NOTICE_TEXT: "System Maintenance Public Visitor Notice",
+
   // Financial & Wallet
   COMPANY_USDT_ADDRESS: "Company USDT (BEP-20) Receiving Wallet",
   COMPANY_USDT_QR: "Company USDT (BEP-20) Receiving QR Code Image",
@@ -117,6 +128,7 @@ export function AdminConfigView() {
   const [statusMessage, setStatusMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const [, setTimeTick] = useState(0);
   const [copiedAddress, setCopiedAddress] = useState(false);
+  const [copiedAdminLink, setCopiedAdminLink] = useState(false);
 
   const handleQrUpload = (file: File) => {
     if (!file) return;
@@ -299,6 +311,50 @@ export function AdminConfigView() {
     });
   };
 
+  const isMaintenanceActive = formValues.MAINTENANCE_MODE === "true";
+  const isPrelaunchActive = formValues.PRELAUNCH_MODE === "true";
+  const currentMode = isMaintenanceActive ? "MAINTENANCE" : isPrelaunchActive ? "PRELAUNCH" : "LIVE";
+
+  const handleSetPlatformMode = async (mode: "LIVE" | "PRELAUNCH" | "MAINTENANCE") => {
+    const updated = { ...formValues };
+    if (mode === "LIVE") {
+      updated.PRELAUNCH_MODE = "false";
+      updated.MAINTENANCE_MODE = "false";
+    } else if (mode === "PRELAUNCH") {
+      updated.PRELAUNCH_MODE = "true";
+      updated.MAINTENANCE_MODE = "false";
+    } else if (mode === "MAINTENANCE") {
+      updated.PRELAUNCH_MODE = "false";
+      updated.MAINTENANCE_MODE = "true";
+    }
+    setFormValues(updated);
+
+    setSaving(true);
+    setStatusMessage(null);
+    try {
+      const res = await fetch("/api/admin/config", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ configs: updated }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to switch platform mode");
+      setStatusMessage({
+        type: "success",
+        text: `Platform operational mode successfully switched to ${
+          mode === "LIVE" ? "Normal Live Protocol" : mode === "PRELAUNCH" ? "Pre-Launching Phase" : "System Maintenance"
+        }!`,
+      });
+      await fetchConfigs();
+      setTimeout(() => setStatusMessage(null), 4000);
+    } catch (err: any) {
+      console.error(err);
+      setStatusMessage({ type: "error", text: err.message || "Failed to update platform mode" });
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const handleReset = () => {
     const initialForm: Record<string, string> = {};
     for (const [key, item] of Object.entries(configs)) {
@@ -435,7 +491,7 @@ export function AdminConfigView() {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         {/* Category Pills */}
         <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-[#070e20] border border-[#152238] overflow-x-auto max-w-full">
-          {["all", "wallet", "withdrawal", "plan", "royalty", "transfers", "company"].map((cat) => {
+          {["all", "system_mode", "wallet", "withdrawal", "plan", "royalty", "transfers", "company"].map((cat) => {
             const Icon = CATEGORY_ICONS[cat] || Settings;
             const isActive = activeCategory === cat;
             return (
@@ -467,6 +523,210 @@ export function AdminConfigView() {
           />
         </div>
       </div>
+
+      {/* Dedicated Platform Status & Operational Mode Controller */}
+      {(activeCategory === "system_mode" || activeCategory === "all") && !searchQuery && (
+        <div className="bg-gradient-to-br from-[#0c1222] via-[#0f172a] to-[#1a1333] border-2 border-amber-500/40 rounded-3xl p-6 sm:p-7 backdrop-blur shadow-2xl relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-80 h-80 bg-amber-500/10 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20" />
+
+          <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6 pb-6 border-b border-slate-800">
+            <div>
+              <div className="flex items-center gap-2 text-amber-400 text-xs font-bold uppercase tracking-widest mb-1.5">
+                <Power className="w-4 h-4 text-amber-400" />
+                <span>Platform Status &amp; Access Control</span>
+              </div>
+              <h2 className="text-xl sm:text-2xl font-black text-white flex flex-wrap items-center gap-3">
+                <span>System Operational Mode</span>
+                <span className={`text-xs px-3 py-1 rounded-full font-bold uppercase border flex items-center gap-1.5 ${
+                  currentMode === "LIVE"
+                    ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/40"
+                    : currentMode === "PRELAUNCH"
+                    ? "bg-cyan-500/20 text-cyan-300 border-cyan-500/40"
+                    : "bg-rose-500/20 text-rose-300 border-rose-500/40"
+                }`}>
+                  <span className={`w-2 h-2 rounded-full ${
+                    currentMode === "LIVE" ? "bg-emerald-400" : currentMode === "PRELAUNCH" ? "bg-cyan-400 animate-pulse" : "bg-rose-400 animate-ping"
+                  }`} />
+                  {currentMode === "LIVE" ? "Live: Normal Operations" : currentMode === "PRELAUNCH" ? "Pre-Launching Phase Active" : "Maintenance Mode Active"}
+                </span>
+              </h2>
+              <p className="text-slate-400 text-xs sm:text-sm mt-1 max-w-2xl leading-relaxed">
+                Control visitor access in real-time. Turn on <strong>Pre-Launching</strong> or <strong>Maintenance Mode</strong> anytime. When active, public user registration and member login panels are hidden. Administrators can always log in directly via the private admin link.
+              </p>
+            </div>
+
+            {/* Direct Admin Link Security Guarantee Callout */}
+            <div className="bg-[#050b18]/90 border border-amber-500/30 p-4 rounded-2xl max-w-sm shrink-0">
+              <div className="flex items-center justify-between gap-2 mb-1.5">
+                <span className="text-xs font-bold text-amber-400 flex items-center gap-1.5">
+                  <ShieldAlert className="w-3.5 h-3.5" /> Direct Admin Login Link
+                </span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (typeof window !== "undefined") {
+                      const url = `${window.location.origin}/adminlogin`;
+                      navigator.clipboard.writeText(url);
+                      setCopiedAdminLink(true);
+                      setTimeout(() => setCopiedAdminLink(false), 2500);
+                    }
+                  }}
+                  className="text-[11px] font-bold px-2 py-0.5 rounded bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 flex items-center gap-1 transition cursor-pointer"
+                >
+                  {copiedAdminLink ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                  <span>{copiedAdminLink ? "Copied" : "Copy Link"}</span>
+                </button>
+              </div>
+              <p className="text-[11px] text-slate-300 font-mono bg-black/40 px-2.5 py-1.5 rounded-lg border border-slate-800 break-all select-all">
+                /adminlogin
+              </p>
+              <p className="text-[10px] text-slate-400 mt-1.5 leading-snug">
+                Even when maintenance or pre-launch is ON, admins can manually open this link to log in.
+              </p>
+            </div>
+          </div>
+
+          {/* 3 Interactive Mode Selector Cards */}
+          <div className="relative z-10 grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+            {/* Mode 1: Normal Live */}
+            <div className={`p-5 rounded-2xl border transition-all flex flex-col justify-between ${
+              currentMode === "LIVE"
+                ? "bg-emerald-950/40 border-emerald-500 shadow-xl shadow-emerald-950/50 ring-1 ring-emerald-500/40"
+                : "bg-[#060c1c] border-slate-800 hover:border-slate-700 opacity-85 hover:opacity-100"
+            }`}>
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-black uppercase tracking-wider text-emerald-400 flex items-center gap-1.5">
+                    <Activity className="w-3.5 h-3.5" /> 1. Normal Live
+                  </span>
+                  {currentMode === "LIVE" && (
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
+                      CURRENT
+                    </span>
+                  )}
+                </div>
+                <h4 className="text-base font-bold text-white mb-1">Live Operation</h4>
+                <p className="text-xs text-slate-400 leading-relaxed mb-4">
+                  Normal live status. User registration, member login, wallet deposit, package purchase, and dashboards are 100% open to everyone.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => handleSetPlatformMode("LIVE")}
+                disabled={saving || currentMode === "LIVE"}
+                className={`w-full py-2.5 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 ${
+                  currentMode === "LIVE"
+                    ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 cursor-default"
+                    : "bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-600/30 cursor-pointer"
+                }`}
+              >
+                {currentMode === "LIVE" ? "Currently Active" : "Switch to Normal Live"}
+              </button>
+            </div>
+
+            {/* Mode 2: Pre-Launching Mode */}
+            <div className={`p-5 rounded-2xl border transition-all flex flex-col justify-between ${
+              currentMode === "PRELAUNCH"
+                ? "bg-cyan-950/40 border-cyan-500 shadow-xl shadow-cyan-950/50 ring-1 ring-cyan-500/40"
+                : "bg-[#060c1c] border-slate-800 hover:border-slate-700 opacity-85 hover:opacity-100"
+            }`}>
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-black uppercase tracking-wider text-cyan-400 flex items-center gap-1.5">
+                    <Sparkles className="w-3.5 h-3.5" /> 2. Pre-Launching
+                  </span>
+                  {currentMode === "PRELAUNCH" && (
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-300 border border-cyan-500/40">
+                      CURRENT
+                    </span>
+                  )}
+                </div>
+                <h4 className="text-base font-bold text-white mb-1">Pre-Launch Phase</h4>
+                <p className="text-xs text-slate-400 leading-relaxed mb-4">
+                  Member login and registration panels are hidden. Visitors see official Pre-Launching status. Admin access remains open at /adminlogin.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => handleSetPlatformMode("PRELAUNCH")}
+                disabled={saving || currentMode === "PRELAUNCH"}
+                className={`w-full py-2.5 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 ${
+                  currentMode === "PRELAUNCH"
+                    ? "bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 cursor-default"
+                    : "bg-cyan-600 hover:bg-cyan-500 text-white shadow-lg shadow-cyan-600/30 cursor-pointer"
+                }`}
+              >
+                {currentMode === "PRELAUNCH" ? "Currently Active" : "Activate Pre-Launch"}
+              </button>
+            </div>
+
+            {/* Mode 3: Maintenance Mode */}
+            <div className={`p-5 rounded-2xl border transition-all flex flex-col justify-between ${
+              currentMode === "MAINTENANCE"
+                ? "bg-rose-950/40 border-rose-500 shadow-xl shadow-rose-950/50 ring-1 ring-rose-500/40"
+                : "bg-[#060c1c] border-slate-800 hover:border-slate-700 opacity-85 hover:opacity-100"
+            }`}>
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-black uppercase tracking-wider text-rose-400 flex items-center gap-1.5">
+                    <ShieldAlert className="w-3.5 h-3.5" /> 3. Maintenance
+                  </span>
+                  {currentMode === "MAINTENANCE" && (
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-rose-500/20 text-rose-300 border border-rose-500/40">
+                      CURRENT
+                    </span>
+                  )}
+                </div>
+                <h4 className="text-base font-bold text-white mb-1">System Maintenance</h4>
+                <p className="text-xs text-slate-400 leading-relaxed mb-4">
+                  Locks member login &amp; dashboard with maintenance screen. User registration is blocked. Admin access remains open at /adminlogin.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => handleSetPlatformMode("MAINTENANCE")}
+                disabled={saving || currentMode === "MAINTENANCE"}
+                className={`w-full py-2.5 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 ${
+                  currentMode === "MAINTENANCE"
+                    ? "bg-rose-500/20 text-rose-300 border border-rose-500/40 cursor-default"
+                    : "bg-rose-600 hover:bg-rose-500 text-white shadow-lg shadow-rose-600/30 cursor-pointer"
+                }`}
+              >
+                {currentMode === "MAINTENANCE" ? "Currently Active" : "Activate Maintenance"}
+              </button>
+            </div>
+          </div>
+
+          {/* Notice Messages Customizer */}
+          <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 gap-4 mt-6 pt-5 border-t border-slate-800">
+            <div>
+              <label className="text-xs font-bold text-cyan-300 block mb-1">
+                Pre-Launching Visitor Notice Message
+              </label>
+              <textarea
+                rows={2}
+                value={formValues.PRELAUNCH_NOTICE_TEXT || ""}
+                onChange={(e) => handleInputChange("PRELAUNCH_NOTICE_TEXT", e.target.value)}
+                placeholder="Notice displayed during pre-launch phase..."
+                className="w-full bg-[#050b18] border border-slate-700 rounded-xl px-3 py-2 text-white text-xs focus:outline-none focus:border-cyan-500 transition"
+              />
+            </div>
+
+            <div>
+              <label className="text-xs font-bold text-rose-300 block mb-1">
+                Maintenance Mode Visitor Notice Message
+              </label>
+              <textarea
+                rows={2}
+                value={formValues.MAINTENANCE_NOTICE_TEXT || ""}
+                onChange={(e) => handleInputChange("MAINTENANCE_NOTICE_TEXT", e.target.value)}
+                placeholder="Notice displayed during maintenance..."
+                className="w-full bg-[#050b18] border border-slate-700 rounded-xl px-3 py-2 text-white text-xs focus:outline-none focus:border-rose-500 transition"
+              />
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Dedicated Withdrawal Window & 24/7 Hours Controller */}
       {(activeCategory === "withdrawal" || activeCategory === "all") && !searchQuery && (
