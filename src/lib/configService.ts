@@ -230,8 +230,23 @@ export const DEFAULT_SYSTEM_CONFIGS: Record<string, { value: string; description
     category: "system_mode",
   },
   PRELAUNCH_NOTICE_TEXT: {
-    value: "Dubai Finance is currently in its official Pre-Launch phase. Public member registration and user dashboards will open shortly. Stay tuned!",
+    value: "Dubai Finance is currently in its exclusive Pre-Launch phase. The official global platform launch and public member activations go LIVE on September 21, 2026! Get ready to experience institutional 5% to 15% Daily ROI Staking and 12-Level Team Royalties. Stay tuned!",
     description: "Notice message displayed to visitors when Pre-launch mode is active",
+    category: "system_mode",
+  },
+  PRELAUNCH_TIMER_ENABLED: {
+    value: "true",
+    description: "Display big countdown timer on homescreen when Pre-Launching mode is active (true / false)",
+    category: "system_mode",
+  },
+  PRELAUNCH_TARGET_DATE: {
+    value: "2026-09-21T10:00",
+    description: "Official launch target date and time in YYYY-MM-DDTHH:MM (e.g. 2026-09-21T10:00 for September 21, 2026)",
+    category: "system_mode",
+  },
+  PRELAUNCH_TIMER_TITLE: {
+    value: "OFFICIAL GLOBAL PLATFORM LAUNCH • SEPTEMBER 21, 2026",
+    description: "Countdown timer banner header title",
     category: "system_mode",
   },
   MAINTENANCE_NOTICE_TEXT: {

@@ -62,6 +62,9 @@ const FRIENDLY_NAMES: Record<string, string> = {
   MAINTENANCE_MODE: "System Maintenance Mode (true / false)",
   PRELAUNCH_NOTICE_TEXT: "Pre-Launching Phase Public Visitor Notice",
   MAINTENANCE_NOTICE_TEXT: "System Maintenance Public Visitor Notice",
+  PRELAUNCH_TIMER_ENABLED: "Homescreen Big Countdown Timer (true / false)",
+  PRELAUNCH_TARGET_DATE: "Official Launch Target Date & Time (IST)",
+  PRELAUNCH_TIMER_TITLE: "Countdown Timer Header Title",
 
   // Financial & Wallet
   COMPANY_USDT_ADDRESS: "Company USDT (BEP-20) Receiving Wallet",
@@ -723,6 +726,86 @@ export function AdminConfigView() {
                 placeholder="Notice displayed during maintenance..."
                 className="w-full bg-[#050b18] border border-slate-700 rounded-xl px-3 py-2 text-white text-xs focus:outline-none focus:border-rose-500 transition"
               />
+            </div>
+          </div>
+
+          {/* Pre-Launching Live Countdown Timer Controller */}
+          <div className="relative z-10 mt-6 pt-5 border-t border-slate-800 bg-[#060c1d]/60 p-5 rounded-2xl border border-amber-500/20">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+              <div>
+                <div className="flex items-center gap-2 text-amber-400 text-xs font-bold uppercase tracking-wider">
+                  <Clock className="w-4 h-4 text-amber-400" />
+                  <span>Homescreen Big Launch Countdown Timer</span>
+                </div>
+                <p className="text-xs text-slate-400 mt-0.5">
+                  Displays a prominent real-time countdown (Days, Hours, Minutes, Seconds) on the Homescreen when Pre-Launching mode is active.
+                </p>
+              </div>
+
+              {/* Toggle Switch */}
+              <div className="flex items-center gap-3 shrink-0">
+                <span className="text-xs text-slate-300 font-bold">
+                  {formValues.PRELAUNCH_TIMER_ENABLED === "false" ? "Timer OFF" : "Timer ON"}
+                </span>
+                <button
+                  type="button"
+                  onClick={() =>
+                    handleInputChange(
+                      "PRELAUNCH_TIMER_ENABLED",
+                      formValues.PRELAUNCH_TIMER_ENABLED === "false" ? "true" : "false"
+                    )
+                  }
+                  className={`relative inline-flex h-8 w-16 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                    formValues.PRELAUNCH_TIMER_ENABLED !== "false"
+                      ? "bg-amber-500 shadow-md shadow-amber-500/30"
+                      : "bg-slate-700"
+                  }`}
+                  title="Toggle homescreen countdown timer"
+                >
+                  <span
+                    className={`pointer-events-none inline-block h-7 w-7 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out flex items-center justify-center text-[10px] font-black ${
+                      formValues.PRELAUNCH_TIMER_ENABLED !== "false"
+                        ? "translate-x-8 text-amber-600"
+                        : "translate-x-0 text-slate-700"
+                    }`}
+                  >
+                    {formValues.PRELAUNCH_TIMER_ENABLED !== "false" ? "ON" : "OFF"}
+                  </span>
+                </button>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="text-xs font-bold text-amber-300 block mb-1">
+                  Target Launch Date &amp; Time
+                </label>
+                <input
+                  type="datetime-local"
+                  value={formValues.PRELAUNCH_TARGET_DATE || "2026-09-21T10:00"}
+                  onChange={(e) => handleInputChange("PRELAUNCH_TARGET_DATE", e.target.value)}
+                  className="w-full bg-[#050b18] border border-slate-700 rounded-xl px-3 py-2 text-white font-mono text-xs focus:outline-none focus:border-amber-500 transition"
+                />
+                <span className="text-[10px] text-slate-500 mt-1 block">
+                  Set to <strong>2026-09-21 10:00 AM</strong> for September 21 launch
+                </span>
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-amber-300 block mb-1">
+                  Countdown Header Banner Title
+                </label>
+                <input
+                  type="text"
+                  value={formValues.PRELAUNCH_TIMER_TITLE || ""}
+                  onChange={(e) => handleInputChange("PRELAUNCH_TIMER_TITLE", e.target.value)}
+                  placeholder="OFFICIAL GLOBAL PLATFORM LAUNCH • SEPTEMBER 21, 2026"
+                  className="w-full bg-[#050b18] border border-slate-700 rounded-xl px-3 py-2 text-white text-xs focus:outline-none focus:border-amber-500 transition"
+                />
+                <span className="text-[10px] text-slate-500 mt-1 block">
+                  Displayed as the headline above the digital clock numbers
+                </span>
+              </div>
             </div>
           </div>
         </div>
