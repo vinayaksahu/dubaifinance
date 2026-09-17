@@ -36,6 +36,11 @@ enum TransactionType {
   BASIC_ROI
   FD_ROI
   DIRECT_REFERRAL
+  DIRECT_SPONSOR_BONUS
+  UPLINE_OVERRIDE_BONUS
+  RANK_REWARD_CASHOUT
+  RANK_UPGRADE_HOLD
+  COMMISSION_WITHDRAWAL
   BASIC_LEVEL_INCOME
   FD_LEVEL_INCOME
   P2P_SENT
@@ -77,11 +82,19 @@ model User {
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
 
+  // Unused legacy columns to keep Prisma sync non-destructive
+  currentRank          Int            @default(0)
+  rankHoldingValue     Decimal        @default(0.0) @db.Decimal(20, 8)
+  autoUpgradeEnabled   Boolean        @default(true)
+  isRankBanned         Boolean        @default(false)
+  isUltimaCompleted    Boolean        @default(false)
+
   contracts       InvestmentContract[]
   ledgers         LedgerEntry[]
   deposits        DepositRequest[]
   withdrawals     WithdrawalRequest[]
   tickets         SupportTicket[]
+  queuePositions  QueuePosition[]
 }
 
 model InvestmentContract {
@@ -180,5 +193,33 @@ model OtpVerification {
   createdAt      DateTime        @default(now())
 
   @@index([email, purpose])
+}
+
+enum QueueStatus {
+  WAITING
+  COMPLETED
+  EXITED
+}
+
+model QueuePosition {
+  id             String       @id @default(cuid())
+  userId         String
+  user           User         @relation(fields: [userId], references: [id])
+  rankTier       Int
+  rankName       String
+  entryAmount    Decimal      @db.Decimal(20, 8)
+  rankValue      Decimal      @db.Decimal(20, 8)
+  child1Id       String?
+  child2Id       String?
+  childrenCount  Int          @default(0)
+  status         QueueStatus  @default(WAITING)
+  queueOrder     BigInt
+  completedAt    DateTime?
+  exitedAt       DateTime?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@index([rankTier, status, queueOrder])
+  @@index([userId])
 }
 
