@@ -65,7 +65,7 @@ export async function POST(req: NextRequest) {
         );
       }
     } else {
-      // Default member portal
+      // Default member portal (/login)
       if (isSuperRoot) {
         // Keep super root admin strictly hidden from member portal
         return NextResponse.json(
@@ -73,7 +73,12 @@ export async function POST(req: NextRequest) {
           { status: 401 }
         );
       }
-      // If an Admin logs in here, allow and auto-redirect them to /admin
+      if (isAdmin) {
+        return NextResponse.json(
+          { error: "Access Denied. Administrator accounts cannot log in through the Member Portal. Please use the official Admin Portal at /adminlogin." },
+          { status: 403 }
+        );
+      }
     }
 
     const token = await createSessionToken({
