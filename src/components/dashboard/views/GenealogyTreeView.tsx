@@ -32,110 +32,10 @@ interface GenealogyTreeViewProps {
   onNavigateTab?: (tab: string) => void;
 }
 
-// Default sample data matching the exact screenshot when user preview is requested
-const SAMPLE_TREE_DATA: TreeNodeData = {
-  id: "root-1",
-  customId: "DF000001",
-  name: "Adam Smith (You)",
-  username: "@adam",
-  status: "ACTIVE",
-  activeInvestment: 57.0,
-  directTeamCount: 5,
-  totalTeamCount: 6,
-  level: 0,
-  isYou: true,
-  joinDate: "2026-07-01",
-  doa: "2026-07-01",
-  children: [
-    {
-      id: "child-1",
-      customId: "DF100001",
-      name: "Bob Johnson",
-      username: "@bob",
-      status: "ACTIVE",
-      activeInvestment: 50.0,
-      directTeamCount: 1,
-      totalTeamCount: 1,
-      level: 1,
-      isYou: false,
-      joinDate: "2026-07-10",
-      doa: "2026-07-10",
-      sponsorCustomId: "DF000001",
-      children: [
-        {
-          id: "subchild-1",
-          customId: "DF200001",
-          name: "David Lee",
-          username: "@david",
-          status: "INACTIVE",
-          activeInvestment: 0.0,
-          directTeamCount: 0,
-          totalTeamCount: 0,
-          level: 2,
-          isYou: false,
-          joinDate: "2026-08-01",
-          doa: "-",
-          sponsorCustomId: "DF100001",
-          children: [],
-        },
-      ],
-    },
-    {
-      id: "child-2",
-      customId: "DF100002",
-      name: "Charles Brown",
-      username: "@charles",
-      status: "INACTIVE",
-      activeInvestment: 0.0,
-      directTeamCount: 0,
-      totalTeamCount: 0,
-      level: 1,
-      isYou: false,
-      joinDate: "2026-07-15",
-      doa: "-",
-      sponsorCustomId: "DF000001",
-      children: [],
-    },
-    {
-      id: "child-3",
-      customId: "DF100003",
-      name: "Eve Wilson",
-      username: "@eve",
-      status: "ACTIVE",
-      activeInvestment: 50.0,
-      directTeamCount: 0,
-      totalTeamCount: 0,
-      level: 1,
-      isYou: false,
-      joinDate: "2026-07-20",
-      doa: "2026-07-20",
-      sponsorCustomId: "DF000001",
-      children: [],
-    },
-    {
-      id: "child-4",
-      customId: "DF100004",
-      name: "Kamlesh kumar...",
-      username: "@kam7398",
-      status: "ACTIVE",
-      activeInvestment: 5.0,
-      directTeamCount: 0,
-      totalTeamCount: 0,
-      level: 1,
-      isYou: false,
-      joinDate: "2026-08-02",
-      doa: "2026-08-02",
-      sponsorCustomId: "DF000001",
-      children: [],
-    },
-  ],
-};
-
 export function GenealogyTreeView({ user, onNavigateTab }: GenealogyTreeViewProps) {
   const [treeData, setTreeData] = useState<TreeNodeData | null>(null);
   const [stats, setStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [useSampleData, setUseSampleData] = useState(false);
   const [zoomLevel, setZoomLevel] = useState(1);
   const [collapsedNodes, setCollapsedNodes] = useState<Record<string, boolean>>({});
   const [searchTerm, setSearchTerm] = useState("");
@@ -146,6 +46,23 @@ export function GenealogyTreeView({ user, onNavigateTab }: GenealogyTreeViewProp
   const [copiedId, setCopiedId] = useState(false);
 
   const containerRef = useRef<HTMLDivElement>(null);
+
+  // Fallback root node using actual logged-in user data if treeData hasn't loaded yet
+  const fallbackRoot: TreeNodeData = {
+    id: user?.id || "root",
+    customId: user?.customId || "DF000001",
+    name: user?.fullName ? `${user.fullName} (You)` : "You",
+    username: user?.email ? `@${user.email.split("@")[0]}` : `@${user?.customId?.toLowerCase() || "member"}`,
+    status: user?.status === "INACTIVE" ? "INACTIVE" : "ACTIVE",
+    activeInvestment: Number(user?.fundBalance || 0),
+    directTeamCount: 0,
+    totalTeamCount: 0,
+    level: 0,
+    isYou: true,
+    joinDate: user?.createdAt ? new Date(user.createdAt).toISOString().split("T")[0] : "-",
+    doa: "-",
+    children: [],
+  };
 
   // Fetch real downline tree from backend API
   const fetchTree = async (rootId?: string) => {
@@ -159,19 +76,9 @@ export function GenealogyTreeView({ user, onNavigateTab }: GenealogyTreeViewProp
       if (data.root) {
         setTreeData(data.root);
         setStats(data.stats);
-
-        // Auto-switch to sample preview if the user has 0 direct members
-        if (data.root.children.length === 0) {
-          setUseSampleData(true);
-        } else {
-          setUseSampleData(false);
-        }
       }
     } catch (err) {
-      console.error(err);
-      // Fallback to sample data for smooth experience
-      setTreeData(SAMPLE_TREE_DATA);
-      setUseSampleData(true);
+      console.error("[GenealogyTreeView] Failed to load downline tree:", err);
     } finally {
       setLoading(false);
     }
@@ -181,8 +88,8 @@ export function GenealogyTreeView({ user, onNavigateTab }: GenealogyTreeViewProp
     fetchTree(rootFocusId || undefined);
   }, [rootFocusId]);
 
-  // Active data being viewed
-  const activeTree: TreeNodeData = useSampleData ? SAMPLE_TREE_DATA : (treeData || SAMPLE_TREE_DATA);
+  // Active data being viewed (always real data)
+  const activeTree: TreeNodeData = treeData || fallbackRoot;
 
   // Toggle Collapse / Expand
   const toggleCollapse = (nodeId: string, e?: React.MouseEvent) => {
@@ -416,6 +323,36 @@ export function GenealogyTreeView({ user, onNavigateTab }: GenealogyTreeViewProp
             </div>
           </>
         )}
+
+        {/* If Root Node has no downline yet, display referral invitation */}
+        {isRoot && (!node.children || node.children.length === 0) && (
+          <div className="mt-8 flex flex-col items-center text-center max-w-sm p-6 rounded-2xl bg-[#091124] border border-[#17274a] shadow-xl animate-in fade-in duration-300">
+            <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center text-indigo-400 mb-3">
+              <Users className="w-6 h-6" />
+            </div>
+            <h4 className="text-sm font-bold text-white mb-1">No Direct Team Members Yet</h4>
+            <p className="text-xs text-slate-400 mb-4 leading-relaxed">
+              Start building your 12-level network tree by inviting friends and partners using your personal referral link.
+            </p>
+            <button
+              type="button"
+              onClick={copyReferral}
+              className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold flex items-center gap-2 transition shadow-lg shadow-indigo-600/20"
+            >
+              {copiedId ? (
+                <>
+                  <Check className="w-3.5 h-3.5" />
+                  <span>Referral Link Copied!</span>
+                </>
+              ) : (
+                <>
+                  <Copy className="w-3.5 h-3.5" />
+                  <span>Copy My Referral Link</span>
+                </>
+              )}
+            </button>
+          </div>
+        )}
       </div>
     );
   };
@@ -467,7 +404,7 @@ export function GenealogyTreeView({ user, onNavigateTab }: GenealogyTreeViewProp
             <Users className="w-4 h-4 text-indigo-400" />
           </div>
           <p className="text-xl sm:text-2xl font-black text-slate-100 font-mono">
-            {useSampleData ? 6 : stats?.totalMembers ?? 1}
+            {stats?.totalMembers ?? (activeTree.children.length > 0 ? activeTree.totalTeamCount + 1 : 1)}
           </p>
         </div>
 
@@ -480,7 +417,7 @@ export function GenealogyTreeView({ user, onNavigateTab }: GenealogyTreeViewProp
             <UserCheck className="w-4 h-4 text-emerald-400" />
           </div>
           <p className="text-xl sm:text-2xl font-black text-emerald-400 font-mono">
-            {useSampleData ? 4 : stats?.activeMembers ?? (activeTree.status === "ACTIVE" ? 1 : 0)}
+            {stats?.activeMembers ?? (activeTree.status === "ACTIVE" ? 1 : 0)}
           </p>
         </div>
 
@@ -493,7 +430,7 @@ export function GenealogyTreeView({ user, onNavigateTab }: GenealogyTreeViewProp
             <UserX className="w-4 h-4 text-rose-400" />
           </div>
           <p className="text-xl sm:text-2xl font-black text-rose-400 font-mono">
-            {useSampleData ? 2 : stats?.inactiveMembers ?? 0}
+            {stats?.inactiveMembers ?? (activeTree.status === "INACTIVE" ? 1 : 0)}
           </p>
         </div>
 
@@ -503,7 +440,7 @@ export function GenealogyTreeView({ user, onNavigateTab }: GenealogyTreeViewProp
             <Sparkles className="w-4 h-4 text-amber-400" />
           </div>
           <p className="text-xl sm:text-2xl font-black text-amber-400 font-mono">
-            {useSampleData ? 5 : activeTree.directTeamCount}
+            {activeTree.directTeamCount}
           </p>
         </div>
       </div>
@@ -636,20 +573,6 @@ export function GenealogyTreeView({ user, onNavigateTab }: GenealogyTreeViewProp
                 <RotateCcw className="w-3.5 h-3.5" />
               </button>
             </div>
-
-            {/* Sample / Live Tree Toggle */}
-            <button
-              type="button"
-              onClick={() => setUseSampleData(!useSampleData)}
-              className={`px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all ${
-                useSampleData
-                  ? "bg-amber-500/20 text-amber-300 border border-amber-500/40"
-                  : "bg-[#0d172e] text-slate-300 border border-[#1d3159] hover:text-white"
-              }`}
-            >
-              <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-              <span>{useSampleData ? "Demo Preview (On)" : "Show Demo Preview"}</span>
-            </button>
           </div>
         </div>
 
