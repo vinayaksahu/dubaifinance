@@ -17,7 +17,8 @@ import {
   ChevronRight,
   X,
   ShieldCheck,
-  Landmark
+  Landmark,
+  Database
 } from "lucide-react";
 
 interface AdminSidebarProps {
@@ -52,7 +53,10 @@ export default function AdminSidebar({
     { id: "users", label: "User Management", icon: Users },
     { id: "roi-engine", label: "ROI Engine", icon: Zap },
     { id: "tickets", label: "Support Tickets", icon: Headphones },
-    ...(isSuper ? [{ id: "config", label: "System Config", icon: Settings }] : []),
+    ...(isSuper ? [
+      { id: "config", label: "System Config", icon: Settings },
+      { id: "backup", label: "Database Backup", icon: Database },
+    ] : []),
   ];
 
   const handleLogout = async () => {

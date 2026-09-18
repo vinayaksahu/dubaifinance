@@ -11,6 +11,7 @@ import { AdminUsersView } from "@/components/admin/views/AdminUsersView";
 import { AdminTicketsView } from "@/components/admin/views/AdminTicketsView";
 import { AdminConfigView } from "@/components/admin/views/AdminConfigView";
 import { AdminIncomeView } from "@/components/admin/views/AdminIncomeView";
+import { AdminBackupView } from "@/components/admin/views/AdminBackupView";
 
 export default function AdminPage() {
   const router = useRouter();
@@ -172,6 +173,10 @@ export default function AdminPage() {
 
           {activeTab === "config" && (
             <AdminConfigView />
+          )}
+
+          {activeTab === "backup" && (
+            <AdminBackupView />
           )}
         </main>
       </div>
