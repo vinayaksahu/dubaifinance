@@ -18,7 +18,8 @@ import {
   X,
   ShieldCheck,
   Landmark,
-  Database
+  Database,
+  UserCog
 } from "lucide-react";
 
 interface AdminSidebarProps {
@@ -53,6 +54,7 @@ export default function AdminSidebar({
     { id: "users", label: "User Management", icon: Users },
     { id: "roi-engine", label: "ROI Engine", icon: Zap },
     { id: "tickets", label: "Support Tickets", icon: Headphones },
+    { id: "profile", label: "Admin Profile", icon: UserCog },
     ...(isSuper ? [
       { id: "config", label: "System Config", icon: Settings },
       { id: "backup", label: "Database Backup", icon: Database },

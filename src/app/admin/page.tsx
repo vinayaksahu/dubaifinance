@@ -12,6 +12,7 @@ import { AdminTicketsView } from "@/components/admin/views/AdminTicketsView";
 import { AdminConfigView } from "@/components/admin/views/AdminConfigView";
 import { AdminIncomeView } from "@/components/admin/views/AdminIncomeView";
 import { AdminBackupView } from "@/components/admin/views/AdminBackupView";
+import { AdminProfileView } from "@/components/admin/views/AdminProfileView";
 
 export default function AdminPage() {
   const router = useRouter();
@@ -127,6 +128,7 @@ export default function AdminPage() {
           user={user}
           onToggleSidebar={handleToggleSidebar}
           isCollapsed={sidebarCollapsed}
+          onRefresh={loadData}
         />
 
         {/* Dynamic View Body */}
@@ -139,6 +141,10 @@ export default function AdminPage() {
               cronMsg={cronMsg}
               setActiveTab={setActiveTab}
             />
+          )}
+
+          {activeTab === "profile" && (
+            <AdminProfileView user={user} onRefresh={loadData} />
           )}
 
           {activeTab === "deposits" && (
