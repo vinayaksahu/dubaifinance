@@ -15,16 +15,42 @@ export async function POST(req: NextRequest) {
       select: { id: true, email: true, fullName: true, customId: true },
     });
 
-    if (!admin || !admin.email) {
-      return NextResponse.json({ error: "Admin email not found." }, { status: 404 });
+    if (!admin) {
+      return NextResponse.json({ error: "Admin account not found." }, { status: 404 });
     }
 
-    const normalizedEmail = admin.email.toLowerCase().trim();
+    const body = await req.json().catch(() => ({}));
+    const rawTarget = body.email || admin.email;
+    if (!rawTarget || typeof rawTarget !== "string") {
+      return NextResponse.json({ error: "A valid email address is required to receive OTP." }, { status: 400 });
+    }
 
-    // Check cooldown: don't allow resending within 60 seconds
+    const targetEmail = rawTarget.toLowerCase().trim();
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(targetEmail)) {
+      return NextResponse.json({ error: "Please enter a valid email address format." }, { status: 400 });
+    }
+
+    // If changing to a new email, ensure it's not registered to someone else
+    if (targetEmail !== admin.email?.toLowerCase().trim()) {
+      const duplicate = await db.user.findFirst({
+        where: {
+          email: targetEmail,
+          NOT: { id: session.userId },
+        },
+      });
+      if (duplicate) {
+        return NextResponse.json(
+          { error: `Email "${targetEmail}" is already registered to another account (${duplicate.customId}).` },
+          { status: 400 }
+        );
+      }
+    }
+
+    // Check cooldown: don't allow spamming within 60 seconds
     const existingOtp = await (db as any).otpVerification.findFirst({
       where: {
-        email: normalizedEmail,
+        email: targetEmail,
         purpose: "ADMIN_PROFILE_UPDATE",
       },
       orderBy: { createdAt: "desc" },
@@ -43,22 +69,17 @@ export async function POST(req: NextRequest) {
     }
 
     // Send OTP via SMTP
-    await sendOtpEmail(normalizedEmail, "ADMIN_PROFILE_UPDATE");
-
-    // Mask email for display (e.g. v***u@gmail.com)
-    const [name, domain] = normalizedEmail.split("@");
-    const maskedName = name.length > 2 ? `${name[0]}***${name[name.length - 1]}` : `${name[0]}*`;
-    const maskedEmail = `${maskedName}@${domain}`;
+    await sendOtpEmail(targetEmail, "ADMIN_PROFILE_UPDATE");
 
     return NextResponse.json({
       success: true,
-      message: `Verification code sent to ${maskedEmail}. Please check your inbox or spam.`,
-      maskedEmail,
+      message: `Verification code sent to ${targetEmail}. Please check your inbox or spam.`,
+      targetEmail,
     });
   } catch (error: any) {
     console.error("[Admin Profile Send-OTP Error]:", error);
     return NextResponse.json(
-      { error: error?.message || "Failed to send verification code." },
+      { error: error?.message || "Failed to send verification code. Please check SMTP configuration." },
       { status: 500 }
     );
   }

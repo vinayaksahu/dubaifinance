@@ -63,18 +63,27 @@ export function AdminProfileView({ user, onRefresh }: AdminProfileViewProps) {
 
   const handleSendOtp = async () => {
     if (otpCooldown > 0 || otpSending) return;
+
+    const targetEmail = (email || user?.email || "").trim();
+    if (!targetEmail) {
+      setOtpMsg({ type: "error", text: "Please enter a valid email address first." });
+      return;
+    }
+
     setOtpSending(true);
     setOtpMsg(null);
+    setProfileMsg(null);
 
     try {
       const res = await fetch("/api/admin/profile/send-otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: targetEmail }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to send verification code");
 
-      setOtpMsg({ type: "success", text: data.message || "OTP code sent to your registered email!" });
+      setOtpMsg({ type: "success", text: data.message || `Verification OTP sent to ${targetEmail}!` });
       setOtpCooldown(60);
     } catch (err: any) {
       setOtpMsg({ type: "error", text: err.message });
@@ -90,7 +99,7 @@ export function AdminProfileView({ user, onRefresh }: AdminProfileViewProps) {
     if (!otp.trim()) {
       setProfileMsg({
         type: "error",
-        text: "Security verification required. Please click 'Send OTP' and enter the 6-digit code received on your email.",
+        text: "Please click 'Send OTP' above to receive your 6-digit code, then enter it to verify and save.",
       });
       return;
     }
@@ -101,7 +110,7 @@ export function AdminProfileView({ user, onRefresh }: AdminProfileViewProps) {
       const res = await fetch("/api/admin/profile", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ fullName, email, phone, otp: otp.trim() }),
+        body: JSON.stringify({ fullName, email: email.trim(), phone, otp: otp.trim() }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to update profile");
@@ -150,6 +159,8 @@ export function AdminProfileView({ user, onRefresh }: AdminProfileViewProps) {
       setPwdLoading(false);
     }
   };
+
+  const activeEmailTarget = (email || user?.email || "").trim();
 
   return (
     <div className="space-y-6">
@@ -294,14 +305,14 @@ export function AdminProfileView({ user, onRefresh }: AdminProfileViewProps) {
                       Security OTP Verification
                     </span>
                   </div>
-                  <span className="text-[10px] text-slate-500 dark:text-slate-400 font-mono">
-                    Required for Profile Changes
+                  <span className="text-[10px] text-amber-500 dark:text-amber-400 font-mono font-semibold">
+                    Mandatory
                   </span>
                 </div>
 
                 <p className="text-[11px] text-slate-600 dark:text-slate-300">
-                  Verification code will be sent to your registered admin email:{" "}
-                  <strong className="text-amber-600 dark:text-amber-400 font-mono">{user?.email}</strong>
+                  Verification OTP will be sent to:{" "}
+                  <strong className="text-amber-600 dark:text-amber-400 font-mono font-bold">{activeEmailTarget}</strong>
                 </p>
 
                 {otpMsg && (
@@ -330,7 +341,7 @@ export function AdminProfileView({ user, onRefresh }: AdminProfileViewProps) {
                     type="button"
                     onClick={handleSendOtp}
                     disabled={otpSending || otpCooldown > 0}
-                    className="px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs transition disabled:opacity-50 shrink-0 flex items-center gap-1.5 shadow-sm"
+                    className="px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs transition disabled:opacity-50 shrink-0 flex items-center gap-1.5 shadow-sm cursor-pointer"
                   >
                     {otpSending ? (
                       <>
@@ -353,7 +364,7 @@ export function AdminProfileView({ user, onRefresh }: AdminProfileViewProps) {
                 <button
                   type="submit"
                   disabled={profileLoading}
-                  className="w-full py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-xs shadow-lg shadow-amber-500/20 transition disabled:opacity-50 flex items-center justify-center gap-2"
+                  className="w-full py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-xs shadow-lg shadow-amber-500/20 transition disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <Save className="w-4 h-4" />
                   {profileLoading ? "Verifying & Saving..." : "Verify OTP & Save Profile"}
@@ -436,7 +447,7 @@ export function AdminProfileView({ user, onRefresh }: AdminProfileViewProps) {
                 <button
                   type="submit"
                   disabled={pwdLoading}
-                  className="w-full py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-xs shadow-lg shadow-amber-500/20 transition disabled:opacity-50 flex items-center justify-center gap-2"
+                  className="w-full py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-xs shadow-lg shadow-amber-500/20 transition disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <Key className="w-4 h-4" />
                   {pwdLoading ? "Updating Password..." : "Update Password"}

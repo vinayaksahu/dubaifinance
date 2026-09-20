@@ -53,7 +53,7 @@ export async function POST(req: Request) {
 
     if (!otp || typeof otp !== "string" || !otp.trim()) {
       return NextResponse.json(
-        { error: "Security OTP is required to update admin profile." },
+        { error: "Security OTP is required to update admin profile. Click 'Send OTP' to receive verification code." },
         { status: 400 }
       );
     }
@@ -67,11 +67,18 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Admin account email not found." }, { status: 404 });
     }
 
-    // Verify OTP sent to current admin's email
-    const isOtpValid = await verifyOtp(currentAdmin.email, otp.trim(), "ADMIN_PROFILE_UPDATE");
+    const cleanEmail = email ? email.toLowerCase().trim() : currentAdmin.email.toLowerCase().trim();
+    const currentRegisteredEmail = currentAdmin.email.toLowerCase().trim();
+
+    // Verify OTP: check target email first, then current email fallback
+    let isOtpValid = await verifyOtp(cleanEmail, otp.trim(), "ADMIN_PROFILE_UPDATE");
+    if (!isOtpValid && cleanEmail !== currentRegisteredEmail) {
+      isOtpValid = await verifyOtp(currentRegisteredEmail, otp.trim(), "ADMIN_PROFILE_UPDATE");
+    }
+
     if (!isOtpValid) {
       return NextResponse.json(
-        { error: "Invalid or expired OTP code. Please request a new verification code." },
+        { error: "Invalid or expired OTP code. Please enter the correct 6-digit code or request a new one." },
         { status: 400 }
       );
     }
@@ -82,8 +89,7 @@ export async function POST(req: Request) {
     };
 
     // If email is provided and different, check uniqueness
-    if (email && typeof email === "string" && email.trim()) {
-      const cleanEmail = email.trim().toLowerCase();
+    if (cleanEmail && cleanEmail !== currentRegisteredEmail) {
       const existing = await db.user.findFirst({
         where: {
           email: cleanEmail,
