@@ -40,6 +40,16 @@ export function getDubaiTimeInfo(date: Date = new Date()) {
   const currentDubaiFormatted = `${day} ${monthNames[month]} ${year}, ${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")} GST`;
   const nextCycleDubaiFormatted = `${nextCycleGstDate.getUTCDate()} ${monthNames[nextCycleGstDate.getUTCMonth()]} ${nextCycleGstDate.getUTCFullYear()}, 12:01 AM GST`;
 
+  // IST = UTC + 5:30 (GST + 1h 30m)
+  const istDate = new Date(date.getTime() + 5.5 * 60 * 60 * 1000);
+  const currentIstFormatted = `${istDate.getUTCDate()} ${monthNames[istDate.getUTCMonth()]} ${istDate.getUTCFullYear()}, ${String(istDate.getUTCHours()).padStart(2, "0")}:${String(istDate.getUTCMinutes()).padStart(2, "0")} IST`;
+  const nextCycleIstFormatted = "01:31 AM IST";
+
+  // UTC = UTC + 0
+  const utcDate = new Date(date.getTime());
+  const currentUtcFormatted = `${utcDate.getUTCDate()} ${monthNames[utcDate.getUTCMonth()]} ${utcDate.getUTCFullYear()}, ${String(utcDate.getUTCHours()).padStart(2, "0")}:${String(utcDate.getUTCMinutes()).padStart(2, "0")} UTC`;
+  const nextCycleUtcFormatted = "08:01 PM UTC";
+
   return {
     dateStr,
     year,
@@ -51,9 +61,13 @@ export function getDubaiTimeInfo(date: Date = new Date()) {
     startOfDayMs,
     endOfDayMs,
     currentDubaiFormatted,
+    currentIstFormatted,
+    currentUtcFormatted,
     nextCycleUtc,
     nextCycleUtcTimestamp,
     nextCycleDubaiFormatted,
+    nextCycleIstFormatted,
+    nextCycleUtcFormatted,
   };
 }
 
@@ -321,7 +335,11 @@ export async function getUpcomingCycleForecast(adminId?: string) {
 
   return {
     currentDubaiTime: nowInfo.currentDubaiFormatted,
+    currentIstTime: nowInfo.currentIstFormatted,
+    currentUtcTime: nowInfo.currentUtcFormatted,
     nextCycleDubaiTime: nowInfo.nextCycleDubaiFormatted,
+    nextCycleIstTime: nowInfo.nextCycleIstFormatted,
+    nextCycleUtcTime: nowInfo.nextCycleUtcFormatted,
     nextCycleUtcTimestamp: nowInfo.nextCycleUtcTimestamp,
     totalScheduledContracts: scheduledContractsCount,
     pendingContractsToday,

@@ -110,10 +110,22 @@ export interface WithdrawalWindowStatus {
   is24h: boolean;
   startTime: string;
   endTime: string;
-  startFormatted: string;
-  endFormatted: string;
-  label: string;
+  startFormatted: string; // IST formatted
+  endFormatted: string;   // IST formatted
+  startFormattedGst: string;
+  endFormattedGst: string;
+  startFormattedIst: string;
+  endFormattedIst: string;
+  startFormattedUtc: string;
+  endFormattedUtc: string;
+  label: string; // Primary GST display
+  gstLabel: string;
+  istLabel: string;
+  utcLabel: string;
+  multiZoneLabel: string;
+  currentGstTime: string;
   currentIstTime: string;
+  currentUtcTime: string;
 }
 
 export function getWithdrawalWindowStatus(config?: Record<string, any>): WithdrawalWindowStatus {
@@ -122,7 +134,7 @@ export function getWithdrawalWindowStatus(config?: Record<string, any>): Withdra
     config?.WITHDRAWAL_24H_OPEN === "true" ||
     config?.WITHDRAWAL_24H_OPEN === "1";
 
-  // Parse Start Time
+  // Parse Start Time (stored in IST reference)
   let startTime = "10:00";
   if (config?.WITHDRAWAL_START_TIME && String(config.WITHDRAWAL_START_TIME).includes(":")) {
     startTime = String(config.WITHDRAWAL_START_TIME).trim();
@@ -131,7 +143,7 @@ export function getWithdrawalWindowStatus(config?: Record<string, any>): Withdra
     startTime = `${String(isNaN(h) ? 10 : h).padStart(2, "0")}:00`;
   }
 
-  // Parse End Time
+  // Parse End Time (stored in IST reference)
   let endTime = "14:00";
   if (config?.WITHDRAWAL_END_TIME && String(config.WITHDRAWAL_END_TIME).includes(":")) {
     endTime = String(config.WITHDRAWAL_END_TIME).trim();
@@ -157,13 +169,25 @@ export function getWithdrawalWindowStatus(config?: Record<string, any>): Withdra
   // Effectively 24h if flag is set or start is 00:00 and end is 23:59
   const isEffectively24h = is24hFlag || (startTotalMinutes === 0 && endTotalMinutes >= 1439);
 
-  // Current IST Time (UTC + 5:30)
+  // UTC Base
   const now = new Date();
   const utcMs = now.getTime() + now.getTimezoneOffset() * 60000;
+
+  // GST (Dubai Time, UTC+4:00)
+  const gstDate = new Date(utcMs + 4 * 3600000);
+  const curGstH = gstDate.getHours();
+  const curGstM = gstDate.getMinutes();
+
+  // IST (India Standard Time, UTC+5:30)
   const istDate = new Date(utcMs + 5.5 * 3600000);
-  const curH = istDate.getHours();
-  const curM = istDate.getMinutes();
-  const curTotalMinutes = curH * 60 + curM;
+  const curIstH = istDate.getHours();
+  const curIstM = istDate.getMinutes();
+  const curTotalMinutes = curIstH * 60 + curIstM;
+
+  // UTC (UTC+00:00)
+  const utcDate = new Date(utcMs);
+  const curUtcH = utcDate.getHours();
+  const curUtcM = utcDate.getMinutes();
 
   let isOpen = false;
   if (isEffectively24h) {
@@ -171,7 +195,7 @@ export function getWithdrawalWindowStatus(config?: Record<string, any>): Withdra
   } else if (startTotalMinutes <= endTotalMinutes) {
     isOpen = curTotalMinutes >= startTotalMinutes && curTotalMinutes <= endTotalMinutes;
   } else {
-    // Overnight window (e.g. 22:00 to 04:00)
+    // Overnight window
     isOpen = curTotalMinutes >= startTotalMinutes || curTotalMinutes <= endTotalMinutes;
   }
 
@@ -181,21 +205,61 @@ export function getWithdrawalWindowStatus(config?: Record<string, any>): Withdra
     return `${String(h12).padStart(2, "0")}:${String(minutes).padStart(2, "0")} ${period}`;
   };
 
-  const startFormatted = formatTime12h(startH, startM);
-  const endFormatted = formatTime12h(endH, endM);
-  const currentIstTime = formatTime12h(curH, curM);
+  const minutesToH12 = (totalMinutes: number) => {
+    const normalized = ((totalMinutes % 1440) + 1440) % 1440;
+    const h = Math.floor(normalized / 60);
+    const m = normalized % 60;
+    return formatTime12h(h, m);
+  };
 
-  const label = isEffectively24h ? "24/7 (Always Open)" : `${startFormatted} – ${endFormatted} IST`;
+  // IST Timings (10:00 AM - 02:00 PM)
+  const startFormattedIst = formatTime12h(startH, startM);
+  const endFormattedIst = formatTime12h(endH, endM);
+
+  // GST Timings: IST - 90 mins (08:30 AM - 12:30 PM)
+  const startFormattedGst = minutesToH12(startTotalMinutes - 90);
+  const endFormattedGst = minutesToH12(endTotalMinutes - 90);
+
+  // UTC Timings: IST - 330 mins (04:30 AM - 08:30 AM)
+  const startFormattedUtc = minutesToH12(startTotalMinutes - 330);
+  const endFormattedUtc = minutesToH12(endTotalMinutes - 330);
+
+  // Clocks
+  const currentGstTime = formatTime12h(curGstH, curGstM);
+  const currentIstTime = formatTime12h(curIstH, curIstM);
+  const currentUtcTime = formatTime12h(curUtcH, curUtcM);
+
+  const gstLabel = isEffectively24h ? "24/7 (Always Open)" : `${startFormattedGst} – ${endFormattedGst} GST`;
+  const istLabel = isEffectively24h ? "24/7 (Always Open)" : `${startFormattedIst} – ${endFormattedIst} IST`;
+  const utcLabel = isEffectively24h ? "24/7 (Always Open)" : `${startFormattedUtc} – ${endFormattedUtc} UTC`;
+  const multiZoneLabel = isEffectively24h
+    ? "24/7 (Always Open)"
+    : `${startFormattedGst} – ${endFormattedGst} GST (${startFormattedIst} – ${endFormattedIst} IST)`;
+
+  // Primary label defaults to GST with Dubai context
+  const label = isEffectively24h ? "24/7 (Always Open)" : `${startFormattedGst} – ${endFormattedGst} GST (Dubai Time)`;
 
   return {
     isOpen,
     is24h: isEffectively24h,
     startTime: `${String(startH).padStart(2, "0")}:${String(startM).padStart(2, "0")}`,
     endTime: `${String(endH).padStart(2, "0")}:${String(endM).padStart(2, "0")}`,
-    startFormatted,
-    endFormatted,
+    startFormatted: startFormattedIst,
+    endFormatted: endFormattedIst,
+    startFormattedGst,
+    endFormattedGst,
+    startFormattedIst,
+    endFormattedIst,
+    startFormattedUtc,
+    endFormattedUtc,
     label,
+    gstLabel,
+    istLabel,
+    utcLabel,
+    multiZoneLabel,
+    currentGstTime,
     currentIstTime,
+    currentUtcTime,
   };
 }
 

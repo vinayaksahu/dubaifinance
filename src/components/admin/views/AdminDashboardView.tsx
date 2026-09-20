@@ -22,6 +22,7 @@ export function AdminDashboardView({
   const safeStats = stats || {};
   const [showQueuedList, setShowQueuedList] = useState(false);
   const [contractSearch, setContractSearch] = useState("");
+  const [cycleTz, setCycleTz] = useState<"GST" | "IST" | "UTC">("GST");
   const upcoming = safeStats.upcomingCycle || {};
   const isClosingComplete = upcoming.isClosingCompleteToday !== false && (upcoming.pendingContractsToday === undefined || upcoming.pendingContractsToday === 0);
   const pendingContractsCount = upcoming.pendingContractsToday ?? 0;
@@ -159,11 +160,22 @@ export function AdminDashboardView({
             <div className="flex items-center gap-2 flex-wrap">
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-600 dark:text-amber-400 text-xs font-bold uppercase tracking-wider">
                 <Clock className="h-3.5 w-3.5 text-amber-500" />
-                <span>Dubai 12:01 AM GST Cycle</span>
+                <span>
+                  {cycleTz === "GST" && "Dubai 12:01 AM GST Cycle (Primary)"}
+                  {cycleTz === "IST" && "India 01:31 AM IST Cycle"}
+                  {cycleTz === "UTC" && "Global 08:01 PM UTC Cycle"}
+                </span>
               </span>
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 text-xs font-bold">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                <span>Next Cycle: {upcoming.nextCycleDubaiTime || "12:01 AM GST"}</span>
+                <span>
+                  Next Cycle:{" "}
+                  {cycleTz === "GST"
+                    ? upcoming.nextCycleDubaiTime || "12:01 AM GST"
+                    : cycleTz === "IST"
+                    ? upcoming.nextCycleIstTime || "01:31 AM IST"
+                    : upcoming.nextCycleUtcTime || "08:01 PM UTC"}
+                </span>
               </span>
             </div>
             <h2 className="font-display font-black text-xl sm:text-2xl text-slate-900 dark:text-slate-100">
@@ -175,8 +187,55 @@ export function AdminDashboardView({
           </div>
           
           <div className="flex flex-col sm:flex-row lg:flex-col items-start lg:items-end gap-2.5">
-            <div className="text-xs text-slate-500 dark:text-slate-400 bg-black/30 border border-slate-800 px-3 py-1.5 rounded-xl font-mono">
-              Dubai Time: <span className="text-amber-400 font-bold">{upcoming.currentDubaiTime || "Loading..."}</span>
+            {/* Timezone Switcher & Live Clock */}
+            <div className="flex flex-col items-start lg:items-end gap-1.5">
+              <div className="inline-flex items-center gap-1 p-1 rounded-xl bg-black/40 border border-slate-800 text-[11px]">
+                <button
+                  type="button"
+                  onClick={() => setCycleTz("GST")}
+                  className={`px-2.5 py-0.5 rounded-lg font-bold transition-all ${
+                    cycleTz === "GST"
+                      ? "bg-amber-500 text-black font-black"
+                      : "text-slate-400 hover:text-white"
+                  }`}
+                >
+                  🇦🇪 GST (Dubai)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setCycleTz("IST")}
+                  className={`px-2.5 py-0.5 rounded-lg font-bold transition-all ${
+                    cycleTz === "IST"
+                      ? "bg-blue-500 text-white font-black"
+                      : "text-slate-400 hover:text-white"
+                  }`}
+                >
+                  🇮🇳 IST
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setCycleTz("UTC")}
+                  className={`px-2.5 py-0.5 rounded-lg font-bold transition-all ${
+                    cycleTz === "UTC"
+                      ? "bg-cyan-500 text-black font-black"
+                      : "text-slate-400 hover:text-white"
+                  }`}
+                >
+                  🌐 UTC
+                </button>
+              </div>
+
+              <div className="text-xs text-slate-500 dark:text-slate-400 bg-black/30 border border-slate-800 px-3 py-1.5 rounded-xl font-mono">
+                {cycleTz === "GST" && (
+                  <>🇦🇪 Dubai: <span className="text-amber-400 font-bold">{upcoming.currentDubaiTime || "Loading..."}</span></>
+                )}
+                {cycleTz === "IST" && (
+                  <>🇮🇳 India: <span className="text-blue-400 font-bold">{upcoming.currentIstTime || "Loading..."}</span></>
+                )}
+                {cycleTz === "UTC" && (
+                  <>🌐 UTC: <span className="text-cyan-400 font-bold">{upcoming.currentUtcTime || "Loading..."}</span></>
+                )}
+              </div>
             </div>
 
             <div className="flex flex-col items-start lg:items-end gap-1.5">

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Clock, Sparkles, Rocket, Calendar, ShieldCheck } from "lucide-react";
+import { Clock, Sparkles, Rocket, Calendar, ShieldCheck, Globe } from "lucide-react";
 
 interface CountdownBannerProps {
   targetDateStr?: string;
@@ -12,6 +12,13 @@ export function CountdownBanner({
   targetDateStr = "2026-09-21T20:00",
   title = "OFFICIAL GLOBAL PLATFORM LAUNCH • SEPTEMBER 21, 2026",
 }: CountdownBannerProps) {
+  const [activeTz, setActiveTz] = useState<"GST" | "IST" | "UTC" | "ALL">("GST");
+  const [clocks, setClocks] = useState({
+    gst: "",
+    ist: "",
+    utc: "",
+  });
+
   const [timeLeft, setTimeLeft] = useState<{
     days: number;
     hours: number;
@@ -28,6 +35,24 @@ export function CountdownBanner({
 
   useEffect(() => {
     const calculateTime = () => {
+      // Live multi-timezone clocks
+      const nowDate = new Date();
+      const utcMs = nowDate.getTime() + nowDate.getTimezoneOffset() * 60000;
+      const formatT = (d: Date) => {
+        let h = d.getHours();
+        const m = String(d.getMinutes()).padStart(2, "0");
+        const s = String(d.getSeconds()).padStart(2, "0");
+        const p = h >= 12 ? "PM" : "AM";
+        h = h % 12 === 0 ? 12 : h % 12;
+        return `${String(h).padStart(2, "0")}:${m}:${s} ${p}`;
+      };
+
+      setClocks({
+        gst: formatT(new Date(utcMs + 4 * 3600000)),
+        ist: formatT(new Date(utcMs + 5.5 * 3600000)),
+        utc: formatT(new Date(utcMs)),
+      });
+
       // Parse target time with Dubai timezone (GST, UTC+04:00) support
       let targetTime: number;
       if (!targetDateStr) {
@@ -155,8 +180,99 @@ export function CountdownBanner({
             </div>
           )}
 
+          {/* Multi-Timezone Selector Bar */}
+          <div className="mt-4 mb-3 flex flex-wrap items-center justify-center gap-2">
+            <span className="text-[11px] font-bold text-slate-400 flex items-center gap-1.5 mr-1">
+              <Globe className="w-3.5 h-3.5 text-amber-400" />
+              <span>Timezone:</span>
+            </span>
+            <div className="inline-flex items-center gap-1 p-1 rounded-xl bg-black/60 border border-white/10 shadow-inner">
+              <button
+                type="button"
+                onClick={() => setActiveTz("GST")}
+                className={`px-3 py-1 rounded-lg text-xs font-black transition-all flex items-center gap-1.5 ${
+                  activeTz === "GST"
+                    ? "bg-amber-500 text-black shadow-md font-extrabold"
+                    : "text-slate-400 hover:text-white"
+                }`}
+              >
+                <span>🇦🇪 GST (Dubai • Primary)</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTz("IST")}
+                className={`px-3 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
+                  activeTz === "IST"
+                    ? "bg-blue-500 text-white shadow-md font-extrabold"
+                    : "text-slate-400 hover:text-white"
+                }`}
+              >
+                <span>🇮🇳 IST (India)</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTz("UTC")}
+                className={`px-3 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
+                  activeTz === "UTC"
+                    ? "bg-cyan-500 text-black shadow-md font-extrabold"
+                    : "text-slate-400 hover:text-white"
+                }`}
+              >
+                <span>🌐 UTC</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTz("ALL")}
+                className={`px-3 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
+                  activeTz === "ALL"
+                    ? "bg-purple-500 text-white shadow-md font-extrabold"
+                    : "text-slate-400 hover:text-white"
+                }`}
+              >
+                <span>All Zones</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Multi-Timezone Live Details */}
+          {activeTz === "ALL" ? (
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 max-w-2xl mx-auto my-3 text-left">
+              <div className="p-3 rounded-2xl bg-black/60 border border-amber-500/40 shadow-sm">
+                <div className="flex items-center justify-between text-[11px] font-bold text-amber-400 uppercase tracking-wider">
+                  <span>🇦🇪 Dubai (GST, UTC+4)</span>
+                  <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 font-black">PRIMARY</span>
+                </div>
+                <div className="text-sm font-black text-white mt-1">08:00 PM GST</div>
+                <div className="text-[11px] text-slate-400 mt-1 font-mono">Live Clock: <span className="text-amber-300 font-bold">{clocks.gst || "..."}</span></div>
+              </div>
+
+              <div className="p-3 rounded-2xl bg-black/60 border border-blue-500/40 shadow-sm">
+                <div className="text-[11px] font-bold text-blue-400 uppercase tracking-wider">
+                  🇮🇳 India (IST, UTC+5:30)
+                </div>
+                <div className="text-sm font-black text-white mt-1">09:30 PM IST</div>
+                <div className="text-[11px] text-slate-400 mt-1 font-mono">Live Clock: <span className="text-blue-300 font-bold">{clocks.ist || "..."}</span></div>
+              </div>
+
+              <div className="p-3 rounded-2xl bg-black/60 border border-cyan-500/40 shadow-sm">
+                <div className="text-[11px] font-bold text-cyan-400 uppercase tracking-wider">
+                  🌐 Global (UTC, UTC+0)
+                </div>
+                <div className="text-sm font-black text-white mt-1">04:00 PM UTC</div>
+                <div className="text-[11px] text-slate-400 mt-1 font-mono">Live Clock: <span className="text-cyan-300 font-bold">{clocks.utc || "..."}</span></div>
+              </div>
+            </div>
+          ) : (
+            <div className="my-2 inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-black/50 border border-white/10 text-xs font-medium text-slate-300">
+              <span className="text-slate-400">Live Clock:</span>
+              <span className="font-mono font-bold text-amber-400">
+                {activeTz === "GST" ? `${clocks.gst} GST` : activeTz === "IST" ? `${clocks.ist} IST` : `${clocks.utc} UTC`}
+              </span>
+            </div>
+          )}
+
           {/* Highlights Footer */}
-          <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-6 text-xs text-slate-400 pt-2 font-medium">
+          <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-6 text-xs text-slate-400 pt-3 font-medium border-t border-white/5 mt-2">
             <span className="flex items-center gap-1.5">
               <Calendar className="w-3.5 h-3.5 text-amber-400" />
               <span>Target: September 21, 2026</span>
@@ -164,7 +280,12 @@ export function CountdownBanner({
             <span className="hidden sm:inline text-slate-600">&bull;</span>
             <span className="flex items-center gap-1.5">
               <Clock className="w-3.5 h-3.5 text-cyan-400" />
-              <span>08:00 PM GST (Dubai Time) Live Activation</span>
+              <span>
+                {activeTz === "GST" && "08:00 PM GST (Dubai Time • Primary) Live Activation"}
+                {activeTz === "IST" && "09:30 PM IST (India Time) Live Activation"}
+                {activeTz === "UTC" && "04:00 PM UTC (Universal Time) Live Activation"}
+                {activeTz === "ALL" && "08:00 PM GST / 09:30 PM IST / 04:00 PM UTC Live Activation"}
+              </span>
             </span>
             <span className="hidden sm:inline text-slate-600">&bull;</span>
             <span className="flex items-center gap-1.5">

@@ -687,9 +687,21 @@ export function ActionModals({ user, onRefresh }: { user: any; onRefresh: () => 
                 </p>
 
                 {!windowStatus.isOpen && (
-                  <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs font-semibold mb-4 flex items-center gap-2">
-                    <Clock className="w-4 h-4 shrink-0" />
-                    Notice: Withdrawal window is open daily during {windowStatus.label}. (Current IST Time: {windowStatus.currentIstTime})
+                  <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs font-semibold mb-4 space-y-1.5">
+                    <div className="flex items-center gap-2">
+                      <Clock className="w-4 h-4 shrink-0 text-amber-400" />
+                      <span className="font-bold">Notice: Withdrawal Window is Currently Closed</span>
+                    </div>
+                    <div className="pl-6 space-y-1 text-[11px]">
+                      <div>
+                        🇦🇪 <strong className="text-amber-200">GST (Dubai • Primary):</strong> {windowStatus.gstLabel}{" "}
+                        <span className="text-slate-400 font-mono">(Live: {windowStatus.currentGstTime})</span>
+                      </div>
+                      <div>
+                        🇮🇳 <strong className="text-blue-300">IST (India):</strong> {windowStatus.istLabel}{" "}
+                        <span className="text-slate-400 font-mono">(Live: {windowStatus.currentIstTime})</span>
+                      </div>
+                    </div>
                   </div>
                 )}
 

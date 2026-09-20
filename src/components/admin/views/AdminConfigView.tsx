@@ -879,13 +879,20 @@ export function AdminConfigView() {
                   Time when withdrawal button becomes active and open
                 </p>
               </div>
-              <input
-                type="time"
-                value={currentStartTime}
-                disabled={is24hActive}
-                onChange={(e) => updateStartTime(e.target.value)}
-                className="w-full bg-[#081023] border border-slate-700 rounded-xl px-3 py-2 text-white font-mono text-sm focus:outline-none focus:border-purple-500 disabled:opacity-40 disabled:cursor-not-allowed"
-              />
+              <div>
+                <input
+                  type="time"
+                  value={currentStartTime}
+                  disabled={is24hActive}
+                  onChange={(e) => updateStartTime(e.target.value)}
+                  className="w-full bg-[#081023] border border-slate-700 rounded-xl px-3 py-2 text-white font-mono text-sm focus:outline-none focus:border-purple-500 disabled:opacity-40 disabled:cursor-not-allowed"
+                />
+                {!is24hActive && (
+                  <div className="mt-2 text-[11px] font-mono text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2.5 py-1 rounded-lg">
+                    🇦🇪 GST (Dubai): <strong>{previewStatus.startFormattedGst}</strong>
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* End Time Picker */}
@@ -898,13 +905,20 @@ export function AdminConfigView() {
                   Time when withdrawal button automatically closes
                 </p>
               </div>
-              <input
-                type="time"
-                value={currentEndTime}
-                disabled={is24hActive}
-                onChange={(e) => updateEndTime(e.target.value)}
-                className="w-full bg-[#081023] border border-slate-700 rounded-xl px-3 py-2 text-white font-mono text-sm focus:outline-none focus:border-purple-500 disabled:opacity-40 disabled:cursor-not-allowed"
-              />
+              <div>
+                <input
+                  type="time"
+                  value={currentEndTime}
+                  disabled={is24hActive}
+                  onChange={(e) => updateEndTime(e.target.value)}
+                  className="w-full bg-[#081023] border border-slate-700 rounded-xl px-3 py-2 text-white font-mono text-sm focus:outline-none focus:border-purple-500 disabled:opacity-40 disabled:cursor-not-allowed"
+                />
+                {!is24hActive && (
+                  <div className="mt-2 text-[11px] font-mono text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2.5 py-1 rounded-lg">
+                    🇦🇪 GST (Dubai): <strong>{previewStatus.endFormattedGst}</strong>
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Live Member Portal Preview */}
@@ -912,10 +926,16 @@ export function AdminConfigView() {
               <div>
                 <div className="flex items-center justify-between mb-1">
                   <span className="text-xs font-bold text-purple-300">Live Member Portal View</span>
-                  <span className="text-[10px] font-mono text-slate-400">Current IST: {previewStatus.currentIstTime}</span>
+                  <div className="text-[10px] font-mono text-slate-400 flex flex-col items-end">
+                    <span>GST: {previewStatus.currentGstTime}</span>
+                    <span>IST: {previewStatus.currentIstTime}</span>
+                  </div>
                 </div>
-                <div className="text-sm font-black text-white mt-1">
-                  {previewStatus.label}
+                <div className="text-sm font-black text-amber-300 mt-1">
+                  🇦🇪 {previewStatus.gstLabel}
+                </div>
+                <div className="text-xs font-semibold text-slate-400 mt-0.5">
+                  🇮🇳 {previewStatus.istLabel}
                 </div>
               </div>
               <div className="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs">
@@ -939,35 +959,35 @@ export function AdminConfigView() {
               onClick={() => applyPreset("24h")}
               className="px-3.5 py-1.5 rounded-xl bg-purple-950/60 hover:bg-purple-900/60 text-purple-300 border border-purple-500/30 text-xs font-semibold transition-all"
             >
-              ⚡ 24 Hours Always Open (00:00 - 23:59)
+              ⚡ 24 Hours Always Open (00:00 - 23:59 GST / IST)
             </button>
             <button
               type="button"
               onClick={() => applyPreset("default")}
               className="px-3.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 text-xs font-semibold transition-all"
             >
-              🕒 Default (10:00 AM - 02:00 PM)
+              🕒 Standard (08:30 AM – 12:30 PM GST / 10:00 AM – 02:00 PM IST)
             </button>
             <button
               type="button"
               onClick={() => applyPreset("morning")}
               className="px-3.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 text-xs font-semibold transition-all"
             >
-              🌅 Morning (09:00 AM - 01:00 PM)
+              🌅 Morning (07:30 AM – 11:30 AM GST / 09:00 AM – 01:00 PM IST)
             </button>
             <button
               type="button"
               onClick={() => applyPreset("afternoon")}
               className="px-3.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 text-xs font-semibold transition-all"
             >
-              🌇 Afternoon (12:00 PM - 06:00 PM)
+              🌇 Afternoon (10:30 AM – 04:30 PM GST / 12:00 PM – 06:00 PM IST)
             </button>
             <button
               type="button"
               onClick={() => applyPreset("evening")}
               className="px-3.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 text-xs font-semibold transition-all"
             >
-              🌙 Evening (04:00 PM - 10:00 PM)
+              🌙 Evening (02:30 PM – 08:30 PM GST / 04:00 PM – 10:00 PM IST)
             </button>
           </div>
         </div>

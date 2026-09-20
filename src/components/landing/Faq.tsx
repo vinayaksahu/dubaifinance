@@ -25,7 +25,7 @@ export function Faq() {
     },
     {
       q: "When can I place daily withdrawal requests?",
-      a: "Withdrawals are open 7 days a week strictly between 10:00 AM and 02:00 PM (IST). Requests placed during this window are queued for automated blockchain dispatch without delay.",
+      a: "Withdrawals are open 7 days a week strictly between 08:30 AM and 12:30 PM GST (Dubai Time • Primary) / 10:00 AM and 02:00 PM IST (India Time). Requests placed during this window are queued for automated blockchain dispatch without delay.",
     },
     {
       q: "How does the 12-Level Team Royalty income work?",

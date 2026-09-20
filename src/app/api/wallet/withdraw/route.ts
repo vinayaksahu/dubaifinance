@@ -35,7 +35,7 @@ export async function POST(req: NextRequest) {
 
     if (!windowStatus.isOpen) {
       return NextResponse.json({
-        error: `Withdrawal window is closed. Withdrawals are accepted during ${windowStatus.label}. (Current IST Time: ${windowStatus.currentIstTime})`,
+        error: `Withdrawal window is closed. Withdrawals are accepted daily during ${windowStatus.gstLabel} (Dubai Time) / ${windowStatus.istLabel} (India Time). (Current Dubai Time: ${windowStatus.currentGstTime} GST)`,
       }, { status: 403 });
     }
 
