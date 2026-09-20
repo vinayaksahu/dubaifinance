@@ -31,7 +31,17 @@ import {
   Clock,
   ShieldCheck,
   FileText,
-  Edit
+  Edit,
+  Activity,
+  Globe,
+  Laptop,
+  Smartphone,
+  Tablet as TabletIcon,
+  MapPin,
+  Filter,
+  Monitor,
+  CheckCircle,
+  XCircle
 } from "lucide-react";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 
@@ -74,11 +84,13 @@ interface InspectData {
   deposits: any[];
   withdrawals: any[];
   activeContracts: any[];
+  loginSessions?: any[];
+  activityLogs?: any[];
 }
 
 export default function SuperRootAdminPage() {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<"admins" | "inspect" | "config" | "wallet">("admins");
+  const [activeTab, setActiveTab] = useState<"admins" | "inspect" | "config" | "wallet" | "audit">("admins");
   const [stats, setStats] = useState<GlobalStats | null>(null);
   const [admins, setAdmins] = useState<AdminItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -93,6 +105,30 @@ export default function SuperRootAdminPage() {
   const [selectedAdminId, setSelectedAdminId] = useState<string | null>(null);
   const [inspectData, setInspectData] = useState<InspectData | null>(null);
   const [inspectLoading, setInspectLoading] = useState(false);
+  const [inspectSubTab, setInspectSubTab] = useState<"members" | "deposits" | "withdrawals" | "contracts" | "sessions" | "logs">("members");
+
+  // Audit Intelligence Hub states
+  const [auditSubTab, setAuditSubTab] = useState<"sessions" | "activities">("sessions");
+  const [auditAdminFilter, setAuditAdminFilter] = useState<string>("all");
+  const [auditRoleFilter, setAuditRoleFilter] = useState<string>("all");
+  const [auditCategoryFilter, setAuditCategoryFilter] = useState<string>("all");
+  const [auditTimeframe, setAuditTimeframe] = useState<string>("all");
+  const [auditSearch, setAuditSearch] = useState<string>("");
+  const [auditData, setAuditData] = useState<{
+    sessions: any[];
+    totalSessions: number;
+    activities: any[];
+    totalActivities: number;
+    adminsList: any[];
+    stats: {
+      totalSessions: number;
+      totalActivities: number;
+      desktopCount: number;
+      mobileCount: number;
+      tabletCount: number;
+    };
+  } | null>(null);
+  const [auditLoading, setAuditLoading] = useState(false);
 
   // System Config states
   const [configs, setConfigs] = useState<Record<string, any>>({});
@@ -204,6 +240,35 @@ export default function SuperRootAdminPage() {
       setInspectLoading(false);
     }
   };
+
+  const loadAuditLogs = async () => {
+    setAuditLoading(true);
+    try {
+      const params = new URLSearchParams();
+      if (auditAdminFilter !== "all") params.set("adminId", auditAdminFilter);
+      if (auditRoleFilter !== "all") params.set("role", auditRoleFilter);
+      if (auditCategoryFilter !== "all") params.set("category", auditCategoryFilter);
+      if (auditTimeframe !== "all") params.set("timeframe", auditTimeframe);
+      if (auditSearch.trim()) params.set("search", auditSearch.trim());
+      params.set("limit", "100");
+
+      const res = await fetch(`/api/superadmin/audit-logs?${params.toString()}`);
+      const data = await res.json();
+      if (res.ok) {
+        setAuditData(data);
+      }
+    } catch (e) {
+      console.error("Audit log load error:", e);
+    } finally {
+      setAuditLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === "audit") {
+      loadAuditLogs();
+    }
+  }, [activeTab, auditAdminFilter, auditRoleFilter, auditCategoryFilter, auditTimeframe]);
 
   useEffect(() => {
     loadAllData();
@@ -629,6 +694,21 @@ export default function SuperRootAdminPage() {
 
           <button
             onClick={() => {
+              setActiveTab("audit");
+              loadAuditLogs();
+            }}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition font-mono ${
+              activeTab === "audit"
+                ? "bg-rose-500/20 text-rose-300 border border-rose-500/40 shadow-lg shadow-rose-500/10"
+                : "text-slate-400 hover:text-white hover:bg-slate-900"
+            }`}
+          >
+            <ShieldAlert className="w-4 h-4 text-rose-400" />
+            Security &amp; Audit Intelligence
+          </button>
+
+          <button
+            onClick={() => {
               setActiveTab("config");
               loadConfigs();
             }}
@@ -906,68 +986,922 @@ export default function SuperRootAdminPage() {
                   </div>
                 </div>
 
-                {/* Branch Members Table */}
-                <div className="bg-slate-900/90 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
-                  <div className="p-4 border-b border-slate-800 flex items-center justify-between">
-                    <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                      <Users className="w-4 h-4 text-cyan-400" />
-                      Team Members Under {inspectData.admin.customId} ({inspectData.members.length} Total)
-                    </h3>
-                  </div>
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-left text-xs">
-                      <thead className="bg-slate-950/60 text-slate-400 uppercase font-mono tracking-wider border-b border-slate-800 text-[11px]">
-                        <tr>
-                          <th className="py-3 px-4">Member ID &amp; Name</th>
-                          <th className="py-3 px-4">Sponsor</th>
-                          <th className="py-3 px-4">Fund Wallet</th>
-                          <th className="py-3 px-4">Income Wallet</th>
-                          <th className="py-3 px-4">Status</th>
-                          <th className="py-3 px-4">Joined Date</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-slate-800/60">
-                        {inspectData.members.length === 0 ? (
+                {/* Branch Inspector Sub-Tabs */}
+                <div className="flex flex-wrap items-center gap-2 border-b border-slate-800 pb-2">
+                  <button
+                    onClick={() => setInspectSubTab("members")}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition font-mono ${
+                      inspectSubTab === "members"
+                        ? "bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 shadow-sm"
+                        : "text-slate-400 hover:text-white hover:bg-slate-900"
+                    }`}
+                  >
+                    <Users className="w-3.5 h-3.5" />
+                    Team Members ({inspectData.members.length})
+                  </button>
+
+                  <button
+                    onClick={() => setInspectSubTab("sessions")}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition font-mono ${
+                      inspectSubTab === "sessions"
+                        ? "bg-rose-500/20 text-rose-300 border border-rose-500/40 shadow-sm"
+                        : "text-slate-400 hover:text-white hover:bg-slate-900"
+                    }`}
+                  >
+                    <ShieldAlert className="w-3.5 h-3.5 text-rose-400" />
+                    Login Sessions &amp; Devices ({inspectData.loginSessions?.length || 0})
+                  </button>
+
+                  <button
+                    onClick={() => setInspectSubTab("logs")}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition font-mono ${
+                      inspectSubTab === "logs"
+                        ? "bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow-sm"
+                        : "text-slate-400 hover:text-white hover:bg-slate-900"
+                    }`}
+                  >
+                    <Activity className="w-3.5 h-3.5 text-amber-400" />
+                    Function Logs ({inspectData.activityLogs?.length || 0})
+                  </button>
+
+                  <button
+                    onClick={() => setInspectSubTab("deposits")}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition font-mono ${
+                      inspectSubTab === "deposits"
+                        ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shadow-sm"
+                        : "text-slate-400 hover:text-white hover:bg-slate-900"
+                    }`}
+                  >
+                    <Wallet className="w-3.5 h-3.5" />
+                    Deposits ({inspectData.deposits.length})
+                  </button>
+
+                  <button
+                    onClick={() => setInspectSubTab("withdrawals")}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition font-mono ${
+                      inspectSubTab === "withdrawals"
+                        ? "bg-purple-500/20 text-purple-300 border border-purple-500/40 shadow-sm"
+                        : "text-slate-400 hover:text-white hover:bg-slate-900"
+                    }`}
+                  >
+                    <Banknote className="w-3.5 h-3.5" />
+                    Withdrawals ({inspectData.withdrawals.length})
+                  </button>
+
+                  <button
+                    onClick={() => setInspectSubTab("contracts")}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition font-mono ${
+                      inspectSubTab === "contracts"
+                        ? "bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow-sm"
+                        : "text-slate-400 hover:text-white hover:bg-slate-900"
+                    }`}
+                  >
+                    <TrendingUp className="w-3.5 h-3.5" />
+                    Contracts ({inspectData.activeContracts.length})
+                  </button>
+                </div>
+
+                {/* Sub-Tab 1: Members Table */}
+                {inspectSubTab === "members" && (
+                  <div className="bg-slate-900/90 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+                    <div className="p-4 border-b border-slate-800 flex items-center justify-between">
+                      <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                        <Users className="w-4 h-4 text-cyan-400" />
+                        Team Members Under {inspectData.admin.customId} ({inspectData.members.length} Total)
+                      </h3>
+                    </div>
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-left text-xs">
+                        <thead className="bg-slate-950/60 text-slate-400 uppercase font-mono tracking-wider border-b border-slate-800 text-[11px]">
                           <tr>
-                            <td colSpan={6} className="text-center py-10 text-slate-500 font-mono">
-                              No members registered under this branch yet.
-                            </td>
+                            <th className="py-3 px-4">Member ID &amp; Name</th>
+                            <th className="py-3 px-4">Sponsor</th>
+                            <th className="py-3 px-4">Fund Wallet</th>
+                            <th className="py-3 px-4">Income Wallet</th>
+                            <th className="py-3 px-4">Status</th>
+                            <th className="py-3 px-4">Joined Date</th>
                           </tr>
-                        ) : (
-                          inspectData.members.map((m) => (
-                            <tr key={m.id} className="hover:bg-slate-800/30">
-                              <td className="py-3 px-4">
-                                <p className="font-bold text-white font-mono">{m.customId}</p>
-                                <p className="text-slate-400">{m.fullName}</p>
-                              </td>
-                              <td className="py-3 px-4 font-mono text-slate-300">
-                                {m.sponsor ? `${m.sponsor.customId} (${m.sponsor.fullName})` : "Direct/Root"}
-                              </td>
-                              <td className="py-3 px-4 font-mono text-cyan-400 font-bold">
-                                ${Number(m.fundBalance).toFixed(2)}
-                              </td>
-                              <td className="py-3 px-4 font-mono text-emerald-400 font-bold">
-                                ${Number(m.incomeBalance).toFixed(2)}
-                              </td>
-                              <td className="py-3 px-4">
-                                <span className={`px-2 py-0.5 rounded text-[10px] font-bold font-mono ${
-                                  m.status === "ACTIVE" ? "bg-emerald-500/10 text-emerald-400" : "bg-slate-800 text-slate-400"
-                                }`}>
-                                  {m.status}
-                                </span>
-                              </td>
-                              <td className="py-3 px-4 text-slate-400 font-mono">
-                                {new Date(m.createdAt).toISOString().split("T")[0]}
+                        </thead>
+                        <tbody className="divide-y divide-slate-800/60">
+                          {inspectData.members.length === 0 ? (
+                            <tr>
+                              <td colSpan={6} className="text-center py-10 text-slate-500 font-mono">
+                                No members registered under this branch yet.
                               </td>
                             </tr>
-                          ))
-                        )}
-                      </tbody>
-                    </table>
+                          ) : (
+                            inspectData.members.map((m) => (
+                              <tr key={m.id} className="hover:bg-slate-800/30">
+                                <td className="py-3 px-4">
+                                  <p className="font-bold text-white font-mono">{m.customId}</p>
+                                  <p className="text-slate-400">{m.fullName}</p>
+                                </td>
+                                <td className="py-3 px-4 font-mono text-slate-300">
+                                  {m.sponsor ? `${m.sponsor.customId} (${m.sponsor.fullName})` : "Direct/Root"}
+                                </td>
+                                <td className="py-3 px-4 font-mono text-cyan-400 font-bold">
+                                  ${Number(m.fundBalance).toFixed(2)}
+                                </td>
+                                <td className="py-3 px-4 font-mono text-emerald-400 font-bold">
+                                  ${Number(m.incomeBalance).toFixed(2)}
+                                </td>
+                                <td className="py-3 px-4">
+                                  <span className={`px-2 py-0.5 rounded text-[10px] font-bold font-mono ${
+                                    m.status === "ACTIVE" ? "bg-emerald-500/10 text-emerald-400" : "bg-slate-800 text-slate-400"
+                                  }`}>
+                                    {m.status}
+                                  </span>
+                                </td>
+                                <td className="py-3 px-4 text-slate-400 font-mono">
+                                  {new Date(m.createdAt).toISOString().split("T")[0]}
+                                </td>
+                              </tr>
+                            ))
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
                   </div>
-                </div>
+                )}
+
+                {/* Sub-Tab 2: Login Sessions & Devices */}
+                {inspectSubTab === "sessions" && (
+                  <div className="bg-slate-900/90 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+                    <div className="p-4 border-b border-slate-800 flex items-center justify-between">
+                      <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                        <ShieldAlert className="w-4 h-4 text-rose-400" />
+                        Login Sessions &amp; Device Telemetry ({inspectData.loginSessions?.length || 0} Recent Sessions)
+                      </h3>
+                      <span className="text-[11px] text-slate-400 font-mono">
+                        Includes Admin {inspectData.admin.customId} &amp; their downline members
+                      </span>
+                    </div>
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-left text-xs">
+                        <thead className="bg-slate-950/60 text-slate-400 uppercase font-mono tracking-wider border-b border-slate-800 text-[11px]">
+                          <tr>
+                            <th className="py-3 px-4">User</th>
+                            <th className="py-3 px-4">Portal &amp; Status</th>
+                            <th className="py-3 px-4">IP Address &amp; Location</th>
+                            <th className="py-3 px-4">Device &amp; Browser</th>
+                            <th className="py-3 px-4">Timestamp</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-800/60">
+                          {(!inspectData.loginSessions || inspectData.loginSessions.length === 0) ? (
+                            <tr>
+                              <td colSpan={5} className="text-center py-10 text-slate-500 font-mono">
+                                No login sessions recorded for this branch yet.
+                              </td>
+                            </tr>
+                          ) : (
+                            inspectData.loginSessions.map((s: any) => (
+                              <tr key={s.id} className="hover:bg-slate-800/30">
+                                <td className="py-3 px-4">
+                                  <div className="flex items-center gap-2">
+                                    <div>
+                                      <p className="font-bold text-white font-mono">{s.user?.customId || "Unknown"}</p>
+                                      <p className="text-slate-400 text-[11px]">{s.user?.fullName}</p>
+                                    </div>
+                                    <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold font-mono ${
+                                      s.user?.role === "ADMIN" || s.user?.role === "SUPER_ADMIN"
+                                        ? "bg-rose-500/20 text-rose-300 border border-rose-500/30"
+                                        : "bg-cyan-500/20 text-cyan-300 border border-cyan-500/30"
+                                    }`}>
+                                      {s.user?.role || "USER"}
+                                    </span>
+                                  </div>
+                                </td>
+                                <td className="py-3 px-4">
+                                  <div className="flex items-center gap-1.5">
+                                    <span className="px-2 py-0.5 rounded bg-slate-800 text-slate-300 text-[10px] font-mono font-bold">
+                                      {s.portal}
+                                    </span>
+                                    {s.status === "SUCCESS" ? (
+                                      <span className="flex items-center gap-1 text-emerald-400 font-bold font-mono text-[10px]">
+                                        <CheckCircle className="w-3 h-3 text-emerald-400" /> SUCCESS
+                                      </span>
+                                    ) : (
+                                      <span className="flex items-center gap-1 text-rose-400 font-bold font-mono text-[10px]" title={s.failureReason || "Failed"}>
+                                        <XCircle className="w-3 h-3 text-rose-400" /> FAILED
+                                      </span>
+                                    )}
+                                  </div>
+                                  {s.failureReason && (
+                                    <p className="text-[10px] text-rose-400/80 font-mono mt-0.5">{s.failureReason}</p>
+                                  )}
+                                </td>
+                                <td className="py-3 px-4">
+                                  <p className="font-mono text-white font-bold">{s.ipAddress}</p>
+                                  <p className="text-slate-400 text-[11px] flex items-center gap-1 mt-0.5">
+                                    <MapPin className="w-3 h-3 text-rose-400 shrink-0" />
+                                    {s.city}, {s.country}
+                                  </p>
+                                </td>
+                                <td className="py-3 px-4">
+                                  <div className="flex items-center gap-1.5">
+                                    {s.device === "Mobile" ? (
+                                      <Smartphone className="w-3.5 h-3.5 text-amber-400" />
+                                    ) : s.device === "Tablet" ? (
+                                      <TabletIcon className="w-3.5 h-3.5 text-purple-400" />
+                                    ) : (
+                                      <Laptop className="w-3.5 h-3.5 text-cyan-400" />
+                                    )}
+                                    <span className="font-bold text-slate-200">{s.device}</span>
+                                    <span className="text-slate-500">·</span>
+                                    <span className="text-slate-400">{s.os}</span>
+                                  </div>
+                                  <p className="text-[11px] text-slate-500 mt-0.5">{s.browser}</p>
+                                </td>
+                                <td className="py-3 px-4 text-slate-400 font-mono text-[11px]">
+                                  {new Date(s.createdAt).toLocaleString()}
+                                </td>
+                              </tr>
+                            ))
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
+
+                {/* Sub-Tab 3: Function Logs */}
+                {inspectSubTab === "logs" && (
+                  <div className="bg-slate-900/90 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+                    <div className="p-4 border-b border-slate-800 flex items-center justify-between">
+                      <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                        <Activity className="w-4 h-4 text-amber-400" />
+                        Function Usage &amp; Action Logs ({inspectData.activityLogs?.length || 0} Records)
+                      </h3>
+                      <span className="text-[11px] text-slate-400 font-mono">
+                        Audited function calls by {inspectData.admin.customId} &amp; team
+                      </span>
+                    </div>
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-left text-xs">
+                        <thead className="bg-slate-950/60 text-slate-400 uppercase font-mono tracking-wider border-b border-slate-800 text-[11px]">
+                          <tr>
+                            <th className="py-3 px-4">User</th>
+                            <th className="py-3 px-4">Function / Action</th>
+                            <th className="py-3 px-4">Details &amp; Description</th>
+                            <th className="py-3 px-4">Client Telemetry</th>
+                            <th className="py-3 px-4">Timestamp</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-800/60">
+                          {(!inspectData.activityLogs || inspectData.activityLogs.length === 0) ? (
+                            <tr>
+                              <td colSpan={5} className="text-center py-10 text-slate-500 font-mono">
+                                No activity logs recorded for this branch yet.
+                              </td>
+                            </tr>
+                          ) : (
+                            inspectData.activityLogs.map((l: any) => (
+                              <tr key={l.id} className="hover:bg-slate-800/30">
+                                <td className="py-3 px-4">
+                                  <div className="flex items-center gap-2">
+                                    <div>
+                                      <p className="font-bold text-white font-mono">{l.user?.customId || "Unknown"}</p>
+                                      <p className="text-slate-400 text-[11px]">{l.user?.fullName}</p>
+                                    </div>
+                                    <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold font-mono ${
+                                      l.user?.role === "ADMIN" || l.user?.role === "SUPER_ADMIN"
+                                        ? "bg-rose-500/20 text-rose-300 border border-rose-500/30"
+                                        : "bg-cyan-500/20 text-cyan-300 border border-cyan-500/30"
+                                    }`}>
+                                      {l.user?.role || "USER"}
+                                    </span>
+                                  </div>
+                                </td>
+                                <td className="py-3 px-4">
+                                  <span className={`px-2 py-0.5 rounded text-[10px] font-bold font-mono ${
+                                    l.category === "FINANCIAL"
+                                      ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"
+                                      : l.category === "SECURITY"
+                                      ? "bg-rose-500/20 text-rose-300 border border-rose-500/30"
+                                      : l.category === "ADMIN"
+                                      ? "bg-purple-500/20 text-purple-300 border border-purple-500/30"
+                                      : l.category === "PROFILE"
+                                      ? "bg-amber-500/20 text-amber-300 border border-amber-500/30"
+                                      : "bg-blue-500/20 text-blue-300 border border-blue-500/30"
+                                  }`}>
+                                    {l.action}
+                                  </span>
+                                  <p className="text-[10px] text-slate-500 font-mono mt-1">{l.category}</p>
+                                </td>
+                                <td className="py-3 px-4">
+                                  <p className="text-white font-medium text-xs max-w-md">{l.description}</p>
+                                </td>
+                                <td className="py-3 px-4 font-mono text-[11px]">
+                                  <p className="text-slate-300">{l.ipAddress}</p>
+                                  <p className="text-slate-500">{l.device} · {l.city}, {l.country}</p>
+                                </td>
+                                <td className="py-3 px-4 text-slate-400 font-mono text-[11px]">
+                                  {new Date(l.createdAt).toLocaleString()}
+                                </td>
+                              </tr>
+                            ))
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
+
+                {/* Sub-Tab 4: Deposits */}
+                {inspectSubTab === "deposits" && (
+                  <div className="bg-slate-900/90 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+                    <div className="p-4 border-b border-slate-800 flex items-center justify-between">
+                      <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                        <Wallet className="w-4 h-4 text-emerald-400" />
+                        Deposit Records ({inspectData.deposits.length} Total)
+                      </h3>
+                    </div>
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-left text-xs">
+                        <thead className="bg-slate-950/60 text-slate-400 uppercase font-mono tracking-wider border-b border-slate-800 text-[11px]">
+                          <tr>
+                            <th className="py-3 px-4">Member</th>
+                            <th className="py-3 px-4">Amount</th>
+                            <th className="py-3 px-4">TxHash / Proof</th>
+                            <th className="py-3 px-4">Status</th>
+                            <th className="py-3 px-4">Date</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-800/60">
+                          {inspectData.deposits.length === 0 ? (
+                            <tr>
+                              <td colSpan={5} className="text-center py-10 text-slate-500 font-mono">
+                                No deposits found for this branch.
+                              </td>
+                            </tr>
+                          ) : (
+                            inspectData.deposits.map((d: any) => (
+                              <tr key={d.id} className="hover:bg-slate-800/30">
+                                <td className="py-3 px-4">
+                                  <p className="font-bold text-white font-mono">{d.user?.customId}</p>
+                                  <p className="text-slate-400">{d.user?.fullName}</p>
+                                </td>
+                                <td className="py-3 px-4 font-mono text-emerald-400 font-bold">
+                                  ${Number(d.amountInUsdt).toFixed(2)} USDT
+                                </td>
+                                <td className="py-3 px-4 font-mono text-slate-400 text-[11px]">
+                                  {d.txHash ? `${d.txHash.slice(0, 14)}...` : "Manual"}
+                                </td>
+                                <td className="py-3 px-4">
+                                  <span className={`px-2 py-0.5 rounded text-[10px] font-bold font-mono ${
+                                    d.status === "APPROVED"
+                                      ? "bg-emerald-500/15 text-emerald-400"
+                                      : d.status === "PENDING"
+                                      ? "bg-amber-500/15 text-amber-400"
+                                      : "bg-rose-500/15 text-rose-400"
+                                  }`}>
+                                    {d.status}
+                                  </span>
+                                </td>
+                                <td className="py-3 px-4 text-slate-400 font-mono">
+                                  {new Date(d.createdAt).toISOString().split("T")[0]}
+                                </td>
+                              </tr>
+                            ))
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
+
+                {/* Sub-Tab 5: Withdrawals */}
+                {inspectSubTab === "withdrawals" && (
+                  <div className="bg-slate-900/90 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+                    <div className="p-4 border-b border-slate-800 flex items-center justify-between">
+                      <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                        <Banknote className="w-4 h-4 text-purple-400" />
+                        Withdrawal Requests &amp; Payouts ({inspectData.withdrawals.length} Total)
+                      </h3>
+                    </div>
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-left text-xs">
+                        <thead className="bg-slate-950/60 text-slate-400 uppercase font-mono tracking-wider border-b border-slate-800 text-[11px]">
+                          <tr>
+                            <th className="py-3 px-4">Member</th>
+                            <th className="py-3 px-4">Gross Amount</th>
+                            <th className="py-3 px-4">Admin Fee</th>
+                            <th className="py-3 px-4">Net Payout</th>
+                            <th className="py-3 px-4">Destination</th>
+                            <th className="py-3 px-4">Status</th>
+                            <th className="py-3 px-4">Date</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-800/60">
+                          {inspectData.withdrawals.length === 0 ? (
+                            <tr>
+                              <td colSpan={7} className="text-center py-10 text-slate-500 font-mono">
+                                No withdrawal requests found for this branch.
+                              </td>
+                            </tr>
+                          ) : (
+                            inspectData.withdrawals.map((w: any) => (
+                              <tr key={w.id} className="hover:bg-slate-800/30">
+                                <td className="py-3 px-4">
+                                  <p className="font-bold text-white font-mono">{w.user?.customId}</p>
+                                  <p className="text-slate-400">{w.user?.fullName}</p>
+                                </td>
+                                <td className="py-3 px-4 font-mono text-white font-bold">
+                                  ${Number(w.amountInUsdt).toFixed(2)}
+                                </td>
+                                <td className="py-3 px-4 font-mono text-amber-400 font-bold">
+                                  ${Number(w.feeAmount || 0).toFixed(2)}
+                                </td>
+                                <td className="py-3 px-4 font-mono text-emerald-400 font-bold">
+                                  ${Number(w.netAmount || w.amountInUsdt).toFixed(2)}
+                                </td>
+                                <td className="py-3 px-4 font-mono text-slate-400 text-[11px]">
+                                  {w.toAddress ? `${w.toAddress.slice(0, 10)}...` : "—"}
+                                </td>
+                                <td className="py-3 px-4">
+                                  <span className={`px-2 py-0.5 rounded text-[10px] font-bold font-mono ${
+                                    w.status === "PROCESSED"
+                                      ? "bg-emerald-500/15 text-emerald-400"
+                                      : w.status === "PENDING"
+                                      ? "bg-amber-500/15 text-amber-400"
+                                      : "bg-rose-500/15 text-rose-400"
+                                  }`}>
+                                    {w.status}
+                                  </span>
+                                </td>
+                                <td className="py-3 px-4 text-slate-400 font-mono">
+                                  {new Date(w.createdAt).toISOString().split("T")[0]}
+                                </td>
+                              </tr>
+                            ))
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
+
+                {/* Sub-Tab 6: Contracts */}
+                {inspectSubTab === "contracts" && (
+                  <div className="bg-slate-900/90 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+                    <div className="p-4 border-b border-slate-800 flex items-center justify-between">
+                      <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                        <TrendingUp className="w-4 h-4 text-amber-400" />
+                        Active Investment Contracts ({inspectData.activeContracts.length} Total)
+                      </h3>
+                    </div>
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-left text-xs">
+                        <thead className="bg-slate-950/60 text-slate-400 uppercase font-mono tracking-wider border-b border-slate-800 text-[11px]">
+                          <tr>
+                            <th className="py-3 px-4">Member</th>
+                            <th className="py-3 px-4">Package</th>
+                            <th className="py-3 px-4">Invested Amount</th>
+                            <th className="py-3 px-4">Daily ROI</th>
+                            <th className="py-3 px-4">Days Paid / Tenure</th>
+                            <th className="py-3 px-4">Maturity Date</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-800/60">
+                          {inspectData.activeContracts.length === 0 ? (
+                            <tr>
+                              <td colSpan={6} className="text-center py-10 text-slate-500 font-mono">
+                                No active investment contracts for this branch.
+                              </td>
+                            </tr>
+                          ) : (
+                            inspectData.activeContracts.map((c: any) => (
+                              <tr key={c.id} className="hover:bg-slate-800/30">
+                                <td className="py-3 px-4">
+                                  <p className="font-bold text-white font-mono">{c.user?.customId}</p>
+                                  <p className="text-slate-400">{c.user?.fullName}</p>
+                                </td>
+                                <td className="py-3 px-4 font-mono font-bold text-amber-300">
+                                  {c.packageType === "BASIC_SAVING" ? "Basic Saving" : "Fix Deposit"}
+                                </td>
+                                <td className="py-3 px-4 font-mono text-emerald-400 font-bold">
+                                  ${Number(c.amountInUsdt).toFixed(2)} USDT
+                                </td>
+                                <td className="py-3 px-4 font-mono text-cyan-400">
+                                  {Number(c.dailyRoiRate)}% / day
+                                </td>
+                                <td className="py-3 px-4 font-mono text-slate-300">
+                                  {c.daysPaid} / {c.tenureDays} Days
+                                </td>
+                                <td className="py-3 px-4 text-slate-400 font-mono">
+                                  {c.maturityDate ? new Date(c.maturityDate).toISOString().split("T")[0] : "—"}
+                                </td>
+                              </tr>
+                            ))
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
               </div>
             ) : null}
+          </section>
+        )}
+
+        {/* TAB: SECURITY & AUDIT INTELLIGENCE HUB */}
+        {activeTab === "audit" && (
+          <section className="space-y-6">
+            {/* Header & Controls */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div>
+                <h2 className="text-xl font-black text-white flex items-center gap-2">
+                  <ShieldAlert className="w-6 h-6 text-rose-500" />
+                  Security &amp; Audit Intelligence Hub
+                </h2>
+                <p className="text-xs text-slate-400 mt-0.5">
+                  Live forensics &amp; telemetry monitoring across all Admins and assigned team members.
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={loadAuditLogs}
+                  disabled={auditLoading}
+                  className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl border border-slate-700 bg-slate-900 hover:border-slate-600 text-xs font-semibold text-white transition font-mono"
+                >
+                  <RefreshCw className={`w-3.5 h-3.5 ${auditLoading ? "animate-spin text-rose-400" : ""}`} />
+                  Refresh Telemetry
+                </button>
+              </div>
+            </div>
+
+            {/* Telemetry KPI Cards */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="p-4 rounded-xl bg-slate-900/80 border border-slate-800 font-mono relative overflow-hidden">
+                <div className="flex items-center justify-between text-slate-400 text-xs mb-1">
+                  <span>SESSIONS LOGGED</span>
+                  <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                </div>
+                <p className="text-2xl font-black text-white">{auditData?.totalSessions ?? "..."}</p>
+                <p className="text-[11px] text-emerald-400 mt-1">Monitored In Real-Time</p>
+              </div>
+
+              <div className="p-4 rounded-xl bg-slate-900/80 border border-slate-800 font-mono relative overflow-hidden">
+                <div className="flex items-center justify-between text-slate-400 text-xs mb-1">
+                  <span>FUNCTION LOGS</span>
+                  <Activity className="w-4 h-4 text-amber-400" />
+                </div>
+                <p className="text-2xl font-black text-amber-400">{auditData?.totalActivities ?? "..."}</p>
+                <p className="text-[11px] text-slate-400 mt-1">Actions &amp; Calls Audited</p>
+              </div>
+
+              <div className="p-4 rounded-xl bg-slate-900/80 border border-slate-800 font-mono relative overflow-hidden">
+                <div className="flex items-center justify-between text-slate-400 text-xs mb-1">
+                  <span>DESKTOP SESSIONS</span>
+                  <Laptop className="w-4 h-4 text-cyan-400" />
+                </div>
+                <p className="text-2xl font-black text-cyan-400">{auditData?.stats.desktopCount ?? 0}</p>
+                <p className="text-[11px] text-slate-400 mt-1">Workstation Terminals</p>
+              </div>
+
+              <div className="p-4 rounded-xl bg-slate-900/80 border border-slate-800 font-mono relative overflow-hidden">
+                <div className="flex items-center justify-between text-slate-400 text-xs mb-1">
+                  <span>MOBILE &amp; TABLET</span>
+                  <Smartphone className="w-4 h-4 text-purple-400" />
+                </div>
+                <p className="text-2xl font-black text-purple-400">
+                  {(auditData?.stats.mobileCount || 0) + (auditData?.stats.tabletCount || 0)}
+                </p>
+                <p className="text-[11px] text-slate-400 mt-1">Mobile Handhelds</p>
+              </div>
+            </div>
+
+            {/* Filter & Search Bar */}
+            <div className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-3">
+              <div className="flex flex-wrap items-center gap-3">
+                {/* Admin Filter Dropdown */}
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-slate-400 font-mono">Branch:</span>
+                  <select
+                    value={auditAdminFilter}
+                    onChange={(e) => setAuditAdminFilter(e.target.value)}
+                    className="px-3 py-1.5 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white font-mono outline-none focus:border-rose-500"
+                  >
+                    <option value="all">All Admins &amp; Teams</option>
+                    {admins.map((a) => (
+                      <option key={a.id} value={a.id}>
+                        {a.customId} - {a.fullName} (Prefix: {a.teamPrefix || "1"})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Role Filter */}
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-slate-400 font-mono">Role:</span>
+                  <select
+                    value={auditRoleFilter}
+                    onChange={(e) => setAuditRoleFilter(e.target.value)}
+                    className="px-3 py-1.5 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white font-mono outline-none focus:border-rose-500"
+                  >
+                    <option value="all">All Roles</option>
+                    <option value="ADMIN">Admins Only</option>
+                    <option value="USER">Members Only</option>
+                  </select>
+                </div>
+
+                {/* Category Filter */}
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-slate-400 font-mono">Category:</span>
+                  <select
+                    value={auditCategoryFilter}
+                    onChange={(e) => setAuditCategoryFilter(e.target.value)}
+                    className="px-3 py-1.5 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white font-mono outline-none focus:border-rose-500"
+                  >
+                    <option value="all">All Categories</option>
+                    <option value="AUTH">AUTH</option>
+                    <option value="SECURITY">SECURITY</option>
+                    <option value="FINANCIAL">FINANCIAL</option>
+                    <option value="ADMIN">ADMIN</option>
+                    <option value="PROFILE">PROFILE</option>
+                  </select>
+                </div>
+
+                {/* Timeframe Filter */}
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-slate-400 font-mono">Time:</span>
+                  <select
+                    value={auditTimeframe}
+                    onChange={(e) => setAuditTimeframe(e.target.value)}
+                    className="px-3 py-1.5 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white font-mono outline-none focus:border-rose-500"
+                  >
+                    <option value="all">All Time</option>
+                    <option value="today">Today</option>
+                    <option value="7d">Last 7 Days</option>
+                    <option value="30d">Last 30 Days</option>
+                  </select>
+                </div>
+
+                {/* Search box */}
+                <div className="relative flex-1 min-w-[220px]">
+                  <Search className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="text"
+                    value={auditSearch}
+                    onChange={(e) => setAuditSearch(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") loadAuditLogs();
+                    }}
+                    placeholder="Search ID, Name, IP, Location, Device..."
+                    className="w-full pl-9 pr-3.5 py-1.5 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white placeholder-slate-500 font-mono outline-none focus:border-rose-500 transition"
+                  />
+                </div>
+
+                <button
+                  onClick={loadAuditLogs}
+                  className="px-3 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold font-mono transition shadow"
+                >
+                  Apply
+                </button>
+              </div>
+
+              {/* View Switcher: Sessions vs Function Logs */}
+              <div className="flex items-center gap-2 pt-2 border-t border-slate-800">
+                <button
+                  onClick={() => setAuditSubTab("sessions")}
+                  className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-bold font-mono transition ${
+                    auditSubTab === "sessions"
+                      ? "bg-rose-500/20 text-rose-300 border border-rose-500/40"
+                      : "text-slate-400 hover:text-white"
+                  }`}
+                >
+                  <ShieldAlert className="w-3.5 h-3.5 text-rose-400" />
+                  Login Sessions &amp; Devices ({auditData?.totalSessions || 0})
+                </button>
+
+                <button
+                  onClick={() => setAuditSubTab("activities")}
+                  className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-bold font-mono transition ${
+                    auditSubTab === "activities"
+                      ? "bg-rose-500/20 text-rose-300 border border-rose-500/40"
+                      : "text-slate-400 hover:text-white"
+                  }`}
+                >
+                  <Activity className="w-3.5 h-3.5 text-amber-400" />
+                  Function &amp; Action Usage Logs ({auditData?.totalActivities || 0})
+                </button>
+              </div>
+            </div>
+
+            {/* Audit Logs Content */}
+            {auditLoading ? (
+              <div className="text-center py-16 text-rose-400 font-mono text-xs">
+                Analyzing and fetching audit logs...
+              </div>
+            ) : auditSubTab === "sessions" ? (
+              /* Global Login Sessions Table */
+              <div className="bg-slate-900/90 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+                <div className="p-4 border-b border-slate-800 flex items-center justify-between">
+                  <h3 className="text-sm font-bold text-white flex items-center gap-2 font-mono">
+                    <ShieldAlert className="w-4 h-4 text-rose-400" />
+                    Authentication Telemetry &amp; Access Log ({auditData?.sessions.length || 0} Listed)
+                  </h3>
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs">
+                    <thead className="bg-slate-950/60 text-slate-400 uppercase font-mono tracking-wider border-b border-slate-800 text-[11px]">
+                      <tr>
+                        <th className="py-3 px-4">Account / User</th>
+                        <th className="py-3 px-4">Assigned Admin Branch</th>
+                        <th className="py-3 px-4">Portal &amp; Status</th>
+                        <th className="py-3 px-4">IP Address &amp; Location</th>
+                        <th className="py-3 px-4">Device &amp; Browser</th>
+                        <th className="py-3 px-4">Timestamp</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-800/60">
+                      {(!auditData?.sessions || auditData.sessions.length === 0) ? (
+                        <tr>
+                          <td colSpan={6} className="text-center py-12 text-slate-500 font-mono">
+                            No login session records found matching the current filters.
+                          </td>
+                        </tr>
+                      ) : (
+                        auditData.sessions.map((s: any) => (
+                          <tr key={s.id} className="hover:bg-slate-800/30">
+                            <td className="py-3 px-4">
+                              <div className="flex items-center gap-2">
+                                <div>
+                                  <p className="font-bold text-white font-mono">{s.user?.customId || "Unknown"}</p>
+                                  <p className="text-slate-400 text-[11px]">{s.user?.fullName}</p>
+                                </div>
+                                <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold font-mono ${
+                                  s.user?.role === "SUPER_ROOT_ADMIN"
+                                    ? "bg-purple-500/20 text-purple-300 border border-purple-500/30"
+                                    : s.user?.role === "ADMIN" || s.user?.role === "SUPER_ADMIN"
+                                    ? "bg-rose-500/20 text-rose-300 border border-rose-500/30"
+                                    : "bg-cyan-500/20 text-cyan-300 border border-cyan-500/30"
+                                }`}>
+                                  {s.user?.role || "USER"}
+                                </span>
+                              </div>
+                            </td>
+                            <td className="py-3 px-4 font-mono text-[11px]">
+                              {s.user?.role === "SUPER_ROOT_ADMIN" ? (
+                                <span className="text-purple-400 font-bold">Direct Super Root</span>
+                              ) : s.user?.role === "ADMIN" || s.user?.role === "SUPER_ADMIN" ? (
+                                <span className="text-rose-400 font-bold">Self Admin Branch</span>
+                              ) : s.user?.assignedAdmin ? (
+                                <span className="text-amber-300 font-bold">
+                                  {s.user.assignedAdmin.customId} ({s.user.assignedAdmin.fullName})
+                                </span>
+                              ) : (
+                                <span className="text-slate-500">Unassigned</span>
+                              )}
+                            </td>
+                            <td className="py-3 px-4">
+                              <div className="flex items-center gap-1.5">
+                                <span className="px-2 py-0.5 rounded bg-slate-800 text-slate-300 text-[10px] font-mono font-bold">
+                                  {s.portal}
+                                </span>
+                                {s.status === "SUCCESS" ? (
+                                  <span className="flex items-center gap-1 text-emerald-400 font-bold font-mono text-[10px]">
+                                    <CheckCircle className="w-3 h-3 text-emerald-400" /> SUCCESS
+                                  </span>
+                                ) : (
+                                  <span className="flex items-center gap-1 text-rose-400 font-bold font-mono text-[10px]" title={s.failureReason || "Failed"}>
+                                    <XCircle className="w-3 h-3 text-rose-400" /> FAILED
+                                  </span>
+                                )}
+                              </div>
+                              {s.failureReason && (
+                                <p className="text-[10px] text-rose-400/80 font-mono mt-0.5">{s.failureReason}</p>
+                              )}
+                            </td>
+                            <td className="py-3 px-4">
+                              <p className="font-mono text-white font-bold">{s.ipAddress}</p>
+                              <p className="text-slate-400 text-[11px] flex items-center gap-1 mt-0.5">
+                                <MapPin className="w-3 h-3 text-rose-400 shrink-0" />
+                                {s.city}, {s.country}
+                              </p>
+                            </td>
+                            <td className="py-3 px-4">
+                              <div className="flex items-center gap-1.5">
+                                {s.device === "Mobile" ? (
+                                  <Smartphone className="w-3.5 h-3.5 text-amber-400" />
+                                ) : s.device === "Tablet" ? (
+                                  <TabletIcon className="w-3.5 h-3.5 text-purple-400" />
+                                ) : (
+                                  <Laptop className="w-3.5 h-3.5 text-cyan-400" />
+                                )}
+                                <span className="font-bold text-slate-200">{s.device}</span>
+                                <span className="text-slate-500">·</span>
+                                <span className="text-slate-400">{s.os}</span>
+                              </div>
+                              <p className="text-[11px] text-slate-500 mt-0.5">{s.browser}</p>
+                            </td>
+                            <td className="py-3 px-4 text-slate-400 font-mono text-[11px]">
+                              {new Date(s.createdAt).toLocaleString()}
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            ) : (
+              /* Global Function & Action Usage Logs Table */
+              <div className="bg-slate-900/90 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+                <div className="p-4 border-b border-slate-800 flex items-center justify-between">
+                  <h3 className="text-sm font-bold text-white flex items-center gap-2 font-mono">
+                    <Activity className="w-4 h-4 text-amber-400" />
+                    Function Usage &amp; Operational Audit Trail ({auditData?.activities.length || 0} Listed)
+                  </h3>
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs">
+                    <thead className="bg-slate-950/60 text-slate-400 uppercase font-mono tracking-wider border-b border-slate-800 text-[11px]">
+                      <tr>
+                        <th className="py-3 px-4">User / Actor</th>
+                        <th className="py-3 px-4">Branch</th>
+                        <th className="py-3 px-4">Function / Action</th>
+                        <th className="py-3 px-4">Operation Details</th>
+                        <th className="py-3 px-4">Client Telemetry</th>
+                        <th className="py-3 px-4">Timestamp</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-800/60">
+                      {(!auditData?.activities || auditData.activities.length === 0) ? (
+                        <tr>
+                          <td colSpan={6} className="text-center py-12 text-slate-500 font-mono">
+                            No function activity records found matching the current filters.
+                          </td>
+                        </tr>
+                      ) : (
+                        auditData.activities.map((l: any) => (
+                          <tr key={l.id} className="hover:bg-slate-800/30">
+                            <td className="py-3 px-4">
+                              <div className="flex items-center gap-2">
+                                <div>
+                                  <p className="font-bold text-white font-mono">{l.user?.customId || "Unknown"}</p>
+                                  <p className="text-slate-400 text-[11px]">{l.user?.fullName}</p>
+                                </div>
+                                <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold font-mono ${
+                                  l.user?.role === "SUPER_ROOT_ADMIN"
+                                    ? "bg-purple-500/20 text-purple-300 border border-purple-500/30"
+                                    : l.user?.role === "ADMIN" || l.user?.role === "SUPER_ADMIN"
+                                    ? "bg-rose-500/20 text-rose-300 border border-rose-500/30"
+                                    : "bg-cyan-500/20 text-cyan-300 border border-cyan-500/30"
+                                }`}>
+                                  {l.user?.role || "USER"}
+                                </span>
+                              </div>
+                            </td>
+                            <td className="py-3 px-4 font-mono text-[11px]">
+                              {l.user?.role === "SUPER_ROOT_ADMIN" ? (
+                                <span className="text-purple-400 font-bold">Direct Super Root</span>
+                              ) : l.user?.role === "ADMIN" || l.user?.role === "SUPER_ADMIN" ? (
+                                <span className="text-rose-400 font-bold">Admin Self</span>
+                              ) : l.user?.assignedAdmin ? (
+                                <span className="text-amber-300 font-bold">
+                                  {l.user.assignedAdmin.customId}
+                                </span>
+                              ) : (
+                                <span className="text-slate-500">—</span>
+                              )}
+                            </td>
+                            <td className="py-3 px-4">
+                              <span className={`px-2 py-0.5 rounded text-[10px] font-bold font-mono ${
+                                l.category === "FINANCIAL"
+                                  ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"
+                                  : l.category === "SECURITY"
+                                  ? "bg-rose-500/20 text-rose-300 border border-rose-500/30"
+                                  : l.category === "ADMIN"
+                                  ? "bg-purple-500/20 text-purple-300 border border-purple-500/30"
+                                  : l.category === "PROFILE"
+                                  ? "bg-amber-500/20 text-amber-300 border border-amber-500/30"
+                                  : "bg-blue-500/20 text-blue-300 border border-blue-500/30"
+                              }`}>
+                                {l.action}
+                              </span>
+                              <p className="text-[10px] text-slate-500 font-mono mt-1">{l.category}</p>
+                            </td>
+                            <td className="py-3 px-4">
+                              <p className="text-white font-medium text-xs max-w-md">{l.description}</p>
+                            </td>
+                            <td className="py-3 px-4 font-mono text-[11px]">
+                              <p className="text-slate-300">{l.ipAddress}</p>
+                              <p className="text-slate-500">{l.device} · {l.city}, {l.country}</p>
+                            </td>
+                            <td className="py-3 px-4 text-slate-400 font-mono text-[11px]">
+                              {new Date(l.createdAt).toLocaleString()}
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
           </section>
         )}
 

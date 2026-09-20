@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getSession, comparePassword, hashPassword } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { recordActivity } from "@/lib/auditLogger";
 
 export async function POST(req: Request) {
   try {
@@ -55,6 +56,14 @@ export async function POST(req: Request) {
     await db.user.update({
       where: { id: session.userId },
       data: { passwordHash: newHash },
+    });
+
+    await recordActivity({
+      userId: session.userId,
+      action: "ADMIN_PASSWORD_CHANGE",
+      category: "SECURITY",
+      description: `Admin ${admin.customId} changed their account password`,
+      req,
     });
 
     return NextResponse.json({

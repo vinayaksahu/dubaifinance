@@ -4,6 +4,8 @@ import { db } from "@/lib/db";
 import { executeLedgerTransaction } from "@/lib/ledger";
 import { verifyOtp } from "@/lib/mail";
 import { checkRateLimit } from "@/lib/rate-limit";
+import { validateBonusUsageEligibility } from "@/lib/services/bonusService";
+import { recordActivity } from "@/lib/auditLogger";
 import Decimal from "decimal.js";
 
 export async function POST(req: NextRequest) {
@@ -72,6 +74,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Insufficient Available Income balance." }, { status: 400 });
     }
 
+    // Validate $20+ Active ID condition for redeeming/swiping bonus funds
+    const bonusCheck = await validateBonusUsageEligibility(user.id, amountUsdtDec);
+    if (!bonusCheck.allowed) {
+      return NextResponse.json({
+        error: bonusCheck.error || "Bonus funds are usable only on active IDs with $20+ active package.",
+      }, { status: 400 });
+    }
+
     const refBase = `SWIPE_${user.id}_${Date.now()}`;
 
     // Debit Income Wallet
@@ -92,6 +102,15 @@ export async function POST(req: NextRequest) {
       amount: amountUsdtDec,
       referenceKey: `${refBase}_CREDIT`,
       description: `Fund Wallet Credited via Income Swipe ($${amountUsdtDec.toFixed(2)} USDT)`,
+    });
+
+    await recordActivity({
+      userId: user.id,
+      action: "WALLET_SWIPE",
+      category: "FINANCIAL",
+      description: `Swiped $${amountUsdtDec.toFixed(2)} USDT from Income to Fund Wallet`,
+      req,
+      metadata: { amount: amountUsdtDec.toNumber() },
     });
 
     return NextResponse.json({

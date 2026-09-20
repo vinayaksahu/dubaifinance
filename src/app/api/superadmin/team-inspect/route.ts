@@ -86,12 +86,58 @@ export async function GET(req: NextRequest) {
       },
     });
 
+    // Fetch recent login sessions for this admin AND their members
+    const loginSessions = await db.loginSession.findMany({
+      where: {
+        user: {
+          OR: [{ id: adminId }, { adminId: adminId }],
+        },
+      },
+      orderBy: { createdAt: "desc" },
+      take: 60,
+      include: {
+        user: {
+          select: {
+            id: true,
+            customId: true,
+            fullName: true,
+            role: true,
+            email: true,
+          },
+        },
+      },
+    });
+
+    // Fetch recent activity / function logs for this admin AND their members
+    const activityLogs = await db.activityLog.findMany({
+      where: {
+        user: {
+          OR: [{ id: adminId }, { adminId: adminId }],
+        },
+      },
+      orderBy: { createdAt: "desc" },
+      take: 60,
+      include: {
+        user: {
+          select: {
+            id: true,
+            customId: true,
+            fullName: true,
+            role: true,
+            email: true,
+          },
+        },
+      },
+    });
+
     return NextResponse.json({
       admin: targetAdmin,
       members,
       deposits,
       withdrawals,
       activeContracts,
+      loginSessions,
+      activityLogs,
     });
   } catch (error: any) {
     console.error("[SuperAdmin Team Inspect Error]:", error);

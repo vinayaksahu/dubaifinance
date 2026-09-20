@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { verifyOtp } from "@/lib/mail";
+import { recordActivity } from "@/lib/auditLogger";
 
 export async function GET() {
   try {
@@ -113,6 +114,15 @@ export async function POST(req: Request) {
         status: true,
         teamPrefix: true,
       },
+    });
+
+    await recordActivity({
+      userId: session.userId,
+      action: "ADMIN_PROFILE_UPDATE",
+      category: "PROFILE",
+      description: `Admin ${updatedAdmin.customId} updated profile details (name: ${updatedAdmin.fullName}${updateData.email ? `, email changed to: ${updatedAdmin.email}` : ""})`,
+      req,
+      metadata: { fullName: updatedAdmin.fullName, email: updatedAdmin.email, phone: updatedAdmin.phone },
     });
 
     return NextResponse.json({

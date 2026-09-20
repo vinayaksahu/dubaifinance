@@ -7,6 +7,7 @@ import { getNumericConfig } from "@/lib/configService";
 import { APP_CONFIG } from "@/lib/constants";
 import { verifyOtp } from "@/lib/mail";
 import { checkRateLimit } from "@/lib/rate-limit";
+import { recordActivity } from "@/lib/auditLogger";
 import Decimal from "decimal.js";
 
 export async function POST(req: NextRequest) {
@@ -178,6 +179,21 @@ export async function POST(req: NextRequest) {
 
     // Process instant direct referral commission for beneficiary sponsor (Dark PDF 10%)
     await processDirectReferralReward(beneficiary.id, contract.id, amountUsdtDec.toNumber());
+
+    await recordActivity({
+      userId: caller.id,
+      action: "PACKAGE_ACTIVATION",
+      category: "FINANCIAL",
+      description: `Activated ${packageType === "BASIC_SAVING" ? "Basic Saving" : "Fix Deposit"} Package of $${amountUsdtDec.toFixed(2)} USDT for ${beneficiary.customId}`,
+      req,
+      metadata: {
+        contractId: contract.id,
+        packageType,
+        amountInUsdt: amountUsdtDec.toNumber(),
+        beneficiaryCustomId: beneficiary.customId,
+        tenureDays,
+      },
+    });
 
     return NextResponse.json({
       success: true,

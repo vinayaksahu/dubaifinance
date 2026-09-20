@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession, hashPassword } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { recordActivity } from "@/lib/auditLogger";
 
 export async function GET() {
   try {
@@ -154,6 +155,15 @@ export async function POST(req: NextRequest) {
       },
     });
 
+    await recordActivity({
+      userId: session.userId,
+      action: "ADMIN_CREATED",
+      category: "ADMIN",
+      description: `Super Root Admin created new Admin ${newAdmin.customId} (${newAdmin.fullName})`,
+      req,
+      metadata: { adminId: newAdmin.id, customId: newAdmin.customId },
+    });
+
     return NextResponse.json({
       success: true,
       message: `Admin ${newAdmin.customId} created successfully.`,
@@ -191,6 +201,14 @@ export async function PATCH(req: NextRequest) {
         where: { id: adminId },
         data: { status: updatedStatus },
       });
+      await recordActivity({
+        userId: session.userId,
+        action: "ADMIN_STATUS_CHANGED",
+        category: "ADMIN",
+        description: `Super Root Admin changed status of Admin ${targetAdmin.customId} to ${updatedStatus}`,
+        req,
+        metadata: { adminId, newStatus: updatedStatus },
+      });
       return NextResponse.json({ success: true, message: `Admin ${targetAdmin.customId} status updated to ${updatedStatus}.` });
     }
 
@@ -202,6 +220,14 @@ export async function PATCH(req: NextRequest) {
       await db.user.update({
         where: { id: adminId },
         data: { passwordHash },
+      });
+      await recordActivity({
+        userId: session.userId,
+        action: "ADMIN_PASSWORD_RESET",
+        category: "SECURITY",
+        description: `Super Root Admin reset password for Admin ${targetAdmin.customId}`,
+        req,
+        metadata: { adminId },
       });
       return NextResponse.json({ success: true, message: `Password for Admin ${targetAdmin.customId} updated successfully.` });
     }
@@ -227,6 +253,14 @@ export async function PATCH(req: NextRequest) {
       await db.user.update({
         where: { id: adminId },
         data: { teamPrefix: cleanPrefix },
+      });
+      await recordActivity({
+        userId: session.userId,
+        action: "ADMIN_PREFIX_UPDATED",
+        category: "ADMIN",
+        description: `Super Root Admin set team prefix "${cleanPrefix}" for Admin ${targetAdmin.customId}`,
+        req,
+        metadata: { adminId, teamPrefix: cleanPrefix },
       });
       return NextResponse.json({ success: true, message: `Team prefix updated to "${cleanPrefix}".` });
     }
@@ -315,6 +349,15 @@ export async function PATCH(req: NextRequest) {
           status: true,
           role: true,
         },
+      });
+
+      await recordActivity({
+        userId: session.userId,
+        action: "ADMIN_DETAILS_UPDATED",
+        category: "ADMIN",
+        description: `Super Root Admin modified profile/credentials of Admin ${targetAdmin.customId}`,
+        req,
+        metadata: { adminId, updatedFields: Object.keys(updateData) },
       });
 
       return NextResponse.json({

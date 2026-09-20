@@ -185,6 +185,16 @@ export const DEFAULT_SYSTEM_CONFIGS: Record<string, { value: string; description
     description: "Welcome bonus credited upon registration in USDT ($0.50 as per Dark PDF Slide 21)",
     category: "transfers",
   },
+  SIGNUP_LEVEL_BONUS_TOTAL_USDT: {
+    value: "0.50",
+    description: "Total 12-Level Registration Bounty distributed equally across 12 uplines upon signup in USDT ($0.50 / 12)",
+    category: "transfers",
+  },
+  BONUS_REDEMPTION_MIN_ACTIVE_USDT: {
+    value: "20.00",
+    description: "Minimum active package investment required on ID to use/withdraw bonus balance in USDT ($20+)",
+    category: "transfers",
+  },
   MIN_P2P_TRANSFER_USDT: {
     value: "1",
     description: "Minimum P2P fund transfer amount in USDT",

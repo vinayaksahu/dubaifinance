@@ -6,6 +6,8 @@ import { getNumericConfig, getAllSystemConfigs } from "@/lib/configService";
 import { APP_CONFIG, getWithdrawalWindowStatus } from "@/lib/constants";
 import { verifyOtp } from "@/lib/mail";
 import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
+import { validateBonusUsageEligibility } from "@/lib/services/bonusService";
+import { recordActivity } from "@/lib/auditLogger";
 import Decimal from "decimal.js";
 
 export async function POST(req: NextRequest) {
@@ -115,6 +117,14 @@ export async function POST(req: NextRequest) {
       }, { status: 400 });
     }
 
+    // Validate $20+ Active ID condition for redeeming bonus funds
+    const bonusCheck = await validateBonusUsageEligibility(user.id, amountUsdtDec);
+    if (!bonusCheck.allowed) {
+      return NextResponse.json({
+        error: bonusCheck.error || "Bonus funds are usable only on active IDs with $20+ active package.",
+      }, { status: 400 });
+    }
+
     const feePercent = await getNumericConfig("WITHDRAWAL_FEE_PERCENT", APP_CONFIG.withdrawalAdminFeePercent);
     const feeRateDec = new Decimal(feePercent).dividedBy(100);
     const feeAmountDec = amountUsdtDec.times(feeRateDec);
@@ -142,6 +152,21 @@ export async function POST(req: NextRequest) {
         toAddress: payoutAddress,
         network: "USDT_BEP20",
         status: "PENDING",
+      },
+    });
+
+    await recordActivity({
+      userId: user.id,
+      action: "WITHDRAWAL_REQUEST",
+      category: "FINANCIAL",
+      description: `Requested payout of $${amountUsdtDec.toFixed(2)} USDT (Net: $${netAmountDec.toFixed(2)}) to ${payoutAddress.slice(0, 10)}...`,
+      req,
+      metadata: {
+        withdrawalId: request.id,
+        grossAmount: amountUsdtDec.toNumber(),
+        netAmount: netAmountDec.toNumber(),
+        feeAmount: feeAmountDec.toNumber(),
+        payoutAddress,
       },
     });
 

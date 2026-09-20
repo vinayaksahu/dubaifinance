@@ -3,6 +3,7 @@ import { getSession } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { APP_CONFIG, usdtToInr } from "@/lib/constants";
 import { getNumericConfig } from "@/lib/configService";
+import { recordActivity } from "@/lib/auditLogger";
 import Decimal from "decimal.js";
 
 export async function POST(req: NextRequest) {
@@ -40,6 +41,15 @@ export async function POST(req: NextRequest) {
         network: APP_CONFIG.depositNetwork,
         status: "PENDING",
       },
+    });
+
+    await recordActivity({
+      userId: session.userId,
+      action: "DEPOSIT_SUBMITTED",
+      category: "FINANCIAL",
+      description: `Submitted deposit proof for $${amountUsdtDec.toFixed(2)} USDT (TxHash: ${cleanHash.slice(0, 12)}...)`,
+      req,
+      metadata: { depositId: deposit.id, amountInUsdt: amountUsdtDec.toNumber(), txHash: cleanHash },
     });
 
     return NextResponse.json({

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { recordActivity } from "@/lib/auditLogger";
 
 export async function POST(req: Request) {
   try {
@@ -29,6 +30,15 @@ export async function POST(req: Request) {
         email: true,
         phone: true,
       },
+    });
+
+    await recordActivity({
+      userId: session.userId,
+      action: "MEMBER_PROFILE_UPDATE",
+      category: "PROFILE",
+      description: `Member ${updated.customId} updated profile details (name: ${updated.fullName})`,
+      req,
+      metadata: { fullName: updated.fullName, phone: updated.phone },
     });
 
     return NextResponse.json({

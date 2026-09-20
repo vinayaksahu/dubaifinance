@@ -95,6 +95,8 @@ model User {
   withdrawals     WithdrawalRequest[]
   tickets         SupportTicket[]
   queuePositions  QueuePosition[]
+  loginSessions   LoginSession[]
+  activityLogs    ActivityLog[]
 }
 
 model InvestmentContract {
@@ -221,5 +223,51 @@ model QueuePosition {
 
   @@index([rankTier, status, queueOrder])
   @@index([userId])
+}
+
+model LoginSession {
+  id            String       @id @default(cuid())
+  userId        String
+  user          User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ipAddress     String
+  userAgent     String?
+  browser       String?
+  os            String?
+  device        String?      // "Desktop" | "Mobile" | "Tablet" | "Unknown"
+  country       String?
+  city          String?
+  region        String?
+  portal        String       // "MEMBER" | "ADMIN" | "SUPER_ROOT"
+  status        String       @default("SUCCESS") // "SUCCESS" | "FAILED"
+  failureReason String?
+  createdAt     DateTime     @default(now())
+
+  @@index([userId, createdAt])
+  @@index([ipAddress])
+  @@index([createdAt])
+}
+
+model ActivityLog {
+  id          String       @id @default(cuid())
+  userId      String
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  action      String       // "LOGIN", "PROFILE_UPDATE", "CHANGE_PASSWORD", "WITHDRAWAL_REQUEST", "DEPOSIT_REQUEST", "P2P_TRANSFER", "SWIPE_FUNDS", "PACKAGE_ACTIVATION", "ADMIN_CONFIG_UPDATE", etc.
+  category    String       // "AUTH", "SECURITY", "FINANCIAL", "ADMIN", "PROFILE"
+  description String
+  ipAddress   String?
+  userAgent   String?
+  browser     String?
+  os          String?
+  device      String?
+  country     String?
+  city        String?
+  metadata    String?      // JSON payload / context
+  createdAt   DateTime     @default(now())
+
+  @@index([userId, createdAt])
+  @@index([action])
+  @@index([category])
+  @@index([ipAddress])
+  @@index([createdAt])
 }
 

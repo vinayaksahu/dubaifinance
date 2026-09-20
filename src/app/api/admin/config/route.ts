@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { DEFAULT_SYSTEM_CONFIGS, invalidateConfigCache } from "@/lib/configService";
+import { recordActivity } from "@/lib/auditLogger";
 
 export async function GET() {
   try {
@@ -82,6 +83,15 @@ export async function POST(req: NextRequest) {
 
     await Promise.all(updates);
     invalidateConfigCache();
+
+    await recordActivity({
+      userId: session.userId,
+      action: "SYSTEM_CONFIG_UPDATED",
+      category: "ADMIN",
+      description: `Updated system configurations: ${Object.keys(configs).join(", ")}`,
+      req,
+      metadata: { modifiedKeys: Object.keys(configs) },
+    });
 
     return NextResponse.json({
       success: true,

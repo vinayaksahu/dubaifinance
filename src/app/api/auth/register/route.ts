@@ -4,7 +4,8 @@ import { hashPassword, hashPin, createSessionToken } from "@/lib/auth";
 import { executeLedgerTransaction } from "@/lib/ledger";
 import { APP_CONFIG } from "@/lib/constants";
 import { sendWelcomeCredentialsEmail } from "@/lib/mail";
-import { getSystemConfigValue } from "@/lib/configService";
+import { getSystemConfigValue, getNumericConfig } from "@/lib/configService";
+import { distribute12LevelSignupBonus } from "@/lib/services/bonusService";
 import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 import Decimal from "decimal.js";
 
@@ -152,15 +153,23 @@ export async function POST(req: NextRequest) {
     });
 
     // Credit Signup Welcome Bonus directly in USDT ($0.50 USDT per Dark PDF Slide 21)
-    const bonusUsdt = new Decimal(APP_CONFIG.signupBonusUsdt);
-    await executeLedgerTransaction({
-      userId: newUser.id,
-      type: "SIGNUP_BONUS",
-      wallet: "INCOME",
-      amount: bonusUsdt,
-      referenceKey: `SIGNUP_BONUS_${newUser.id}`,
-      description: `Welcome Bonus $${bonusUsdt.toFixed(2)} USDT`,
-    });
+    const bonusUsdtNum = await getNumericConfig("SIGNUP_BONUS_USDT", APP_CONFIG.signupBonusUsdt);
+    const bonusUsdt = new Decimal(bonusUsdtNum);
+    if (bonusUsdt.isPositive() && !bonusUsdt.isZero()) {
+      await executeLedgerTransaction({
+        userId: newUser.id,
+        type: "SIGNUP_BONUS",
+        wallet: "INCOME",
+        amount: bonusUsdt,
+        referenceKey: `SIGNUP_BONUS_${newUser.id}`,
+        description: `Welcome Bonus $${bonusUsdt.toFixed(2)} USDT`,
+      });
+    }
+
+    // Distribute $0.50 / 12-Level Registration Bounty equally across 12 uplines
+    if (newUser.sponsorId) {
+      await distribute12LevelSignupBonus(newUser.id, newUser.sponsorId);
+    }
 
     // Determine live application domain from request headers
     const originHeader = req.headers.get("origin") || req.headers.get("referer");

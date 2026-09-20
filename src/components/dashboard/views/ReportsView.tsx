@@ -77,7 +77,7 @@ export function ReportsView({ user, reportType, onRefresh }: ReportsViewProps) {
 
   const num = (v: any) => Number(v || 0);
 
-  const formatTxType = (type: string) => {
+  const formatTxType = (type: string, description?: string, levelNumber?: number) => {
     const t = String(type || "").toUpperCase();
     if (t === "BASIC_ROI" || t === "BASIC_DAILY_ROI") return "Basic Daily ROI";
     if (t === "FD_ROI" || t === "FD_DAILY_ROI") return "FD Daily ROI";
@@ -85,7 +85,11 @@ export function ReportsView({ user, reportType, onRefresh }: ReportsViewProps) {
     if (t === "BASIC_LEVEL_INCOME") return "Basic Level Bonus";
     if (t === "FD_DIRECT_REFERRAL") return "FD Referral Bonus";
     if (t === "FD_LEVEL_INCOME") return "FD Level Bonus";
-    if (t === "SIGNUP_BONUS") return "Signup Bonus";
+    if (t === "SIGNUP_BONUS") {
+      if (levelNumber) return `Level ${levelNumber} Signup Bounty`;
+      if (description?.toLowerCase().includes("level")) return "12-Level Signup Bounty";
+      return "Welcome Signup Bonus";
+    }
     if (t === "DEPOSIT_APPROVED") return "Deposit Approved";
     if (t === "PACKAGE_PURCHASE") return "Package Activation";
     if (t === "FUND_TRANSFER_SENT") return "P2P Transfer Sent";
@@ -1027,7 +1031,7 @@ export function ReportsView({ user, reportType, onRefresh }: ReportsViewProps) {
                           </span>
                         </td>
                         <td className="py-3 px-4 font-semibold text-slate-200">
-                          {formatTxType(row.type)}
+                          {formatTxType(row.type, row.description, row.levelNumber)}
                         </td>
                         <td className="py-3 px-4 text-slate-400 truncate max-w-[220px]">
                           {row.description}

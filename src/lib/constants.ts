@@ -8,6 +8,8 @@ export const APP_CONFIG = {
   depositAddress: "0x39a0B29A5c66e927598Fa4eCE9bFf84a44bA8812", // Company USDT BEP-20
   depositNetwork: "USDT BEP-20 (Binance Smart Chain)",
   signupBonusUsdt: 0.50, // Dark PDF Slide 21: $0.50 Signup Bonus
+  signupLevelBonusTotalUsdt: 0.50, // Dark PDF Slide 21: $0.50 distributed across 12 levels
+  bonusRedemptionMinActiveUsdt: 20, // Dark PDF Slide 21: Usable on $20+ active IDs
   usdtToInrRate: 1, // 1:1 Pure USDT throughout
   directReferralPercent: 10.0, // Dark PDF Slide 1, 10, 15: 10% INSTANT DIRECT
   minWithdrawalUsdt: 2, // Dark PDF Slide 21: Min $2 USDT

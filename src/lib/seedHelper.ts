@@ -75,6 +75,8 @@ export async function ensureInitialSeed(prismaClient: any) {
         { key: "MIN_WITHDRAWAL_USDT", value: "2.00", description: "Minimum single withdrawal in USDT" },
         { key: "MAX_WITHDRAWAL_USDT", value: "5000.00", description: "Maximum single withdrawal in USDT" },
         { key: "SIGNUP_BONUS_USDT", value: "0.50", description: "Welcome bonus upon registration (USDT)" },
+        { key: "SIGNUP_LEVEL_BONUS_TOTAL_USDT", value: "0.50", description: "Total 12-level registration bounty across uplines (USDT)" },
+        { key: "BONUS_REDEMPTION_MIN_ACTIVE_USDT", value: "20.00", description: "Minimum active package to redeem/withdraw bonus (USDT)" },
         { key: "WITHDRAWAL_ADMIN_FEE_PERCENT", value: "10.0", description: "Admin deduction fee on withdrawal (%)" },
         { key: "BASIC_PLAN_DAILY_ROI", value: "5.0", description: "Basic saving daily ROI (%)" },
         { key: "BASIC_PLAN_TENURE_DAYS", value: "28", description: "Basic saving contract tenure (days)" },

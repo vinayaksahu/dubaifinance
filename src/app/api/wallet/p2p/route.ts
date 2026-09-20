@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { executeLedgerTransaction } from "@/lib/ledger";
 import { verifyOtp } from "@/lib/mail";
 import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
+import { recordActivity } from "@/lib/auditLogger";
 import Decimal from "decimal.js";
 
 export async function POST(req: NextRequest) {
@@ -111,6 +112,15 @@ export async function POST(req: NextRequest) {
       referenceKey: `${refBase}_CREDIT`,
       description: `P2P Received $${amountUsdtDec.toFixed(2)} USDT from ${sender.customId}`,
       sourceUserId: sender.id,
+    });
+
+    await recordActivity({
+      userId: sender.id,
+      action: "P2P_TRANSFER_SENT",
+      category: "FINANCIAL",
+      description: `Sent $${amountUsdtDec.toFixed(2)} USDT via P2P to ${recipient.customId} (${recipient.fullName})`,
+      req,
+      metadata: { recipientCustomId: recipient.customId, amount: amountUsdtDec.toNumber() },
     });
 
     return NextResponse.json({

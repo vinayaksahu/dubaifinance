@@ -112,6 +112,8 @@ const FRIENDLY_NAMES: Record<string, string> = {
 
   // Transfers & Bonus
   SIGNUP_BONUS_USDT: "Welcome Signup Bonus (USDT)",
+  SIGNUP_LEVEL_BONUS_TOTAL_USDT: "12-Level Registration Bounty Total (USDT)",
+  BONUS_REDEMPTION_MIN_ACTIVE_USDT: "Min Active ID to Redeem Bonus (USDT)",
   MIN_P2P_TRANSFER_USDT: "Minimum P2P Transfer (USDT)",
   P2P_FEE_PERCENT: "P2P Transfer Fee (%)",
   SWIPE_FEE_PERCENT: "Income-to-Fund Swipe Fee (%)",
