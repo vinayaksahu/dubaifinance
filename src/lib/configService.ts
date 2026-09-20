@@ -266,10 +266,10 @@ export const DEFAULT_SYSTEM_CONFIGS: Record<string, { value: string; description
   },
 };
 
-// In-memory cache with 15-second TTL
+// In-memory cache with 60-second TTL (invalidated instantly on admin update)
 let cachedConfigs: Record<string, string> | null = null;
 let lastFetchTime = 0;
-const CACHE_TTL_MS = 15000;
+const CACHE_TTL_MS = 60000;
 
 export function invalidateConfigCache() {
   cachedConfigs = null;

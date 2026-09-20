@@ -23,9 +23,6 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Ensure initial users exist if database is fresh
-    await ensureInitialSeed(db);
-
     const body = await req.json();
     const identifier = body.identifier || body.customId || body.email;
     const password = body.password;
@@ -66,7 +63,7 @@ export async function POST(req: NextRequest) {
     }
 
     if (user.status === "BLOCKED") {
-      await recordLoginSession({
+      void recordLoginSession({
         userId: user.id,
         portal: portalType,
         req,
@@ -79,9 +76,14 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const isMatch = await comparePassword(password, user.passwordHash);
+    let isMatch = await comparePassword(password, user.passwordHash);
+    if (!isMatch && typeof password === "string" && password.trim() !== password) {
+      // Auto-fallback to trimmed password if extra whitespace was pasted
+      isMatch = await comparePassword(password.trim(), user.passwordHash);
+    }
+
     if (!isMatch) {
-      await recordLoginSession({
+      void recordLoginSession({
         userId: user.id,
         portal: portalType,
         req,
@@ -179,9 +181,9 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Success login session logging
+    // Success login session logging (non-blocking in background)
     const loggedPortal = isSuperRoot ? "SUPER_ROOT" : isAdmin ? "ADMIN" : "MEMBER";
-    await recordLoginSession({
+    void recordLoginSession({
       userId: user.id,
       portal: loggedPortal,
       req,

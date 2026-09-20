@@ -6,7 +6,12 @@ import { Pool } from "pg";
 const globalForPrisma = globalThis as unknown as { prisma: PrismaClient | undefined };
 
 function createPrismaClient(): PrismaClient {
-  const connectionString = process.env.DATABASE_URL;
+  let connectionString = process.env.DATABASE_URL;
+
+  // Automatically route through Neon's PgBouncer pooler for serverless high-concurrency low-latency
+  if (connectionString && connectionString.includes(".neon.tech") && !connectionString.includes("-pooler")) {
+    connectionString = connectionString.replace(/ep-([a-z0-9-]+)\./, "ep-$1-pooler.");
+  }
 
   const isSSL = Boolean(
     connectionString?.includes("sslmode=") ||
@@ -17,8 +22,8 @@ function createPrismaClient(): PrismaClient {
   const pool = new Pool({
     connectionString,
     max: 10,
-    idleTimeoutMillis: 30000,
-    connectionTimeoutMillis: 10000,
+    idleTimeoutMillis: 60000,
+    connectionTimeoutMillis: 5000,
     ...(isSSL ? { ssl: { rejectUnauthorized: false } } : {}),
   });
 
@@ -43,6 +48,5 @@ function createPrismaClient(): PrismaClient {
 
 export const db = globalForPrisma.prisma ?? createPrismaClient();
 
-if (process.env.NODE_ENV !== "production") {
-  globalForPrisma.prisma = db;
-}
+// Always persist on globalThis across all environments to prevent connection pool exhaustion and redundant handshakes
+globalForPrisma.prisma = db;

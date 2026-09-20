@@ -33,15 +33,13 @@ export async function GET() {
     }
   }
 
-  // Auto-distribute pending ROI on portal load (throttled to at most once per 20 seconds)
+  // Auto-distribute pending ROI on portal load (throttled to at most once every 60s, non-blocking in background)
   const nowMs = Date.now();
-  if (nowMs - lastAutoRoiCheck > 20000) {
+  if (nowMs - lastAutoRoiCheck > 60000) {
     lastAutoRoiCheck = nowMs;
-    try {
-      await executeDailyRoiDistribution();
-    } catch (e) {
+    executeDailyRoiDistribution().catch((e) => {
       console.error("Auto daily ROI check failed in auth/me:", e);
-    }
+    });
   }
 
   const user = await db.user.findUnique({
