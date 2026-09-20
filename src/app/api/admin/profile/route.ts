@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { verifyOtp } from "@/lib/mail";
 
 export async function GET() {
   try {
@@ -44,10 +45,35 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
-    const { fullName, email, phone } = body;
+    const { fullName, email, phone, otp } = body;
 
     if (!fullName || typeof fullName !== "string" || !fullName.trim()) {
       return NextResponse.json({ error: "Full Name is required." }, { status: 400 });
+    }
+
+    if (!otp || typeof otp !== "string" || !otp.trim()) {
+      return NextResponse.json(
+        { error: "Security OTP is required to update admin profile." },
+        { status: 400 }
+      );
+    }
+
+    const currentAdmin = await db.user.findUnique({
+      where: { id: session.userId },
+      select: { email: true, customId: true },
+    });
+
+    if (!currentAdmin || !currentAdmin.email) {
+      return NextResponse.json({ error: "Admin account email not found." }, { status: 404 });
+    }
+
+    // Verify OTP sent to current admin's email
+    const isOtpValid = await verifyOtp(currentAdmin.email, otp.trim(), "ADMIN_PROFILE_UPDATE");
+    if (!isOtpValid) {
+      return NextResponse.json(
+        { error: "Invalid or expired OTP code. Please request a new verification code." },
+        { status: 400 }
+      );
     }
 
     const updateData: any = {
@@ -87,7 +113,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({
       success: true,
-      message: "Admin profile updated successfully!",
+      message: "Admin profile updated successfully with OTP verification!",
       user: updatedAdmin,
     });
   } catch (error: any) {

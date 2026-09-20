@@ -17,7 +17,10 @@ import {
   Edit, 
   Phone, 
   Mail, 
-  Tag 
+  Tag,
+  Send,
+  Loader2,
+  ShieldAlert
 } from "lucide-react";
 import Link from "next/link";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
@@ -40,6 +43,12 @@ export function AdminTopNavbar({ user, onToggleSidebar, isCollapsed = false, onR
   const [profileLoading, setProfileLoading] = useState(false);
   const [profileMsg, setProfileMsg] = useState<{ text: string; error?: boolean } | null>(null);
 
+  // OTP state
+  const [otp, setOtp] = useState("");
+  const [otpSending, setOtpSending] = useState(false);
+  const [otpCooldown, setOtpCooldown] = useState(0);
+  const [otpMsg, setOtpMsg] = useState<{ text: string; error?: boolean } | null>(null);
+
   // Password Form state
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -54,6 +63,14 @@ export function AdminTopNavbar({ user, onToggleSidebar, isCollapsed = false, onR
       setProfilePhone(user.phone || "");
     }
   }, [user]);
+
+  // Handle countdown for OTP cooldown
+  useEffect(() => {
+    if (otpCooldown > 0) {
+      const timer = setTimeout(() => setOtpCooldown((prev) => prev - 1), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [otpCooldown]);
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -81,10 +98,42 @@ export function AdminTopNavbar({ user, onToggleSidebar, isCollapsed = false, onR
     }
   };
 
+  const handleSendOtp = async () => {
+    if (otpCooldown > 0 || otpSending) return;
+    setOtpSending(true);
+    setOtpMsg(null);
+
+    try {
+      const res = await fetch("/api/admin/profile/send-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to send verification code");
+
+      setOtpMsg({ text: data.message || "OTP code sent to your registered email!" });
+      setOtpCooldown(60);
+    } catch (err: any) {
+      setOtpMsg({ text: err.message, error: true });
+    } finally {
+      setOtpSending(false);
+    }
+  };
+
   const handleUpdateProfile = async (e: React.FormEvent) => {
     e.preventDefault();
-    setProfileLoading(true);
     setProfileMsg(null);
+
+    if (!otp.trim()) {
+      setProfileMsg({
+        text: "Security verification required. Please click 'Send OTP' and enter the 6-digit code received on your email.",
+        error: true,
+      });
+      return;
+    }
+
+    setProfileLoading(true);
+
     try {
       const res = await fetch("/api/admin/profile", {
         method: "POST",
@@ -93,11 +142,14 @@ export function AdminTopNavbar({ user, onToggleSidebar, isCollapsed = false, onR
           fullName: profileName,
           email: profileEmail,
           phone: profilePhone,
+          otp: otp.trim(),
         }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to update profile");
-      setProfileMsg({ text: data.message || "Profile updated successfully!" });
+      setProfileMsg({ text: data.message || "Profile updated successfully with OTP verification!" });
+      setOtp("");
+      setOtpMsg(null);
       onRefresh?.();
       setTimeout(() => {
         setActiveModal(null);
@@ -242,6 +294,7 @@ export function AdminTopNavbar({ user, onToggleSidebar, isCollapsed = false, onR
                     onClick={() => {
                       setDropdownOpen(false);
                       setProfileMsg(null);
+                      setOtpMsg(null);
                       setActiveModal("profile");
                     }}
                     className="w-full text-left px-4 py-2.5 text-xs font-medium text-slate-200 hover:text-white hover:bg-white/5 flex items-center gap-3 transition-colors cursor-pointer"
@@ -300,7 +353,7 @@ export function AdminTopNavbar({ user, onToggleSidebar, isCollapsed = false, onR
           onClick={() => setActiveModal(null)}
         >
           <div
-            className="relative w-full max-w-md bg-[#091124] border border-[#17274a] text-slate-200 rounded-3xl p-6 sm:p-7 shadow-2xl animate-in zoom-in-95 duration-150"
+            className="relative w-full max-w-md bg-[#091124] border border-[#17274a] text-slate-200 rounded-3xl p-6 sm:p-7 shadow-2xl animate-in zoom-in-95 duration-150 max-h-[92vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Close Button */}
@@ -318,7 +371,7 @@ export function AdminTopNavbar({ user, onToggleSidebar, isCollapsed = false, onR
               </div>
               <div>
                 <h3 className="text-lg font-bold text-white">Edit Admin Profile</h3>
-                <p className="text-xs text-slate-400">Update your administrator information</p>
+                <p className="text-xs text-slate-400">Update your administrator information with OTP</p>
               </div>
             </div>
 
@@ -359,7 +412,7 @@ export function AdminTopNavbar({ user, onToggleSidebar, isCollapsed = false, onR
                   value={profileName}
                   onChange={(e) => setProfileName(e.target.value)}
                   placeholder="Enter full name"
-                  className="w-full bg-[#070e20] border border-[#1a2d52] rounded-xl px-3.5 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-amber-400"
+                  className="w-full bg-[#070e20] border border-[#1a2d52] rounded-xl px-3.5 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-amber-400 text-xs font-medium"
                   required
                 />
               </div>
@@ -373,7 +426,7 @@ export function AdminTopNavbar({ user, onToggleSidebar, isCollapsed = false, onR
                   value={profileEmail}
                   onChange={(e) => setProfileEmail(e.target.value)}
                   placeholder="admin@dubaifinance.online"
-                  className="w-full bg-[#070e20] border border-[#1a2d52] rounded-xl px-3.5 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-amber-400 font-mono"
+                  className="w-full bg-[#070e20] border border-[#1a2d52] rounded-xl px-3.5 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-amber-400 font-mono text-xs"
                   required
                 />
               </div>
@@ -385,8 +438,71 @@ export function AdminTopNavbar({ user, onToggleSidebar, isCollapsed = false, onR
                   value={profilePhone}
                   onChange={(e) => setProfilePhone(e.target.value)}
                   placeholder="e.g. +971 50 123 4567 or +91..."
-                  className="w-full bg-[#070e20] border border-[#1a2d52] rounded-xl px-3.5 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-amber-400 font-mono"
+                  className="w-full bg-[#070e20] border border-[#1a2d52] rounded-xl px-3.5 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-amber-400 font-mono text-xs"
                 />
+              </div>
+
+              {/* Security OTP Verification Section */}
+              <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 space-y-2.5 mt-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5">
+                    <ShieldAlert className="w-3.5 h-3.5 text-amber-400" />
+                    <span className="font-bold text-amber-300 uppercase tracking-wider font-mono text-[10px]">
+                      Email OTP Verification
+                    </span>
+                  </div>
+                  <span className="text-[10px] text-slate-400 font-mono">
+                    Required
+                  </span>
+                </div>
+
+                <p className="text-[10px] text-slate-300 leading-relaxed">
+                  OTP will be sent to registered email: <strong className="text-amber-400 font-mono">{user?.email}</strong>
+                </p>
+
+                {otpMsg && (
+                  <div
+                    className={`p-2 rounded-xl text-[11px] flex items-center gap-1.5 ${
+                      otpMsg.error
+                        ? "bg-rose-950/60 text-rose-300 border border-rose-500/40"
+                        : "bg-emerald-950/60 text-emerald-300 border border-emerald-500/40"
+                    }`}
+                  >
+                    {otpMsg.error ? <AlertCircle className="w-3.5 h-3.5 shrink-0" /> : <CheckCircle className="w-3.5 h-3.5 shrink-0" />}
+                    <span>{otpMsg.text}</span>
+                  </div>
+                )}
+
+                <div className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    maxLength={6}
+                    value={otp}
+                    onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))}
+                    placeholder="Enter 6-digit OTP"
+                    className="flex-1 px-3 py-2 rounded-xl bg-[#070e20] border border-amber-500/40 text-white outline-none focus:border-amber-400 text-xs font-mono font-bold tracking-widest text-center"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleSendOtp}
+                    disabled={otpSending || otpCooldown > 0}
+                    className="px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs transition disabled:opacity-50 shrink-0 flex items-center gap-1.5 shadow-sm"
+                  >
+                    {otpSending ? (
+                      <>
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        <span>Sending...</span>
+                      </>
+                    ) : otpCooldown > 0 ? (
+                      <span>Resend ({otpCooldown}s)</span>
+                    ) : (
+                      <>
+                        <Send className="w-3.5 h-3.5" />
+                        <span>Send OTP</span>
+                      </>
+                    )}
+                  </button>
+                </div>
               </div>
 
               <div className="flex gap-3 pt-2">
@@ -402,7 +518,7 @@ export function AdminTopNavbar({ user, onToggleSidebar, isCollapsed = false, onR
                   disabled={profileLoading}
                   className="w-1/2 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-xs shadow-lg shadow-amber-500/20 transition disabled:opacity-50"
                 >
-                  {profileLoading ? "Saving..." : "Save Changes"}
+                  {profileLoading ? "Verifying..." : "Verify & Save"}
                 </button>
               </div>
             </form>
@@ -466,7 +582,7 @@ export function AdminTopNavbar({ user, onToggleSidebar, isCollapsed = false, onR
                   value={currentPassword}
                   onChange={(e) => setCurrentPassword(e.target.value)}
                   placeholder="Enter current password"
-                  className="w-full bg-[#070e20] border border-[#1a2d52] rounded-xl px-3.5 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-amber-400 font-mono"
+                  className="w-full bg-[#070e20] border border-[#1a2d52] rounded-xl px-3.5 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-amber-400 font-mono text-xs"
                   required
                 />
               </div>
@@ -480,7 +596,7 @@ export function AdminTopNavbar({ user, onToggleSidebar, isCollapsed = false, onR
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
                   placeholder="Min 6 characters"
-                  className="w-full bg-[#070e20] border border-[#1a2d52] rounded-xl px-3.5 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-amber-400 font-mono"
+                  className="w-full bg-[#070e20] border border-[#1a2d52] rounded-xl px-3.5 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-amber-400 font-mono text-xs"
                   required
                 />
               </div>
@@ -494,7 +610,7 @@ export function AdminTopNavbar({ user, onToggleSidebar, isCollapsed = false, onR
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="Re-enter new password"
-                  className="w-full bg-[#070e20] border border-[#1a2d52] rounded-xl px-3.5 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-amber-400 font-mono"
+                  className="w-full bg-[#070e20] border border-[#1a2d52] rounded-xl px-3.5 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-amber-400 font-mono text-xs"
                   required
                 />
               </div>

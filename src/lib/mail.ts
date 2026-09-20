@@ -38,6 +38,9 @@ function getOtpHtmlTemplate(otp: string, purpose: string = "REGISTRATION"): stri
   } else if (purpose === "TRANSACTION") {
     title = "Authorize Transaction";
     message = "A transaction has been initiated on your Dubai Finance account. Use the 6-digit verification code below to authorize this action.";
+  } else if (purpose === "ADMIN_PROFILE_UPDATE") {
+    title = "Admin Profile Verification Code";
+    message = "A request has been initiated to update your Dubai Finance Administrator profile details. Enter the 6-digit verification code below to authorize this update.";
   }
 
   return `
@@ -222,6 +225,9 @@ export async function sendOtpEmail(email: string, purpose: string = "REGISTRATIO
   } else if (purpose === "TRANSACTION") {
     subject = `Transaction Authorization Code: ${otp} - Dubai Finance`;
     text = `Use ${otp} to authorize your Dubai Finance fund transaction. Valid for 10 minutes.`;
+  } else if (purpose === "ADMIN_PROFILE_UPDATE") {
+    subject = `Admin Profile Update Code: ${otp} - Dubai Finance Security`;
+    text = `Use ${otp} to authorize your Dubai Finance Admin profile changes. Valid for 10 minutes.`;
   }
 
   const mailOptions = {
