@@ -30,7 +30,8 @@ import {
   ArrowRight,
   Clock,
   ShieldCheck,
-  FileText
+  FileText,
+  Edit
 } from "lucide-react";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 
@@ -132,6 +133,18 @@ export default function SuperRootAdminPage() {
   const [newPrefix, setNewPrefix] = useState("");
   const [prefixLoading, setPrefixLoading] = useState(false);
   const [prefixMsg, setPrefixMsg] = useState("");
+
+  // Edit Admin Details Modal (Name, Email, Phone, Team Prefix, Password)
+  const [editModalAdmin, setEditModalAdmin] = useState<AdminItem | null>(null);
+  const [editForm, setEditForm] = useState({
+    fullName: "",
+    email: "",
+    phone: "",
+    teamPrefix: "",
+    password: "",
+  });
+  const [editLoading, setEditLoading] = useState(false);
+  const [editMsg, setEditMsg] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
   const loadAllData = async () => {
     try {
@@ -324,6 +337,54 @@ export default function SuperRootAdminPage() {
       setPrefixMsg(err.message);
     } finally {
       setPrefixLoading(false);
+    }
+  };
+
+  const handleOpenEditModal = (adm: AdminItem) => {
+    setEditModalAdmin(adm);
+    setEditForm({
+      fullName: adm.fullName || "",
+      email: adm.email || "",
+      phone: adm.phone || "",
+      teamPrefix: adm.teamPrefix || "",
+      password: "",
+    });
+    setEditMsg(null);
+  };
+
+  const handleUpdateAdminDetails = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editModalAdmin) return;
+    setEditLoading(true);
+    setEditMsg(null);
+
+    try {
+      const res = await fetch("/api/superadmin/admins", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          adminId: editModalAdmin.id,
+          action: "UPDATE_DETAILS",
+          fullName: editForm.fullName,
+          email: editForm.email,
+          phone: editForm.phone,
+          teamPrefix: editForm.teamPrefix,
+          password: editForm.password,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to update admin details");
+
+      setEditMsg({ type: "success", text: data.message || "Admin updated successfully!" });
+      loadAllData();
+      setTimeout(() => {
+        setEditModalAdmin(null);
+        setEditMsg(null);
+      }, 1200);
+    } catch (err: any) {
+      setEditMsg({ type: "error", text: err.message });
+    } finally {
+      setEditLoading(false);
     }
   };
 
@@ -736,6 +797,16 @@ export default function SuperRootAdminPage() {
                               >
                                 <Eye className="w-3.5 h-3.5" />
                                 Inspect Team
+                              </button>
+
+                              {/* Edit Admin Details (Name, Email, Phone, Password, Prefix) */}
+                              <button
+                                onClick={() => handleOpenEditModal(adm)}
+                                className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 font-bold text-xs transition border border-amber-500/30"
+                                title="Edit Admin Details (Name, Email, Contact Info, Password, Prefix)"
+                              >
+                                <Edit className="w-3.5 h-3.5" />
+                                <span>Edit</span>
                               </button>
 
                               {/* Reset Password */}
@@ -1281,6 +1352,141 @@ export default function SuperRootAdminPage() {
               >
                 {prefixLoading ? "Updating..." : "Save Team Prefix"}
               </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Edit Admin Details (Name, Email, Phone, Prefix, Password) */}
+      {editModalAdmin && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+          <div className="bg-slate-900 border border-slate-800 rounded-3xl max-w-md w-full p-6 shadow-2xl relative max-h-[92vh] overflow-y-auto">
+            <button
+              onClick={() => setEditModalAdmin(null)}
+              className="absolute top-5 right-5 text-slate-400 hover:text-white p-1.5 rounded-lg bg-slate-800/60 hover:bg-slate-800 transition"
+            >
+              <X className="w-4 h-4" />
+            </button>
+
+            <div className="flex items-center gap-2.5 mb-1.5">
+              <div className="w-9 h-9 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400">
+                <Edit className="w-4 h-4" />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-white">Edit Admin Account</h3>
+                <p className="text-[11px] text-slate-400 font-mono">
+                  Branch ID: <span className="text-amber-400 font-bold">{editModalAdmin.customId}</span> &bull; Current Role: <span className="text-slate-300">{editModalAdmin.role}</span>
+                </p>
+              </div>
+            </div>
+
+            {editMsg && (
+              <div
+                className={`p-3 rounded-xl text-xs my-3.5 flex items-center gap-2 ${
+                  editMsg.type === "success"
+                    ? "bg-emerald-500/15 border border-emerald-500/30 text-emerald-300"
+                    : "bg-rose-500/15 border border-rose-500/30 text-rose-300"
+                }`}
+              >
+                {editMsg.type === "success" ? <CheckCircle2 className="w-4 h-4 shrink-0" /> : <AlertTriangle className="w-4 h-4 shrink-0" />}
+                <span className="font-medium">{editMsg.text}</span>
+              </div>
+            )}
+
+            <form onSubmit={handleUpdateAdminDetails} className="space-y-4 text-xs mt-4">
+              {/* Full Name */}
+              <div>
+                <label className="block text-slate-300 font-bold mb-1.5 uppercase font-mono">
+                  Full Name <span className="text-rose-400">*</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={editForm.fullName}
+                  onChange={(e) => setEditForm({ ...editForm, fullName: e.target.value })}
+                  placeholder="e.g. Dubai Finance CMD"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white outline-none focus:border-amber-400 text-xs font-medium"
+                />
+              </div>
+
+              {/* Email */}
+              <div>
+                <label className="block text-slate-300 font-bold mb-1.5 uppercase font-mono">
+                  Email Address <span className="text-rose-400">*</span>
+                </label>
+                <input
+                  type="email"
+                  required
+                  value={editForm.email}
+                  onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
+                  placeholder="admin@dubaifinance.online"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white outline-none focus:border-amber-400 text-xs font-mono"
+                />
+              </div>
+
+              {/* Phone & Prefix Grid */}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-slate-300 font-bold mb-1.5 uppercase font-mono">
+                    Contact / Phone
+                  </label>
+                  <input
+                    type="text"
+                    value={editForm.phone}
+                    onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
+                    placeholder="+971... or +91..."
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white outline-none focus:border-amber-400 text-xs font-mono"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-slate-300 font-bold mb-1.5 uppercase font-mono">
+                    Team Prefix Digit
+                  </label>
+                  <input
+                    type="text"
+                    value={editForm.teamPrefix}
+                    onChange={(e) => setEditForm({ ...editForm, teamPrefix: e.target.value })}
+                    placeholder="e.g. 1, 2"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-amber-300 font-bold outline-none focus:border-amber-400 text-xs font-mono"
+                  />
+                </div>
+              </div>
+
+              {/* New Password */}
+              <div className="pt-2 border-t border-slate-800">
+                <label className="block text-slate-300 font-bold mb-1 uppercase font-mono flex items-center justify-between">
+                  <span>Change Password</span>
+                  <span className="text-[10px] text-slate-500 font-normal lowercase">(leave blank to keep current)</span>
+                </label>
+                <input
+                  type="text"
+                  value={editForm.password}
+                  onChange={(e) => setEditForm({ ...editForm, password: e.target.value })}
+                  placeholder="Enter new password (min 6 chars)"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white outline-none focus:border-amber-400 text-xs font-mono"
+                />
+                <p className="text-[10px] text-slate-500 mt-1 font-mono">
+                  Only fill this field if you want to overwrite this admin&apos;s login password.
+                </p>
+              </div>
+
+              <div className="pt-3 flex items-center justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => setEditModalAdmin(null)}
+                  className="px-4 py-2.5 rounded-xl border border-slate-800 text-slate-300 hover:bg-slate-800 font-semibold transition text-xs"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={editLoading}
+                  className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black transition disabled:opacity-50 text-xs shadow-lg shadow-amber-500/20"
+                >
+                  {editLoading ? "Saving Changes..." : "Save Admin Details"}
+                </button>
+              </div>
             </form>
           </div>
         </div>

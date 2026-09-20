@@ -172,7 +172,8 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized. Super Root Admin access required." }, { status: 403 });
     }
 
-    const { adminId, action, newPassword, status, teamPrefix } = await req.json();
+    const body = await req.json();
+    const { adminId, action, newPassword, status, teamPrefix, fullName, email, phone, password } = body;
     if (!adminId) {
       return NextResponse.json({ error: "adminId is required." }, { status: 400 });
     }
@@ -228,6 +229,99 @@ export async function PATCH(req: NextRequest) {
         data: { teamPrefix: cleanPrefix },
       });
       return NextResponse.json({ success: true, message: `Team prefix updated to "${cleanPrefix}".` });
+    }
+
+    if (action === "UPDATE_DETAILS" || action === "UPDATE_PROFILE") {
+      const updateData: any = {};
+
+      // 1. Update Full Name
+      if (fullName !== undefined) {
+        if (!fullName || !fullName.trim()) {
+          return NextResponse.json({ error: "Full Name cannot be empty." }, { status: 400 });
+        }
+        updateData.fullName = fullName.trim();
+      }
+
+      // 2. Update Email
+      if (email !== undefined) {
+        if (!email || !email.trim()) {
+          return NextResponse.json({ error: "Email cannot be empty." }, { status: 400 });
+        }
+        const cleanEmail = email.trim().toLowerCase();
+        const existingEmail = await db.user.findFirst({
+          where: {
+            email: cleanEmail,
+            NOT: { id: adminId },
+          },
+        });
+        if (existingEmail) {
+          return NextResponse.json(
+            { error: `Email "${cleanEmail}" is already used by another account (${existingEmail.customId}).` },
+            { status: 400 }
+          );
+        }
+        updateData.email = cleanEmail;
+      }
+
+      // 3. Update Contact Phone
+      if (phone !== undefined) {
+        updateData.phone = phone ? phone.trim() : null;
+      }
+
+      // 4. Update Team Prefix (if provided)
+      if (teamPrefix !== undefined) {
+        const cleanPrefix = (teamPrefix || "").toString().trim() || null;
+        if (cleanPrefix) {
+          const existingPrefix = await db.user.findFirst({
+            where: {
+              teamPrefix: cleanPrefix,
+              NOT: { id: adminId },
+              role: { in: ["ADMIN", "SUPER_ADMIN"] },
+            },
+          });
+          if (existingPrefix) {
+            return NextResponse.json(
+              { error: `Team digit prefix "${cleanPrefix}" is already assigned to Admin ${existingPrefix.customId}.` },
+              { status: 400 }
+            );
+          }
+        }
+        updateData.teamPrefix = cleanPrefix;
+      }
+
+      // 5. Update Password (optional)
+      const passCandidate = password || newPassword;
+      if (passCandidate && passCandidate.trim()) {
+        if (passCandidate.trim().length < 6) {
+          return NextResponse.json({ error: "Password must be at least 6 characters." }, { status: 400 });
+        }
+        updateData.passwordHash = await hashPassword(passCandidate.trim());
+      }
+
+      if (Object.keys(updateData).length === 0) {
+        return NextResponse.json({ error: "No update fields provided." }, { status: 400 });
+      }
+
+      const updated = await db.user.update({
+        where: { id: adminId },
+        data: updateData,
+        select: {
+          id: true,
+          customId: true,
+          fullName: true,
+          email: true,
+          phone: true,
+          teamPrefix: true,
+          status: true,
+          role: true,
+        },
+      });
+
+      return NextResponse.json({
+        success: true,
+        message: `Admin ${targetAdmin.customId} profile & credentials updated successfully.`,
+        admin: updated,
+      });
     }
 
     return NextResponse.json({ error: "Invalid action" }, { status: 400 });
