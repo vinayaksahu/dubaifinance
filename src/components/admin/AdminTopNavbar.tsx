@@ -101,12 +101,6 @@ export function AdminTopNavbar({ user, onToggleSidebar, isCollapsed = false, onR
   const handleSendOtp = async () => {
     if (otpCooldown > 0 || otpSending) return;
 
-    const targetEmail = (profileEmail || user?.email || "").trim();
-    if (!targetEmail) {
-      setOtpMsg({ text: "Please enter a valid email address first.", error: true });
-      return;
-    }
-
     setOtpSending(true);
     setOtpMsg(null);
 
@@ -114,12 +108,11 @@ export function AdminTopNavbar({ user, onToggleSidebar, isCollapsed = false, onR
       const res = await fetch("/api/admin/profile/send-otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: targetEmail }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to send verification code");
 
-      setOtpMsg({ text: data.message || `OTP code sent to ${targetEmail}!` });
+      setOtpMsg({ text: data.message || `OTP code sent to your registered email ${user?.email}!` });
       setOtpCooldown(60);
     } catch (err: any) {
       setOtpMsg({ text: err.message, error: true });
@@ -465,7 +458,7 @@ export function AdminTopNavbar({ user, onToggleSidebar, isCollapsed = false, onR
                 </div>
 
                 <p className="text-[10px] text-slate-300 leading-relaxed">
-                  OTP will be sent to: <strong className="text-amber-400 font-mono">{(profileEmail || user?.email || "").trim()}</strong>
+                  Verification OTP will be sent to your registered email: <strong className="text-amber-400 font-mono">{user?.email}</strong>
                 </p>
 
                 {otpMsg && (

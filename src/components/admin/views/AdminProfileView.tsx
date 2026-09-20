@@ -16,7 +16,8 @@ import {
   Lock,
   Send,
   Loader2,
-  ShieldAlert
+  ShieldAlert,
+  ArrowRight
 } from "lucide-react";
 
 interface AdminProfileViewProps {
@@ -64,12 +65,6 @@ export function AdminProfileView({ user, onRefresh }: AdminProfileViewProps) {
   const handleSendOtp = async () => {
     if (otpCooldown > 0 || otpSending) return;
 
-    const targetEmail = (email || user?.email || "").trim();
-    if (!targetEmail) {
-      setOtpMsg({ type: "error", text: "Please enter a valid email address first." });
-      return;
-    }
-
     setOtpSending(true);
     setOtpMsg(null);
     setProfileMsg(null);
@@ -78,12 +73,11 @@ export function AdminProfileView({ user, onRefresh }: AdminProfileViewProps) {
       const res = await fetch("/api/admin/profile/send-otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: targetEmail }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to send verification code");
 
-      setOtpMsg({ type: "success", text: data.message || `Verification OTP sent to ${targetEmail}!` });
+      setOtpMsg({ type: "success", text: data.message || `Verification code sent to registered email ${user?.email}!` });
       setOtpCooldown(60);
     } catch (err: any) {
       setOtpMsg({ type: "error", text: err.message });
@@ -99,7 +93,7 @@ export function AdminProfileView({ user, onRefresh }: AdminProfileViewProps) {
     if (!otp.trim()) {
       setProfileMsg({
         type: "error",
-        text: "Please click 'Send OTP' above to receive your 6-digit code, then enter it to verify and save.",
+        text: `Please click 'Send OTP' to receive the 6-digit verification code on your registered email (${user?.email}).`,
       });
       return;
     }
@@ -115,7 +109,7 @@ export function AdminProfileView({ user, onRefresh }: AdminProfileViewProps) {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to update profile");
 
-      setProfileMsg({ type: "success", text: data.message || "Profile updated successfully with OTP verification!" });
+      setProfileMsg({ type: "success", text: data.message || "Profile updated successfully with verified authorization!" });
       setOtp("");
       setOtpMsg(null);
       onRefresh?.();
@@ -160,7 +154,7 @@ export function AdminProfileView({ user, onRefresh }: AdminProfileViewProps) {
     }
   };
 
-  const activeEmailTarget = (email || user?.email || "").trim();
+  const isChangingEmail = email.trim().toLowerCase() !== (user?.email || "").trim().toLowerCase();
 
   return (
     <div className="space-y-6">
@@ -281,6 +275,12 @@ export function AdminProfileView({ user, onRefresh }: AdminProfileViewProps) {
                   placeholder="admin@dubaifinance.online"
                   className="w-full px-3.5 py-2.5 rounded-xl bg-[var(--bg-main)] border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white outline-none focus:border-amber-400 text-xs font-mono"
                 />
+                {isChangingEmail && (
+                  <p className="text-[11px] text-amber-500 dark:text-amber-400 font-mono mt-1 flex items-center gap-1">
+                    <ArrowRight className="w-3 h-3 shrink-0" />
+                    Changing email from <span className="font-bold underline">{user?.email}</span> to <span className="font-bold underline">{email}</span>
+                  </p>
+                )}
               </div>
 
               <div>
@@ -302,7 +302,7 @@ export function AdminProfileView({ user, onRefresh }: AdminProfileViewProps) {
                   <div className="flex items-center gap-2">
                     <ShieldAlert className="w-4 h-4 text-amber-500" />
                     <span className="font-bold text-slate-900 dark:text-amber-300 uppercase tracking-wider font-mono text-[11px]">
-                      Security OTP Verification
+                      Account Security Verification
                     </span>
                   </div>
                   <span className="text-[10px] text-amber-500 dark:text-amber-400 font-mono font-semibold">
@@ -310,10 +310,17 @@ export function AdminProfileView({ user, onRefresh }: AdminProfileViewProps) {
                   </span>
                 </div>
 
-                <p className="text-[11px] text-slate-600 dark:text-slate-300">
-                  Verification OTP will be sent to:{" "}
-                  <strong className="text-amber-600 dark:text-amber-400 font-mono font-bold">{activeEmailTarget}</strong>
-                </p>
+                <div className="text-[11px] text-slate-600 dark:text-slate-300 space-y-1">
+                  <p>
+                    Verification OTP will be sent to your registered email:{" "}
+                    <strong className="text-amber-600 dark:text-amber-400 font-mono font-bold">{user?.email}</strong>
+                  </p>
+                  {isChangingEmail && (
+                    <p className="text-[10px] text-slate-500 dark:text-slate-400 italic">
+                      (To authorize transferring this admin account to {email}, authorization must come from {user?.email})
+                    </p>
+                  )}
+                </div>
 
                 {otpMsg && (
                   <div

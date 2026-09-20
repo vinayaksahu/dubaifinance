@@ -67,18 +67,13 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Admin account email not found." }, { status: 404 });
     }
 
-    const cleanEmail = email ? email.toLowerCase().trim() : currentAdmin.email.toLowerCase().trim();
     const currentRegisteredEmail = currentAdmin.email.toLowerCase().trim();
 
-    // Verify OTP: check target email first, then current email fallback
-    let isOtpValid = await verifyOtp(cleanEmail, otp.trim(), "ADMIN_PROFILE_UPDATE");
-    if (!isOtpValid && cleanEmail !== currentRegisteredEmail) {
-      isOtpValid = await verifyOtp(currentRegisteredEmail, otp.trim(), "ADMIN_PROFILE_UPDATE");
-    }
-
+    // Security Verification: Check OTP sent to the account's existing registered email
+    const isOtpValid = await verifyOtp(currentRegisteredEmail, otp.trim(), "ADMIN_PROFILE_UPDATE");
     if (!isOtpValid) {
       return NextResponse.json(
-        { error: "Invalid or expired OTP code. Please enter the correct 6-digit code or request a new one." },
+        { error: `Invalid or expired OTP code. Please enter the 6-digit code sent to ${currentRegisteredEmail}.` },
         { status: 400 }
       );
     }
@@ -88,18 +83,21 @@ export async function POST(req: Request) {
       phone: phone ? String(phone).trim() : null,
     };
 
-    // If email is provided and different, check uniqueness
-    if (cleanEmail && cleanEmail !== currentRegisteredEmail) {
-      const existing = await db.user.findFirst({
-        where: {
-          email: cleanEmail,
-          NOT: { id: session.userId },
-        },
-      });
-      if (existing) {
-        return NextResponse.json({ error: `Email "${cleanEmail}" is already taken by another user (${existing.customId}).` }, { status: 400 });
+    // If changing email address, check that the new email format is valid and not already taken
+    if (email && typeof email === "string" && email.trim()) {
+      const cleanEmail = email.trim().toLowerCase();
+      if (cleanEmail !== currentRegisteredEmail) {
+        const existing = await db.user.findFirst({
+          where: {
+            email: cleanEmail,
+            NOT: { id: session.userId },
+          },
+        });
+        if (existing) {
+          return NextResponse.json({ error: `Email "${cleanEmail}" is already taken by another user (${existing.customId}).` }, { status: 400 });
+        }
+        updateData.email = cleanEmail;
       }
-      updateData.email = cleanEmail;
     }
 
     const updatedAdmin = await db.user.update({
@@ -119,7 +117,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({
       success: true,
-      message: "Admin profile updated successfully with OTP verification!",
+      message: "Admin profile updated successfully with verified authorization!",
       user: updatedAdmin,
     });
   } catch (error: any) {
