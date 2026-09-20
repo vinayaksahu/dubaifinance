@@ -1,18 +1,38 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Clock, Sparkles, Rocket, Calendar, ShieldCheck, Globe } from "lucide-react";
+import Link from "next/link";
+import {
+  Clock,
+  Sparkles,
+  Rocket,
+  Calendar,
+  ShieldCheck,
+  Globe,
+  ArrowRight,
+  LogIn,
+  UserPlus,
+  PartyPopper,
+  CheckCircle2,
+  Zap,
+  Flame,
+} from "lucide-react";
 
 interface CountdownBannerProps {
   targetDateStr?: string;
   title?: string;
+  forcePast?: boolean;
+  isAdminPreview?: boolean;
 }
 
 export function CountdownBanner({
   targetDateStr = "2026-09-21T20:00",
   title = "OFFICIAL GLOBAL PLATFORM LAUNCH • SEPTEMBER 21, 2026",
+  forcePast = false,
+  isAdminPreview = false,
 }: CountdownBannerProps) {
   const [activeTz, setActiveTz] = useState<"ALL" | "GST" | "IST" | "UTC">("ALL");
+  const [previewLaunch, setPreviewLaunch] = useState(forcePast);
   const [clocks, setClocks] = useState({
     gst: "",
     ist: "",
@@ -30,8 +50,14 @@ export function CountdownBanner({
     hours: 0,
     minutes: 0,
     seconds: 0,
-    isPast: false,
+    isPast: forcePast,
   });
+
+  useEffect(() => {
+    setPreviewLaunch(forcePast);
+  }, [forcePast]);
+
+  const isLaunched = previewLaunch || timeLeft.isPast;
 
   useEffect(() => {
     const calculateTime = () => {
@@ -129,16 +155,110 @@ export function CountdownBanner({
             Institutional USDT (BEP-20) Wealth Protocol. Public member registration and live package activations unlock in:
           </p>
 
-          {/* Big Digital Timer Grid */}
-          {timeLeft.isPast ? (
-            <div className="my-6 p-6 rounded-2xl bg-amber-500/10 border border-amber-500/30 max-w-md mx-auto">
-              <Rocket className="w-10 h-10 text-amber-400 mx-auto mb-2 animate-bounce" />
-              <h3 className="font-display text-xl font-bold text-amber-300">
-                LAUNCH DAY IS HERE!
-              </h3>
-              <p className="text-xs text-slate-300 mt-1">
-                Public member access and contract activations are now opening.
-              </p>
+          {/* Test / Admin Mode Toggle (Discreetly available for admins/testing) */}
+          {(isAdminPreview || forcePast) && (
+            <div className="mb-4 inline-flex items-center gap-2 p-1.5 rounded-2xl bg-black/60 border border-purple-500/40">
+              <span className="text-[11px] font-bold text-purple-300 px-2 flex items-center gap-1">
+                <Sparkles className="w-3.5 h-3.5 text-purple-400" />
+                <span>Admin Test Controller:</span>
+              </span>
+              <button
+                type="button"
+                onClick={() => setPreviewLaunch(false)}
+                className={`px-3 py-1 rounded-xl text-xs font-bold transition-all ${
+                  !previewLaunch ? "bg-amber-500 text-black font-extrabold shadow-md" : "text-slate-400 hover:text-white"
+                }`}
+              >
+                🕒 Live Countdown View
+              </button>
+              <button
+                type="button"
+                onClick={() => setPreviewLaunch(true)}
+                className={`px-3 py-1 rounded-xl text-xs font-bold transition-all ${
+                  previewLaunch ? "bg-emerald-500 text-white font-extrabold shadow-md" : "text-slate-400 hover:text-white"
+                }`}
+              >
+                🎉 Launched (Welcome &amp; CTAs)
+              </button>
+            </div>
+          )}
+
+          {/* Big Digital Timer Grid OR Launch Celebration Animation */}
+          {isLaunched ? (
+            <div className="relative my-6 p-6 sm:p-10 rounded-3xl bg-gradient-to-b from-[#121b2d]/90 via-[#0a101d]/95 to-[#150f24]/90 border-2 border-amber-400/60 shadow-2xl shadow-amber-500/20 backdrop-blur-2xl overflow-hidden">
+              {/* Animated Floating Glow Orbs & Confetti Particles */}
+              <div className="absolute -top-10 left-1/2 -translate-x-1/2 w-96 h-96 bg-gradient-to-b from-amber-500/20 via-yellow-500/10 to-transparent rounded-full blur-3xl pointer-events-none animate-pulse" />
+              <div className="absolute top-4 left-6 text-2xl animate-bounce duration-1000 select-none">✨</div>
+              <div className="absolute top-6 right-8 text-2xl animate-bounce duration-700 select-none delay-100">🎉</div>
+              <div className="absolute bottom-6 left-12 text-2xl animate-pulse select-none">🎆</div>
+              <div className="absolute bottom-6 right-12 text-2xl animate-bounce duration-1000 select-none delay-200">🚀</div>
+
+              {/* Central Glowing 3D Emblem with Animated Rings */}
+              <div className="relative z-10 flex flex-col items-center text-center">
+                <div className="relative mb-5 flex items-center justify-center">
+                  <div className="absolute w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-amber-400/20 animate-ping" />
+                  <div className="absolute w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-gradient-to-tr from-amber-500/40 via-yellow-400/30 to-cyan-400/30 blur-md animate-pulse" />
+                  <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-br from-amber-400 via-amber-500 to-yellow-600 p-0.5 shadow-2xl shadow-amber-500/50 flex items-center justify-center transform hover:rotate-6 transition-transform">
+                    <div className="w-full h-full rounded-[14px] bg-[#0c1220] flex items-center justify-center">
+                      <Rocket className="w-8 h-8 sm:w-10 sm:h-10 text-amber-400 animate-bounce" />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Celebratory Live Badge */}
+                <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-gradient-to-r from-emerald-500/20 via-amber-500/20 to-emerald-500/20 border border-emerald-400/40 text-emerald-300 text-xs sm:text-sm font-black uppercase tracking-wider mb-3 shadow-lg shadow-emerald-500/10">
+                  <PartyPopper className="w-4 h-4 text-emerald-400 animate-spin" />
+                  <span>PLATFORM IS OFFICIALLY LIVE &bull; ACTIVATION OPEN!</span>
+                  <Sparkles className="w-4 h-4 text-amber-400 animate-pulse" />
+                </div>
+
+                {/* Grand Headline */}
+                <h3 className="font-display text-2xl sm:text-4xl lg:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-yellow-200 to-amber-400 tracking-tight leading-tight max-w-2xl">
+                  WELCOME TO DUBAI FINANCE
+                </h3>
+
+                <p className="text-xs sm:text-sm text-slate-300 mt-3 max-w-xl leading-relaxed">
+                  The institutional USDT (BEP-20) wealth protocol is fully unlocked. Public member registrations, contract activations, and daily 5% ROI liquidity are now active worldwide.
+                </p>
+
+                {/* Big Action Buttons (Register & Login) */}
+                <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4 w-full max-w-md mx-auto">
+                  {/* Register / Join Now Button */}
+                  <Link
+                    href="/register"
+                    className="w-full sm:w-auto flex-1 group relative inline-flex items-center justify-center gap-2.5 px-8 py-4 rounded-2xl bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 hover:from-amber-300 hover:to-yellow-300 text-slate-950 font-black text-sm sm:text-base shadow-2xl shadow-amber-500/40 transition-all duration-300 hover:scale-[1.03] active:scale-[0.98]"
+                  >
+                    <UserPlus className="w-5 h-5 text-slate-950" />
+                    <span>Create Account (Register)</span>
+                    <ArrowRight className="w-4 h-4 text-slate-950 group-hover:translate-x-1 transition-transform" />
+                  </Link>
+
+                  {/* Member Login Button */}
+                  <Link
+                    href="/login"
+                    className="w-full sm:w-auto flex-1 group relative inline-flex items-center justify-center gap-2.5 px-8 py-4 rounded-2xl bg-white/10 hover:bg-white/20 border-2 border-white/20 hover:border-amber-400/60 text-white font-bold text-sm sm:text-base shadow-xl backdrop-blur-md transition-all duration-300 hover:scale-[1.03] active:scale-[0.98]"
+                  >
+                    <LogIn className="w-5 h-5 text-amber-400" />
+                    <span>Member Login</span>
+                  </Link>
+                </div>
+
+                {/* Trust Badges Strip */}
+                <div className="mt-6 pt-5 border-t border-white/10 flex flex-wrap items-center justify-center gap-4 sm:gap-6 text-slate-400 text-xs font-semibold">
+                  <div className="flex items-center gap-1.5 text-emerald-400">
+                    <CheckCircle2 className="w-4 h-4" />
+                    <span>Live Smart Contract</span>
+                  </div>
+                  <div className="flex items-center gap-1.5 text-amber-400">
+                    <Zap className="w-4 h-4" />
+                    <span>Instant USDT BEP-20 Activations</span>
+                  </div>
+                  <div className="flex items-center gap-1.5 text-cyan-400">
+                    <Clock className="w-4 h-4" />
+                    <span>24/7 Global Member Access</span>
+                  </div>
+                </div>
+              </div>
             </div>
           ) : (
             <div className="grid grid-cols-4 gap-2 sm:gap-4 max-w-2xl mx-auto my-6 sm:my-8">

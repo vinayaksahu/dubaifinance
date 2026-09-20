@@ -27,6 +27,7 @@ import {
   Activity
 } from "lucide-react";
 import { getWithdrawalWindowStatus } from "@/lib/constants";
+import { CountdownBanner } from "@/components/landing/CountdownBanner";
 
 interface ConfigItem {
   value: string;
@@ -132,6 +133,7 @@ export function AdminConfigView() {
   const [, setTimeTick] = useState(0);
   const [copiedAddress, setCopiedAddress] = useState(false);
   const [copiedAdminLink, setCopiedAdminLink] = useState(false);
+  const [adminLaunchPreview, setAdminLaunchPreview] = useState<boolean>(true);
 
   const handleQrUpload = (file: File) => {
     if (!file) return;
@@ -805,6 +807,52 @@ export function AdminConfigView() {
                 <span className="text-[10px] text-slate-500 mt-1 block">
                   Displayed as the headline above the digital clock numbers
                 </span>
+              </div>
+            </div>
+
+            {/* Live Launch Celebration & Timer Preview Controller */}
+            <div className="mt-6 pt-5 border-t border-amber-500/20">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+                <div>
+                  <h4 className="text-sm font-bold text-white flex items-center gap-2">
+                    <Sparkles className="w-4 h-4 text-amber-400" />
+                    <span>Launch State Live Visual Preview (Admin Inspector)</span>
+                  </h4>
+                  <p className="text-xs text-slate-400 mt-0.5">
+                    Test how the countdown banner looks right now vs. how the graphic celebration animation and Login / Register buttons appear when the timer finishes.
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2 p-1 rounded-xl bg-black/60 border border-slate-800 self-start sm:self-auto">
+                  <button
+                    type="button"
+                    onClick={() => setAdminLaunchPreview(false)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                      !adminLaunchPreview ? "bg-amber-500 text-black font-extrabold shadow-sm" : "text-slate-400 hover:text-white"
+                    }`}
+                  >
+                    🕒 Countdown Mode
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setAdminLaunchPreview(true)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
+                      adminLaunchPreview ? "bg-emerald-500 text-white font-extrabold shadow-sm" : "text-slate-400 hover:text-white"
+                    }`}
+                  >
+                    <span>🎉 Timer Ended (Celebration &amp; Buttons)</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Embedded Live CountdownBanner Preview */}
+              <div className="p-3 sm:p-5 rounded-2xl bg-[#060c1c] border border-amber-500/30 overflow-hidden shadow-inner">
+                <CountdownBanner
+                  targetDateStr={formValues.PRELAUNCH_TARGET_DATE || "2026-09-21T20:00"}
+                  title={formValues.PRELAUNCH_TIMER_TITLE || "OFFICIAL GLOBAL PLATFORM LAUNCH • SEPTEMBER 21, 2026"}
+                  forcePast={adminLaunchPreview}
+                  isAdminPreview={true}
+                />
               </div>
             </div>
           </div>
