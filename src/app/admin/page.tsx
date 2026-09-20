@@ -13,6 +13,7 @@ import { AdminConfigView } from "@/components/admin/views/AdminConfigView";
 import { AdminIncomeView } from "@/components/admin/views/AdminIncomeView";
 import { AdminBackupView } from "@/components/admin/views/AdminBackupView";
 import { AdminProfileView } from "@/components/admin/views/AdminProfileView";
+import { ImpersonationBanner } from "@/components/common/ImpersonationBanner";
 
 export default function AdminPage() {
   const router = useRouter();
@@ -48,7 +49,7 @@ export default function AdminPage() {
       const meData = await meRes.json();
       const statsData = await statsRes.json();
 
-      if (meData.user.role !== "SUPER_ADMIN" && meData.user.role !== "ADMIN") {
+      if (meData.user.role !== "SUPER_ADMIN" && meData.user.role !== "ADMIN" && meData.user.role !== "SUPER_ROOT_ADMIN") {
         router.push("/adminlogin");
         return;
       }
@@ -106,6 +107,8 @@ export default function AdminPage() {
 
   return (
     <div className="min-h-screen bg-[var(--bg-main)] text-[var(--text-main)] flex flex-col antialiased transition-colors duration-200">
+      <ImpersonationBanner userCustomId={user?.customId} userFullName={user?.fullName} userRole={user?.role} />
+
       {/* Sidebar */}
       <AdminSidebar
         activeTab={activeTab}

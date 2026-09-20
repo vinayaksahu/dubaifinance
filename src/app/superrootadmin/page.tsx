@@ -41,7 +41,9 @@ import {
   Filter,
   Monitor,
   CheckCircle,
-  XCircle
+  XCircle,
+  ExternalLink,
+  Loader2
 } from "lucide-react";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 
@@ -279,6 +281,29 @@ export default function SuperRootAdminPage() {
       await fetch("/api/auth/logout", { method: "POST" });
     } finally {
       router.push("/superrootadminlogin");
+    }
+  };
+
+  const [portalEnteringId, setPortalEnteringId] = useState<string | null>(null);
+
+  const handleEnterPortal = async (targetUserId: string, targetName: string, targetRole: "ADMIN" | "USER") => {
+    try {
+      setPortalEnteringId(targetUserId);
+      const res = await fetch("/api/superadmin/impersonate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ targetUserId }),
+      });
+      const data = await res.json();
+      if (res.ok && data.redirectUrl) {
+        window.location.href = data.redirectUrl;
+      } else {
+        alert(data.error || "Failed to enter portal.");
+        setPortalEnteringId(null);
+      }
+    } catch (err: any) {
+      alert("Error entering portal: " + err.message);
+      setPortalEnteringId(null);
     }
   };
 
@@ -814,7 +839,22 @@ export default function SuperRootAdminPage() {
                               </div>
                               <div>
                                 <p className="font-bold text-white text-sm">{adm.fullName}</p>
-                                <p className="text-slate-400 font-mono text-[11px]">{adm.customId}</p>
+                                <div className="flex items-center gap-2 mt-0.5">
+                                  <span className="text-slate-400 font-mono text-[11px]">{adm.customId}</span>
+                                  <button
+                                    onClick={() => handleEnterPortal(adm.id, adm.fullName, "ADMIN")}
+                                    disabled={portalEnteringId === adm.id}
+                                    className="px-2 py-0.5 rounded bg-cyan-500/20 hover:bg-cyan-500/35 text-cyan-300 border border-cyan-500/40 text-[10px] font-bold font-mono flex items-center gap-1 transition shadow-sm hover:scale-105 active:scale-95 disabled:opacity-50"
+                                    title={`Enter ${adm.fullName}'s Admin Portal`}
+                                  >
+                                    {portalEnteringId === adm.id ? (
+                                      <Loader2 className="w-2.5 h-2.5 animate-spin text-cyan-400" />
+                                    ) : (
+                                      <ExternalLink className="w-2.5 h-2.5 text-cyan-400" />
+                                    )}
+                                    Portal
+                                  </button>
+                                </div>
                               </div>
                             </div>
                           </td>
@@ -1093,8 +1133,25 @@ export default function SuperRootAdminPage() {
                             inspectData.members.map((m) => (
                               <tr key={m.id} className="hover:bg-slate-800/30">
                                 <td className="py-3 px-4">
-                                  <p className="font-bold text-white font-mono">{m.customId}</p>
-                                  <p className="text-slate-400">{m.fullName}</p>
+                                  <div className="flex items-center justify-between gap-2">
+                                    <div>
+                                      <p className="font-bold text-white font-mono">{m.customId}</p>
+                                      <p className="text-slate-400">{m.fullName}</p>
+                                    </div>
+                                    <button
+                                      onClick={() => handleEnterPortal(m.id, m.fullName, "USER")}
+                                      disabled={portalEnteringId === m.id}
+                                      className="px-2 py-1 rounded bg-emerald-500/20 hover:bg-emerald-500/35 text-emerald-300 border border-emerald-500/40 text-[10px] font-bold font-mono flex items-center gap-1 transition shadow-sm hover:scale-105 active:scale-95 disabled:opacity-50"
+                                      title={`Enter ${m.fullName}'s Member Portal`}
+                                    >
+                                      {portalEnteringId === m.id ? (
+                                        <Loader2 className="w-2.5 h-2.5 animate-spin text-emerald-400" />
+                                      ) : (
+                                        <ExternalLink className="w-2.5 h-2.5 text-emerald-400" />
+                                      )}
+                                      Portal
+                                    </button>
+                                  </div>
                                 </td>
                                 <td className="py-3 px-4 font-mono text-slate-300">
                                   {m.sponsor ? `${m.sponsor.customId} (${m.sponsor.fullName})` : "Direct/Root"}

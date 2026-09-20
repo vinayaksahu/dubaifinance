@@ -15,6 +15,7 @@ import { IncomeView } from "@/components/dashboard/views/IncomeView";
 import { MilestoneRewardsView } from "@/components/dashboard/views/MilestoneRewardsView";
 import { ReportsView } from "@/components/dashboard/views/ReportsView";
 import { SupportTicketView } from "@/components/dashboard/views/SupportTicketView";
+import { ImpersonationBanner } from "@/components/common/ImpersonationBanner";
 
 export default function MemberDashboardPage() {
   const router = useRouter();
@@ -69,6 +70,8 @@ export default function MemberDashboardPage() {
 
   return (
     <div className="min-h-screen bg-[var(--bg-main)] text-[var(--text-main)] flex flex-col antialiased transition-colors duration-200">
+      <ImpersonationBanner userCustomId={user?.customId} userFullName={user?.fullName} userRole={user?.role} />
+
       {/* Sidebar */}
       <MemberSidebar
         activeTab={activeTab}
