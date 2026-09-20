@@ -25,8 +25,8 @@ export function TransactionalView({ user, mode, onRefresh }: TransactionalViewPr
   const [withdrawPin, setWithdrawPin] = useState("");
   const [withdrawAddress, setWithdrawAddress] = useState(user.usdtAddress || "");
 
-  // Timezone selector state (Primary: GST Dubai Time)
-  const [selectedTz, setSelectedTz] = useState<"GST" | "IST" | "UTC" | "ALL">("GST");
+  // Timezone selector state (Default: ALL multi-timezone cards with GST Primary)
+  const [selectedTz, setSelectedTz] = useState<"ALL" | "GST" | "IST" | "UTC">("ALL");
 
   const [txOtpSending, setTxOtpSending] = useState(false);
   const [txOtpSent, setTxOtpSent] = useState(false);
@@ -377,62 +377,83 @@ export function TransactionalView({ user, mode, onRefresh }: TransactionalViewPr
                   </div>
                 </div>
 
-                {/* Dynamic Timezone View Content */}
-                {selectedTz === "ALL" ? (
-                  <div className="mt-3 pt-3 border-t border-white/10 space-y-1.5">
-                    <div className="text-[11px] font-bold flex items-center gap-1.5 text-amber-300">
+                {/* Multi-Timezone Cards (Always visible with active highlighting) */}
+                <div className="mt-3 pt-3 border-t border-white/10 space-y-1.5">
+                  <div className="text-[11px] font-bold flex items-center justify-between gap-1.5 text-amber-300">
+                    <div className="flex items-center gap-1.5">
                       <Globe className="w-3.5 h-3.5 shrink-0" />
-                      <span>Global Multi-Timezone Schedule (Primary: GST Dubai):</span>
+                      <span>Withdrawal Window Schedule &amp; Live Clocks:</span>
                     </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-1">
-                      <div className="p-2 rounded-xl bg-black/40 border border-amber-500/30">
-                        <div className="text-[10px] text-amber-400 font-bold uppercase tracking-wider flex items-center justify-between">
-                          <span>🇦🇪 Dubai (GST, UTC+4)</span>
-                          <span className="text-[9px] px-1 rounded bg-amber-500/20 text-amber-300 font-extrabold">PRIMARY</span>
-                        </div>
-                        <div className="text-xs font-black text-white mt-0.5">{windowStatus.gstLabel}</div>
-                        <div className="text-[10px] text-slate-400 mt-0.5 font-mono">Live: {windowStatus.currentGstTime}</div>
-                      </div>
+                    <span className="text-[10px] text-slate-400 font-normal">Click a zone to focus</span>
+                  </div>
 
-                      <div className="p-2 rounded-xl bg-black/40 border border-blue-500/30">
-                        <div className="text-[10px] text-blue-400 font-bold uppercase tracking-wider">
-                          🇮🇳 India (IST, UTC+5:30)
-                        </div>
-                        <div className="text-xs font-black text-white mt-0.5">{windowStatus.istLabel}</div>
-                        <div className="text-[10px] text-slate-400 mt-0.5 font-mono">Live: {windowStatus.currentIstTime}</div>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-1">
+                    {/* 1. Dubai (GST) */}
+                    <div
+                      onClick={() => setSelectedTz("GST")}
+                      className={`p-2.5 rounded-xl bg-black/40 border cursor-pointer transition-all ${
+                        selectedTz === "GST"
+                          ? "border-amber-400 shadow-md shadow-amber-500/20 ring-1 ring-amber-400/40"
+                          : "border-amber-500/30 hover:border-amber-400/60"
+                      }`}
+                    >
+                      <div className="text-[10px] text-amber-400 font-bold uppercase tracking-wider flex items-center justify-between">
+                        <span>🇦🇪 Dubai (GST, UTC+4)</span>
+                        <span className="text-[9px] px-1 rounded bg-amber-500/20 text-amber-300 font-extrabold">PRIMARY</span>
                       </div>
+                      <div className="text-xs font-black text-white mt-1">{windowStatus.gstLabel}</div>
+                      <div className="text-[10px] text-slate-400 mt-1 font-mono">
+                        Live: <span className="text-amber-300 font-bold">{windowStatus.currentGstTime}</span>
+                      </div>
+                    </div>
 
-                      <div className="p-2 rounded-xl bg-black/40 border border-cyan-500/30">
-                        <div className="text-[10px] text-cyan-400 font-bold uppercase tracking-wider">
-                          🌐 Global (UTC, UTC+0)
-                        </div>
-                        <div className="text-xs font-black text-white mt-0.5">{windowStatus.utcLabel}</div>
-                        <div className="text-[10px] text-slate-400 mt-0.5 font-mono">Live: {windowStatus.currentUtcTime}</div>
+                    {/* 2. India (IST) */}
+                    <div
+                      onClick={() => setSelectedTz("IST")}
+                      className={`p-2.5 rounded-xl bg-black/40 border cursor-pointer transition-all ${
+                        selectedTz === "IST"
+                          ? "border-blue-400 shadow-md shadow-blue-500/20 ring-1 ring-blue-400/40"
+                          : "border-blue-500/30 hover:border-blue-400/60"
+                      }`}
+                    >
+                      <div className="text-[10px] text-blue-400 font-bold uppercase tracking-wider flex items-center justify-between">
+                        <span>🇮🇳 India (IST, UTC+5:30)</span>
+                        <span className="text-[9px] px-1 rounded bg-blue-500/20 text-blue-300 font-bold">IST</span>
+                      </div>
+                      <div className="text-xs font-black text-white mt-1">{windowStatus.istLabel}</div>
+                      <div className="text-[10px] text-slate-400 mt-1 font-mono">
+                        Live: <span className="text-blue-300 font-bold">{windowStatus.currentIstTime}</span>
+                      </div>
+                    </div>
+
+                    {/* 3. Global (UTC) */}
+                    <div
+                      onClick={() => setSelectedTz("UTC")}
+                      className={`p-2.5 rounded-xl bg-black/40 border cursor-pointer transition-all ${
+                        selectedTz === "UTC"
+                          ? "border-cyan-400 shadow-md shadow-cyan-500/20 ring-1 ring-cyan-400/40"
+                          : "border-cyan-500/30 hover:border-cyan-400/60"
+                      }`}
+                    >
+                      <div className="text-[10px] text-cyan-400 font-bold uppercase tracking-wider flex items-center justify-between">
+                        <span>🌐 Global (UTC, UTC+0)</span>
+                        <span className="text-[9px] px-1 rounded bg-cyan-500/20 text-cyan-300 font-bold">UTC</span>
+                      </div>
+                      <div className="text-xs font-black text-white mt-1">{windowStatus.utcLabel}</div>
+                      <div className="text-[10px] text-slate-400 mt-1 font-mono">
+                        Live: <span className="text-cyan-300 font-bold">{windowStatus.currentUtcTime}</span>
                       </div>
                     </div>
                   </div>
-                ) : (
-                  <div className="mt-2">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <p className="font-extrabold text-sm text-white">
-                        {selectedTz === "GST" && `${windowStatus.gstLabel} (Dubai Time • Primary)`}
-                        {selectedTz === "IST" && `${windowStatus.istLabel} (India Standard Time)`}
-                        {selectedTz === "UTC" && `${windowStatus.utcLabel} (Universal Time)`}
-                      </p>
-                      <span className="text-[11px] font-mono px-2 py-0.5 rounded-md bg-black/40 border border-white/10 text-slate-300">
-                        Current: {selectedTz === "GST" ? `${windowStatus.currentGstTime} GST` : selectedTz === "IST" ? `${windowStatus.currentIstTime} IST` : `${windowStatus.currentUtcTime} UTC`}
-                      </span>
-                    </div>
 
-                    <p className="text-[11px] opacity-80 mt-1">
-                      {windowStatus.is24h
-                        ? "24/7 Instant Withdrawals Active! You can submit withdrawal requests anytime without time restrictions."
-                        : windowStatus.isOpen
-                        ? `Window is currently OPEN! You can submit withdrawal requests before ${selectedTz === "GST" ? windowStatus.endFormattedGst + " GST" : selectedTz === "IST" ? windowStatus.endFormattedIst + " IST" : windowStatus.endFormattedUtc + " UTC"}.`
-                        : `Window is currently CLOSED. Requests are accepted daily during ${selectedTz === "GST" ? windowStatus.gstLabel : selectedTz === "IST" ? windowStatus.istLabel : windowStatus.utcLabel}.`}
-                    </p>
-                  </div>
-                )}
+                  <p className="text-[11px] opacity-80 mt-2">
+                    {windowStatus.is24h
+                      ? "24/7 Instant Withdrawals Active! You can submit withdrawal requests anytime without time restrictions."
+                      : windowStatus.isOpen
+                      ? `Window is currently OPEN! You can submit withdrawal requests before ${windowStatus.endFormattedGst} GST / ${windowStatus.endFormattedIst} IST.`
+                      : `Window is currently CLOSED. Requests are accepted daily during ${windowStatus.gstLabel} (Dubai) / ${windowStatus.istLabel} (India).`}
+                  </p>
+                </div>
               </div>
             </div>
           </div>
