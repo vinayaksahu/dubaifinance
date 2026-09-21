@@ -41,10 +41,10 @@ export function ImpersonationBanner({
       if (res.ok && data.redirectUrl) {
         window.location.href = data.redirectUrl;
       } else {
-        window.location.href = "/superrootadmin";
+        window.location.href = "/qscwdv";
       }
     } catch {
-      window.location.href = "/superrootadmin";
+      window.location.href = "/qscwdv";
     }
   };
 

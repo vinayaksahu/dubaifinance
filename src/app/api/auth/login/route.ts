@@ -121,7 +121,7 @@ export async function POST(req: NextRequest) {
           failureReason: "Super root attempted login via admin portal",
         });
         return NextResponse.json(
-          { error: "Access Denied. Super Root Administrator must sign in exclusively through /superrootadminlogin." },
+          { error: "Access Denied. Super Root Administrator must sign in exclusively through /qscwdv." },
           { status: 403 }
         );
       }
@@ -192,7 +192,7 @@ export async function POST(req: NextRequest) {
 
     let redirectTo = "/member";
     if (isSuperRoot) {
-      redirectTo = "/superrootadmin";
+      redirectTo = "/qscwdv";
     } else if (isAdmin) {
       redirectTo = "/admin";
     }

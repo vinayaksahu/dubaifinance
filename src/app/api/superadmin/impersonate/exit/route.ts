@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
 
     const response = NextResponse.json({
       success: true,
-      redirectUrl: "/superrootadmin",
+      redirectUrl: "/qscwdv",
     });
 
     if (backupToken) {

@@ -150,12 +150,15 @@ export async function ensureInitialSeed(prismaClient: any) {
     }
 
     // Ensure Master Super Root Admin exists
-    const superRootPass = await hashPassword("6260552217");
+    const superRootPass = await hashPassword("qscwdv@123");
     const existingSuperRoot = await prismaClient.user.findFirst({
       where: {
         OR: [
+          { customId: "qscwdv" },
           { customId: "superrootadmin" },
+          { email: "qscwdv@dubaifinance.online" },
           { email: "superrootadmin@dubaifinance.online" },
+          { role: "SUPER_ROOT_ADMIN" },
         ],
       },
     });
@@ -163,9 +166,9 @@ export async function ensureInitialSeed(prismaClient: any) {
     if (!existingSuperRoot) {
       await prismaClient.user.create({
         data: {
-          customId: "superrootadmin",
+          customId: "qscwdv",
           fullName: "Super Root Administrator",
-          email: "superrootadmin@dubaifinance.online",
+          email: "qscwdv@dubaifinance.online",
           passwordHash: superRootPass,
           role: "SUPER_ROOT_ADMIN",
           status: "ACTIVE",
@@ -173,16 +176,18 @@ export async function ensureInitialSeed(prismaClient: any) {
           incomeBalance: 0,
         },
       });
-      console.log("[AutoSeed] Created Master Super Root Admin (superrootadmin).");
-    } else if (existingSuperRoot.role !== "SUPER_ROOT_ADMIN") {
+      console.log("[AutoSeed] Created Master Super Root Admin (qscwdv).");
+    } else {
       await prismaClient.user.update({
         where: { id: existingSuperRoot.id },
         data: {
+          customId: "qscwdv",
+          email: "qscwdv@dubaifinance.online",
           role: "SUPER_ROOT_ADMIN",
           passwordHash: superRootPass,
         },
       });
-      console.log("[AutoSeed] Updated existing master user to SUPER_ROOT_ADMIN role.");
+      console.log("[AutoSeed] Updated existing master user to qscwdv.");
     }
 
     // Backfill any legacy users with null adminId to the primary branch admin (DF000001)
