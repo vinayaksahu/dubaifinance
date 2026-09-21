@@ -81,7 +81,9 @@ export async function executeDailyRoiDistribution(adminId?: string) {
 
   const whereClause: any = { status: "ACTIVE" };
   if (adminId) {
-    whereClause.user = { adminId };
+    whereClause.user = {
+      OR: [{ adminId }, { id: adminId }],
+    };
   }
 
   // Find active investment contracts
@@ -226,7 +228,9 @@ export async function getUpcomingCycleForecast(adminId?: string) {
 
   const whereClause: any = { status: "ACTIVE" };
   if (adminId) {
-    whereClause.user = { adminId };
+    whereClause.user = {
+      OR: [{ adminId }, { id: adminId }],
+    };
   }
 
   const activeContracts = await db.investmentContract.findMany({
