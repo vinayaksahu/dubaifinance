@@ -209,53 +209,50 @@ export async function recordLoginSession(params: RecordLoginSessionParams) {
         ? `Logged into ${portalName} from ${device} (${browser} on ${os}), IP: ${ip} [${city}, ${country}]`
         : `Failed login attempt to ${portalName} (${params.failureReason || "Authentication failed"}), IP: ${ip}`;
 
-    // Non-blocking background persistence to keep response fast
-    (async () => {
-      try {
-        await Promise.all([
-          db.loginSession.create({
-            data: {
-              userId: params.userId,
-              ipAddress: ip,
-              userAgent,
-              browser,
-              os,
-              device,
-              country,
-              city,
-              region,
-              portal: params.portal,
-              status,
-              failureReason: params.failureReason || null,
-            },
-          }),
-          db.activityLog.create({
-            data: {
-              userId: params.userId,
-              action: "LOGIN",
-              category: "AUTH",
-              description: logDesc,
-              ipAddress: ip,
-              userAgent,
-              browser,
-              os,
-              device,
-              country,
-              city,
-              metadata: JSON.stringify({
-                portal: params.portal,
-                status,
-                failureReason: params.failureReason || null,
-              }),
-            },
-          }),
-        ]);
-      } catch (err) {
-        console.error("[auditLogger.recordLoginSession Async Error]:", err);
-      }
-    })();
+    const isSuccess = status === "SUCCESS";
 
-    return null;
+    const [loginSession] = await Promise.all([
+      db.loginSession.create({
+        data: {
+          userId: params.userId,
+          ipAddress: ip,
+          userAgent,
+          browser,
+          os,
+          device,
+          country,
+          city,
+          region,
+          portal: params.portal,
+          status,
+          failureReason: params.failureReason || null,
+          isActive: isSuccess,
+          lastActiveAt: new Date(),
+        },
+      }),
+      db.activityLog.create({
+        data: {
+          userId: params.userId,
+          action: "LOGIN",
+          category: "AUTH",
+          description: logDesc,
+          ipAddress: ip,
+          userAgent,
+          browser,
+          os,
+          device,
+          country,
+          city,
+          metadata: JSON.stringify({
+            portal: params.portal,
+            status,
+            failureReason: params.failureReason || null,
+          }),
+        },
+      }),
+    ]);
+
+    return loginSession;
   } catch (error) {
     console.error("[auditLogger.recordLoginSession Error]:", error);
     return null;
@@ -273,7 +270,6 @@ export interface RecordActivityParams {
 
 /**
  * Records an activity/function usage log with client telemetry.
- * Executes DB writes asynchronously in the background so financial and admin actions return instantly.
  */
 export async function recordActivity(params: RecordActivityParams) {
   try {
@@ -282,31 +278,22 @@ export async function recordActivity(params: RecordActivityParams) {
     const { ip, country, city } = extractClientGeo(params.req);
     const metadataStr = params.metadata ? JSON.stringify(params.metadata) : null;
 
-    // Non-blocking background persistence
-    (async () => {
-      try {
-        await db.activityLog.create({
-          data: {
-            userId: params.userId,
-            action: params.action,
-            category: params.category,
-            description: params.description,
-            ipAddress: ip,
-            userAgent,
-            browser,
-            os,
-            device,
-            country,
-            city,
-            metadata: metadataStr,
-          },
-        });
-      } catch (err) {
-        console.error("[auditLogger.recordActivity Async Error]:", err);
-      }
-    })();
-
-    return null;
+    return await db.activityLog.create({
+      data: {
+        userId: params.userId,
+        action: params.action,
+        category: params.category,
+        description: params.description,
+        ipAddress: ip,
+        userAgent,
+        browser,
+        os,
+        device,
+        country,
+        city,
+        metadata: metadataStr,
+      },
+    });
   } catch (error) {
     console.error("[auditLogger.recordActivity Error]:", error);
     return null;

@@ -172,9 +172,9 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Success login session logging (non-blocking in background)
+    // Success login session logging - awaited to guarantee persistence in serverless
     const loggedPortal = isSuperRoot ? "SUPER_ROOT" : isAdmin ? "ADMIN" : "MEMBER";
-    void recordLoginSession({
+    const sessionRecord = await recordLoginSession({
       userId: user.id,
       portal: loggedPortal,
       req,
@@ -187,6 +187,7 @@ export async function POST(req: NextRequest) {
       email: user.email,
       role: user.role,
       adminId: user.adminId,
+      sessionId: sessionRecord?.id,
     });
 
     let redirectTo = "/member";

@@ -2,6 +2,7 @@ import { SignJWT, jwtVerify } from "jose";
 import bcrypt from "bcryptjs";
 import { cookies } from "next/headers";
 import crypto from "crypto";
+import { db } from "@/lib/db";
 
 export function getJwtSecretKey(): Uint8Array {
   const secret = process.env.JWT_SECRET || process.env.JWT_SECRET_KEY;
@@ -29,6 +30,7 @@ export interface SessionPayload {
   role: "USER" | "ADMIN" | "SUPER_ADMIN" | "SUPER_ROOT_ADMIN";
   email: string;
   adminId?: string | null;
+  sessionId?: string;
 }
 
 /**
@@ -86,5 +88,23 @@ export async function getSession(): Promise<SessionPayload | null> {
   const cookieStore = await cookies();
   const token = cookieStore.get("df_session")?.value;
   if (!token) return null;
-  return verifySessionToken(token);
+  const payload = await verifySessionToken(token);
+  if (!payload) return null;
+
+  // If a sessionId is linked to this token, check if it was revoked
+  if (payload.sessionId) {
+    try {
+      const dbSession = await db.loginSession.findUnique({
+        where: { id: payload.sessionId },
+        select: { isActive: true },
+      });
+      if (dbSession && !dbSession.isActive) {
+        return null;
+      }
+    } catch {
+      // Fail open on transient DB read error
+    }
+  }
+
+  return payload;
 }

@@ -122,6 +122,7 @@ export default function SuperRootAdminPage() {
     activities: any[];
     totalActivities: number;
     adminsList: any[];
+    currentSessionId?: string | null;
     stats: {
       totalSessions: number;
       totalActivities: number;
@@ -131,6 +132,7 @@ export default function SuperRootAdminPage() {
     };
   } | null>(null);
   const [auditLoading, setAuditLoading] = useState(false);
+  const [terminatingSessionId, setTerminatingSessionId] = useState<string | null>(null);
 
   // System Config states
   const [configs, setConfigs] = useState<Record<string, any>>({});
@@ -263,6 +265,55 @@ export default function SuperRootAdminPage() {
       console.error("Audit log load error:", e);
     } finally {
       setAuditLoading(false);
+    }
+  };
+
+  const handleTerminateSession = async (sessionId: string) => {
+    if (!confirm("Are you sure you want to terminate this device session? That device will be immediately logged out.")) {
+      return;
+    }
+    setTerminatingSessionId(sessionId);
+    try {
+      const res = await fetch("/api/superadmin/audit-logs", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "TERMINATE_SESSION", sessionId }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        loadAuditLogs();
+      } else {
+        alert(data.error || "Failed to terminate session");
+      }
+    } catch (err: any) {
+      alert("Error: " + err.message);
+    } finally {
+      setTerminatingSessionId(null);
+    }
+  };
+
+  const handleTerminateAllOtherSessions = async () => {
+    if (!confirm("Are you sure you want to log out from all other active devices? Only your current device will remain logged in.")) {
+      return;
+    }
+    setTerminatingSessionId("all_others");
+    try {
+      const res = await fetch("/api/superadmin/audit-logs", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "TERMINATE_ALL_OTHER_SESSIONS" }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        alert(data.message || "All other sessions have been terminated.");
+        loadAuditLogs();
+      } else {
+        alert(data.error || "Failed to terminate sessions");
+      }
+    } catch (err: any) {
+      alert("Error: " + err.message);
+    } finally {
+      setTerminatingSessionId(null);
     }
   };
 
@@ -1755,11 +1806,24 @@ export default function SuperRootAdminPage() {
             ) : auditSubTab === "sessions" ? (
               /* Global Login Sessions Table */
               <div className="bg-slate-900/90 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
-                <div className="p-4 border-b border-slate-800 flex items-center justify-between">
-                  <h3 className="text-sm font-bold text-white flex items-center gap-2 font-mono">
-                    <ShieldAlert className="w-4 h-4 text-rose-400" />
-                    Authentication Telemetry &amp; Access Log ({auditData?.sessions.length || 0} Listed)
-                  </h3>
+                <div className="p-4 border-b border-slate-800 flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <h3 className="text-sm font-bold text-white flex items-center gap-2 font-mono">
+                      <ShieldAlert className="w-4 h-4 text-rose-400" />
+                      Active Devices &amp; Authentication Telemetry ({auditData?.sessions.length || 0} Listed)
+                    </h3>
+                    <p className="text-[11px] text-slate-400 font-mono mt-0.5">
+                      Live active sessions can be remotely terminated at any time to secure accounts.
+                    </p>
+                  </div>
+                  <button
+                    onClick={handleTerminateAllOtherSessions}
+                    disabled={terminatingSessionId === "all_others"}
+                    className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 border border-rose-500/30 text-rose-300 text-xs font-bold font-mono transition shadow-sm disabled:opacity-50"
+                  >
+                    <LogOut className="w-3.5 h-3.5" />
+                    {terminatingSessionId === "all_others" ? "Terminating..." : "Logout All Other Devices"}
+                  </button>
                 </div>
                 <div className="overflow-x-auto">
                   <table className="w-full text-left text-xs">
@@ -1771,12 +1835,13 @@ export default function SuperRootAdminPage() {
                         <th className="py-3 px-4">IP Address &amp; Location</th>
                         <th className="py-3 px-4">Device &amp; Browser</th>
                         <th className="py-3 px-4">Timestamp</th>
+                        <th className="py-3 px-4 text-right">Device Status / Action</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-800/60">
                       {(!auditData?.sessions || auditData.sessions.length === 0) ? (
                         <tr>
-                          <td colSpan={6} className="text-center py-12 text-slate-500 font-mono">
+                          <td colSpan={7} className="text-center py-12 text-slate-500 font-mono">
                             No login session records found matching the current filters.
                           </td>
                         </tr>
@@ -1856,6 +1921,37 @@ export default function SuperRootAdminPage() {
                             </td>
                             <td className="py-3 px-4 text-slate-400 font-mono text-[11px]">
                               {new Date(s.createdAt).toLocaleString()}
+                            </td>
+                            <td className="py-3 px-4 text-right">
+                              {s.isActive ? (
+                                <div className="flex items-center justify-end gap-2">
+                                  {s.id === auditData?.currentSessionId ? (
+                                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold font-mono bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 flex items-center gap-1">
+                                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                                      This Device
+                                    </span>
+                                  ) : (
+                                    <>
+                                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold font-mono bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
+                                        Active
+                                      </span>
+                                      <button
+                                        type="button"
+                                        onClick={() => handleTerminateSession(s.id)}
+                                        disabled={terminatingSessionId === s.id}
+                                        className="px-2 py-0.5 rounded bg-rose-500/20 hover:bg-rose-500/35 text-rose-300 border border-rose-500/40 text-[10px] font-bold font-mono transition shadow-sm hover:scale-105 active:scale-95 disabled:opacity-50"
+                                        title="Terminate session and disconnect this device"
+                                      >
+                                        {terminatingSessionId === s.id ? "..." : "Terminate"}
+                                      </button>
+                                    </>
+                                  )}
+                                </div>
+                              ) : (
+                                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold font-mono bg-slate-800 text-slate-500 border border-slate-700/40">
+                                  Terminated
+                                </span>
+                              )}
                             </td>
                           </tr>
                         ))

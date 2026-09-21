@@ -170,6 +170,7 @@ export async function GET(req: NextRequest) {
       activities,
       totalActivities,
       adminsList,
+      currentSessionId: session.sessionId || null,
       stats: {
         totalSessions,
         totalActivities,
@@ -187,6 +188,74 @@ export async function GET(req: NextRequest) {
     console.error("[SuperAdmin Audit Logs API Error]:", error);
     return NextResponse.json(
       { error: error.message || "Failed to fetch audit logs" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function POST(req: NextRequest) {
+  try {
+    const session = await getSession();
+    if (!session || (session.role !== "SUPER_ROOT_ADMIN" && session.role !== "SUPER_ADMIN")) {
+      return NextResponse.json(
+        { error: "Unauthorized. Super Administrator access required." },
+        { status: 403 }
+      );
+    }
+
+    const body = await req.json();
+    const { action, sessionId, userId } = body;
+
+    if (action === "TERMINATE_SESSION") {
+      if (!sessionId) {
+        return NextResponse.json({ error: "sessionId is required." }, { status: 400 });
+      }
+
+      await db.loginSession.update({
+        where: { id: sessionId },
+        data: {
+          isActive: false,
+          revokedAt: new Date(),
+        },
+      });
+
+      return NextResponse.json({
+        success: true,
+        message: "Device session terminated successfully.",
+      });
+    }
+
+    if (action === "TERMINATE_ALL_OTHER_SESSIONS") {
+      const targetUserId = userId || session.userId;
+      const condition: any = {
+        userId: targetUserId,
+        isActive: true,
+      };
+
+      if (session.sessionId && targetUserId === session.userId) {
+        condition.id = { not: session.sessionId };
+      }
+
+      const res = await db.loginSession.updateMany({
+        where: condition,
+        data: {
+          isActive: false,
+          revokedAt: new Date(),
+        },
+      });
+
+      return NextResponse.json({
+        success: true,
+        message: `Terminated ${res.count} active session(s).`,
+        count: res.count,
+      });
+    }
+
+    return NextResponse.json({ error: "Invalid action." }, { status: 400 });
+  } catch (error: any) {
+    console.error("[SuperAdmin Terminate Session Error]:", error);
+    return NextResponse.json(
+      { error: error.message || "Failed to terminate session" },
       { status: 500 }
     );
   }

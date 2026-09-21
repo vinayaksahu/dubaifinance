@@ -240,9 +240,13 @@ model LoginSession {
   portal        String       // "MEMBER" | "ADMIN" | "SUPER_ROOT"
   status        String       @default("SUCCESS") // "SUCCESS" | "FAILED"
   failureReason String?
+  isActive      Boolean      @default(true)
+  lastActiveAt  DateTime     @default(now())
+  revokedAt     DateTime?
   createdAt     DateTime     @default(now())
 
   @@index([userId, createdAt])
+  @@index([userId, isActive])
   @@index([ipAddress])
   @@index([createdAt])
 }
