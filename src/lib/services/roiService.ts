@@ -107,11 +107,12 @@ export async function executeDailyRoiDistribution(adminId?: string) {
     }
 
     // Dubai calendar day calculation:
-    // A contract is active starting on its activation day (Day 1).
+    // A contract is active on its activation day (Day 0).
+    // Day 1 ROI is credited only AFTER the activation day closes at 12:00 AM GST (next day).
     // Each calendar day in Dubai (at 12:01 AM GST or on demand), 1 daily ROI cycle is credited up to tenureDays.
     const createdInfo = getDubaiTimeInfo(new Date(contract.createdAt));
     const msDiff = Math.max(0, nowInfo.startOfDayMs - createdInfo.startOfDayMs);
-    const calendarDaysElapsed = Math.floor(msDiff / (1000 * 60 * 60 * 24)) + 1;
+    const calendarDaysElapsed = Math.floor(msDiff / (1000 * 60 * 60 * 24));
 
     // Eligible days strictly capped at tenureDays
     const eligibleDaysTotal = Math.min(calendarDaysElapsed, contract.tenureDays);
@@ -135,7 +136,7 @@ export async function executeDailyRoiDistribution(adminId?: string) {
     // Process each unpaid cycle
     for (let i = 0; i < daysToPay; i++) {
       const currentDayNumber = contractDaysPaid + 1;
-      const dayOffsetMs = (currentDayNumber - 1) * 24 * 60 * 60 * 1000;
+      const dayOffsetMs = currentDayNumber * 24 * 60 * 60 * 1000;
       const targetDate = new Date(createdInfo.startOfDayMs + dayOffsetMs + 4 * 60 * 60 * 1000);
       const targetDateStr = `${targetDate.getUTCFullYear()}-${String(targetDate.getUTCMonth() + 1).padStart(2, "0")}-${String(targetDate.getUTCDate()).padStart(2, "0")}`;
       const referenceKey = `ROI_${contract.id}_${targetDateStr}`;
@@ -260,7 +261,7 @@ export async function getUpcomingCycleForecast(adminId?: string) {
 
     const createdInfo = getDubaiTimeInfo(new Date(contract.createdAt));
     const msDiff = Math.max(0, nowInfo.startOfDayMs - createdInfo.startOfDayMs);
-    const currentDaysElapsed = Math.floor(msDiff / (1000 * 60 * 60 * 24)) + 1;
+    const currentDaysElapsed = Math.floor(msDiff / (1000 * 60 * 60 * 24));
     const nextDaysElapsed = currentDaysElapsed + 1;
     const nextEligibleDays = Math.min(nextDaysElapsed, contract.tenureDays);
 
