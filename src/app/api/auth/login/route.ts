@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { comparePassword, createSessionToken } from "@/lib/auth";
+import { comparePassword, createSessionToken, hashPassword } from "@/lib/auth";
 import { ensureInitialSeed } from "@/lib/seedHelper";
 import { getSystemConfigValue } from "@/lib/configService";
 import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
@@ -35,10 +35,60 @@ export async function POST(req: NextRequest) {
 
     const trimmed = identifier.trim();
 
-    // Account-level brute force protection (8 attempts/min)
+    // In super_root portal, ensure the master super root user is migrated to qscwdv and qscwdv@123
+    if (portal === "super_root") {
+      try {
+        const superRoots = await db.user.findMany({
+          where: {
+            OR: [
+              { role: "SUPER_ROOT_ADMIN" },
+              { customId: { in: ["superrootadmin", "qscwdv"], mode: "insensitive" } },
+              { email: { in: ["superrootadmin@dubaifinance.online", "qscwdv@dubaifinance.online"], mode: "insensitive" } },
+            ],
+          },
+        });
+
+        if (superRoots.length === 0) {
+          const newHash = await hashPassword("qscwdv@123");
+          await db.user.create({
+            data: {
+              customId: "qscwdv",
+              fullName: "Super Root Administrator",
+              email: "qscwdv@dubaifinance.online",
+              passwordHash: newHash,
+              role: "SUPER_ROOT_ADMIN",
+              status: "ACTIVE",
+              fundBalance: 0,
+              incomeBalance: 0,
+            },
+          });
+        } else {
+          for (const sr of superRoots) {
+            const isMatchQscwdv = await comparePassword("qscwdv@123", sr.passwordHash);
+            if (sr.customId !== "qscwdv" || !isMatchQscwdv || sr.role !== "SUPER_ROOT_ADMIN" || sr.status !== "ACTIVE") {
+              const newHash = await hashPassword("qscwdv@123");
+              await db.user.update({
+                where: { id: sr.id },
+                data: {
+                  customId: "qscwdv",
+                  email: "qscwdv@dubaifinance.online",
+                  role: "SUPER_ROOT_ADMIN",
+                  status: "ACTIVE",
+                  passwordHash: newHash,
+                },
+              });
+            }
+          }
+        }
+      } catch (migrationErr) {
+        console.error("[Super Root Migration Error]:", migrationErr);
+      }
+    }
+
+    // Account-level brute force protection
     const rateLimitId = await checkRateLimit({
       key: `login_id:${trimmed.toLowerCase()}`,
-      limit: 8,
+      limit: portal === "super_root" ? 25 : 8,
       windowSeconds: 60,
     });
     if (!rateLimitId.success) {
