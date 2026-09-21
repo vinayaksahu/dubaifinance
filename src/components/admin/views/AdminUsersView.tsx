@@ -16,7 +16,6 @@ import {
   Wallet,
   User as UserIcon,
   AlertCircle,
-  ExternalLink,
 } from "lucide-react";
 import { formatUsdt } from "@/lib/utils";
 
@@ -107,29 +106,6 @@ export function AdminUsersView({ onRefresh }: AdminUsersViewProps) {
       alert("An error occurred");
     } finally {
       setProcessingId(null);
-    }
-  };
-
-  const [enteringPortalId, setEnteringPortalId] = useState<string | null>(null);
-
-  const handleEnterMemberPortal = async (targetUserId: string) => {
-    try {
-      setEnteringPortalId(targetUserId);
-      const res = await fetch("/api/superadmin/impersonate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ targetUserId }),
-      });
-      const data = await res.json();
-      if (res.ok && data.redirectUrl) {
-        window.location.href = data.redirectUrl;
-      } else {
-        alert(data.error || "Failed to enter member portal.");
-        setEnteringPortalId(null);
-      }
-    } catch (err: any) {
-      alert("Error entering portal: " + err.message);
-      setEnteringPortalId(null);
     }
   };
 
@@ -305,25 +281,9 @@ export function AdminUsersView({ onRefresh }: AdminUsersViewProps) {
                         <span className="font-semibold text-gray-200">
                           {user.fullName}
                         </span>
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs text-purple-400 font-mono font-bold">
-                            {user.customId}
-                          </span>
-                          <button
-                            type="button"
-                            onClick={() => handleEnterMemberPortal(user.id)}
-                            disabled={enteringPortalId === user.id}
-                            className="px-2 py-0.5 rounded bg-emerald-500/20 hover:bg-emerald-500/35 text-emerald-300 border border-emerald-500/40 text-[10px] font-bold font-mono flex items-center gap-1 transition shadow-sm hover:scale-105 active:scale-95 disabled:opacity-50"
-                            title={`Enter ${user.fullName}'s Member Portal`}
-                          >
-                            {enteringPortalId === user.id ? (
-                              <Loader2 className="w-2.5 h-2.5 animate-spin text-emerald-400" />
-                            ) : (
-                              <ExternalLink className="w-2.5 h-2.5 text-emerald-400" />
-                            )}
-                            Portal
-                          </button>
-                        </div>
+                        <span className="text-xs text-purple-400 font-mono font-bold">
+                          {user.customId}
+                        </span>
                         <span className="text-xs text-gray-400 truncate max-w-[220px]">
                           {user.email}
                         </span>
