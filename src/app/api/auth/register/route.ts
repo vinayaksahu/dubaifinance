@@ -7,6 +7,7 @@ import { sendWelcomeCredentialsEmail } from "@/lib/mail";
 import { getSystemConfigValue, getNumericConfig } from "@/lib/configService";
 import { distribute12LevelSignupBonus } from "@/lib/services/bonusService";
 import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
+import { sanitizeText, sanitizeEmail, sanitizeIdentifier } from "@/lib/sanitize";
 import Decimal from "decimal.js";
 
 export async function POST(req: NextRequest) {
@@ -38,8 +39,13 @@ export async function POST(req: NextRequest) {
 
     const { fullName, email, phone, password, transactionPin, sponsorCode } = await req.json();
 
-    if (!fullName || !email || !password) {
-      return NextResponse.json({ error: "Name, email and password are required." }, { status: 400 });
+    const cleanedFullName = sanitizeText(fullName, 80);
+    const normalizedEmail = sanitizeEmail(email);
+    const cleanedPhone = phone ? sanitizeText(phone, 25) : null;
+    const cleanedSponsorCode = sanitizeIdentifier(sponsorCode || "", "").toUpperCase();
+
+    if (!cleanedFullName || !normalizedEmail || !password) {
+      return NextResponse.json({ error: "Name, valid email and password are required." }, { status: 400 });
     }
 
     if (typeof password !== "string" || password.length < 6) {
@@ -53,8 +59,6 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const normalizedEmail = email.toLowerCase().trim();
-
     // Check existing email
     const existingEmail = await db.user.findUnique({ where: { email: normalizedEmail } });
     if (existingEmail) {
@@ -65,12 +69,12 @@ export async function POST(req: NextRequest) {
     let sponsor = null;
     let assignedAdminId: string | null = null;
 
-    if (sponsorCode) {
+    if (cleanedSponsorCode) {
       sponsor = await db.user.findFirst({
         where: {
           OR: [
-            { customId: { equals: sponsorCode.trim(), mode: "insensitive" } },
-            { id: sponsorCode.trim() },
+            { customId: { equals: cleanedSponsorCode, mode: "insensitive" } },
+            { id: cleanedSponsorCode },
           ],
         },
       });
@@ -131,9 +135,9 @@ export async function POST(req: NextRequest) {
     const newUser = await db.user.create({
       data: {
         customId,
-        fullName: fullName.trim(),
+        fullName: cleanedFullName,
         email: normalizedEmail,
-        phone: phone ? phone.trim() : null,
+        phone: cleanedPhone,
         passwordHash,
         transactionPin: pinHash,
         sponsorId: sponsor?.id || null,

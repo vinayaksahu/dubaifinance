@@ -3,6 +3,8 @@ import { getSession } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { recordActivity } from "@/lib/auditLogger";
 
+import { sanitizeText } from "@/lib/sanitize";
+
 export async function POST(req: Request) {
   try {
     const session = await getSession();
@@ -13,15 +15,18 @@ export async function POST(req: Request) {
     const body = await req.json();
     const { fullName, phone } = body;
 
-    if (!fullName || typeof fullName !== "string" || !fullName.trim()) {
+    const cleanedFullName = sanitizeText(fullName, 80);
+    const cleanedPhone = phone ? sanitizeText(phone, 25) : null;
+
+    if (!cleanedFullName) {
       return NextResponse.json({ error: "Full Name is required" }, { status: 400 });
     }
 
     const updated = await db.user.update({
       where: { id: session.userId },
       data: {
-        fullName: fullName.trim(),
-        phone: phone ? String(phone).trim() : null,
+        fullName: cleanedFullName,
+        phone: cleanedPhone,
       },
       select: {
         id: true,

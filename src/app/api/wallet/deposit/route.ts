@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { APP_CONFIG, usdtToInr } from "@/lib/constants";
 import { getNumericConfig } from "@/lib/configService";
 import { recordActivity } from "@/lib/auditLogger";
+import { sanitizeIdentifier, sanitizeText } from "@/lib/sanitize";
 import Decimal from "decimal.js";
 
 export async function POST(req: NextRequest) {
@@ -19,7 +20,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Amount and Blockchain TxHash are required." }, { status: 400 });
     }
 
-    const cleanHash = txHash.trim();
+    const cleanHash = sanitizeIdentifier(txHash, "x");
+    const cleanScreenshot = screenshotUrl ? sanitizeText(screenshotUrl, 500) : null;
+
+    if (!cleanHash || cleanHash.length < 10) {
+      return NextResponse.json({ error: "Valid blockchain transaction hash is required." }, { status: 400 });
+    }
 
     // Check duplicate txHash
     const existing = await db.depositRequest.findUnique({
@@ -37,7 +43,7 @@ export async function POST(req: NextRequest) {
         amountInUsdt: amountUsdtDec.toFixed(8),
         amountInInr: amountUsdtDec.toFixed(2),
         txHash: cleanHash,
-        screenshotUrl: screenshotUrl || null,
+        screenshotUrl: cleanScreenshot,
         network: APP_CONFIG.depositNetwork,
         status: "PENDING",
       },

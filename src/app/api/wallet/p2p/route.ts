@@ -5,6 +5,7 @@ import { executeLedgerTransaction } from "@/lib/ledger";
 import { verifyOtp } from "@/lib/mail";
 import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 import { recordActivity } from "@/lib/auditLogger";
+import { sanitizeIdentifier } from "@/lib/sanitize";
 import Decimal from "decimal.js";
 
 export async function POST(req: NextRequest) {
@@ -28,10 +29,11 @@ export async function POST(req: NextRequest) {
     }
 
     const { recipientCustomId, amountInInr, amountInUsdt, amount, transactionPin, otp } = await req.json();
+    const cleanRecipientId = sanitizeIdentifier(recipientCustomId || "", "").toUpperCase();
     const rawAmount = amountInUsdt ?? amount ?? amountInInr;
     const verificationCode = (otp || transactionPin || "").trim();
 
-    if (!recipientCustomId || !rawAmount || !verificationCode) {
+    if (!cleanRecipientId || !rawAmount || !verificationCode) {
       return NextResponse.json({ error: "Recipient ID, Amount, and Security OTP / PIN are required." }, { status: 400 });
     }
 
@@ -66,21 +68,21 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Invalid or expired Security OTP code." }, { status: 401 });
     }
 
-    if (sender.customId.toUpperCase() === recipientCustomId.trim().toUpperCase()) {
+    if (sender.customId.toUpperCase() === cleanRecipientId) {
       return NextResponse.json({ error: "Cannot transfer funds to yourself." }, { status: 400 });
     }
 
     const recipient = await db.user.findUnique({
-      where: { customId: recipientCustomId.trim().toUpperCase() },
+      where: { customId: cleanRecipientId },
       select: { id: true, customId: true, fullName: true, adminId: true },
     });
 
     if (!recipient) {
-      return NextResponse.json({ error: `Recipient with ID ${recipientCustomId} not found.` }, { status: 404 });
+      return NextResponse.json({ error: `Recipient with ID ${cleanRecipientId} not found.` }, { status: 404 });
     }
 
     if (sender.role !== "SUPER_ROOT_ADMIN" && sender.adminId && recipient.adminId && sender.adminId !== recipient.adminId) {
-      return NextResponse.json({ error: `Recipient with ID ${recipientCustomId} not found.` }, { status: 404 });
+      return NextResponse.json({ error: `Recipient with ID ${cleanRecipientId} not found.` }, { status: 404 });
     }
 
     const amountUsdtDec = new Decimal(parsedUsdt.toString());

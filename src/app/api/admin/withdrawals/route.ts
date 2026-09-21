@@ -93,6 +93,8 @@ export async function GET() {
   });
 }
 
+import { sanitizeText, sanitizeIdentifier } from "@/lib/sanitize";
+
 export async function POST(req: NextRequest) {
   const session = await getSession();
   if (!session || (session.role !== "ADMIN" && session.role !== "SUPER_ADMIN")) {
@@ -100,6 +102,8 @@ export async function POST(req: NextRequest) {
   }
 
   const { withdrawalId, action, txHash, adminNote } = await req.json();
+  const cleanedAdminNote = adminNote ? sanitizeText(adminNote, 250) : null;
+  const cleanedTxHash = txHash ? sanitizeIdentifier(txHash, "x") : "";
 
   const withdrawal = await db.withdrawalRequest.findFirst({
     where: { 
@@ -117,13 +121,13 @@ export async function POST(req: NextRequest) {
   }
 
   if (action === "APPROVE") {
-    if (!txHash) {
+    if (!cleanedTxHash) {
       return NextResponse.json({ error: "Transaction hash is required." }, { status: 400 });
     }
 
     await db.withdrawalRequest.update({
       where: { id: withdrawalId },
-      data: { status: "PROCESSED", txHash, adminNote, processedAt: new Date() },
+      data: { status: "PROCESSED", txHash: cleanedTxHash, adminNote: cleanedAdminNote, processedAt: new Date() },
     });
 
     return NextResponse.json({ success: true, message: "Withdrawal marked as processed." });
@@ -133,7 +137,7 @@ export async function POST(req: NextRequest) {
 
     await db.withdrawalRequest.update({
       where: { id: withdrawalId },
-      data: { status: "REJECTED", adminNote, processedAt: new Date() },
+      data: { status: "REJECTED", adminNote: cleanedAdminNote, processedAt: new Date() },
     });
 
     await executeLedgerTransaction({
@@ -142,7 +146,7 @@ export async function POST(req: NextRequest) {
       wallet: "INCOME",
       amount: amountUsdtDec,
       referenceKey: `WITHDRAWAL_REFUND_${withdrawal.id}`,
-      description: `Refund for rejected withdrawal: ${adminNote || "Admin rejection"}`,
+      description: `Refund for rejected withdrawal: ${cleanedAdminNote || "Admin rejection"}`,
     });
 
     return NextResponse.json({ success: true, message: "Withdrawal rejected and funds refunded to Income Wallet." });

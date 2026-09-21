@@ -3,6 +3,8 @@ import { getSession, comparePin } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { verifyOtp } from "@/lib/mail";
 
+import { sanitizeIdentifier } from "@/lib/sanitize";
+
 export async function POST(req: Request) {
   try {
     const session = await getSession();
@@ -20,10 +22,10 @@ export async function POST(req: Request) {
       );
     }
 
-    const trimmedAddress = usdtAddress.trim();
+    const sanitizedAddress = sanitizeIdentifier(usdtAddress.trim(), "x");
 
-    // Basic BEP-20 / EVM address validation: starts with 0x and 42 chars
-    if (!trimmedAddress.startsWith("0x") || trimmedAddress.length !== 42) {
+    // Strict BEP-20 / EVM address validation: starts with 0x and 40 hex characters
+    if (!/^0x[a-fA-F0-9]{40}$/.test(sanitizedAddress)) {
       return NextResponse.json(
         { error: "Invalid address format. Must be a valid BEP-20 (0x...) address." },
         { status: 400 }
@@ -59,7 +61,7 @@ export async function POST(req: Request) {
 
     const updated = await db.user.update({
       where: { id: session.userId },
-      data: { usdtAddress: trimmedAddress },
+      data: { usdtAddress: sanitizedAddress },
       select: {
         id: true,
         customId: true,

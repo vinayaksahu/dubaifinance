@@ -44,6 +44,8 @@ export async function GET() {
   return NextResponse.json({ deposits });
 }
 
+import { sanitizeText } from "@/lib/sanitize";
+
 export async function POST(req: NextRequest) {
   const session = await getSession();
   if (!session || (session.role !== "ADMIN" && session.role !== "SUPER_ADMIN")) {
@@ -51,6 +53,7 @@ export async function POST(req: NextRequest) {
   }
 
   const { depositId, action, adminNote } = await req.json();
+  const cleanedAdminNote = adminNote ? sanitizeText(adminNote, 250) : null;
 
   const deposit = await db.depositRequest.findFirst({
     where: { 
@@ -72,7 +75,7 @@ export async function POST(req: NextRequest) {
 
     await db.depositRequest.update({
       where: { id: depositId },
-      data: { status: "APPROVED", adminNote, reviewedAt: new Date() },
+      data: { status: "APPROVED", adminNote: cleanedAdminNote, reviewedAt: new Date() },
     });
 
     // Credit user's Fund Wallet
@@ -89,7 +92,7 @@ export async function POST(req: NextRequest) {
   } else if (action === "REJECT") {
     await db.depositRequest.update({
       where: { id: depositId },
-      data: { status: "REJECTED", adminNote, reviewedAt: new Date() },
+      data: { status: "REJECTED", adminNote: cleanedAdminNote, reviewedAt: new Date() },
     });
     return NextResponse.json({ success: true, message: "Deposit rejected." });
   }
