@@ -32,16 +32,21 @@ export async function processLevelIncomeForRoi(
         id: true,
         customId: true,
         status: true,
+        contracts: {
+          where: { status: "ACTIVE" },
+          select: { id: true },
+        },
       },
     });
 
     if (!sponsor) break;
 
-    // Check Qualification: Need 1 Direct Active Referral for each level
+    // Check Qualification: Need sponsor to have an ACTIVE ID (status ACTIVE + active contract) and required Direct Active Referrals
+    const isSponsorActive = sponsor.status === "ACTIVE" && Boolean(sponsor.contracts && sponsor.contracts.length > 0);
     const activeDirectsCount = await db.user.count({
       where: { sponsorId: sponsor.id, status: "ACTIVE" },
     });
-    const isQualified = sponsor.status === "ACTIVE" && activeDirectsCount >= level;
+    const isQualified = isSponsorActive && activeDirectsCount >= level;
 
     if (isQualified) {
       // Dynamic Level Royalty rate from System Config
