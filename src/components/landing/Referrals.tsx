@@ -1,7 +1,48 @@
+"use client";
+
+import { useState, useEffect } from "react";
 import { Gift, Users, ShieldCheck, ArrowRight, CheckCircle2 } from "lucide-react";
 import Link from "next/link";
 
 export function Referrals() {
+  const [isPrelaunch, setIsPrelaunch] = useState(true);
+
+  useEffect(() => {
+    let timer: NodeJS.Timeout | undefined;
+    fetch("/api/config")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data?.configs) {
+          if (data.configs.PRELAUNCH_MODE === "true") {
+            const targetDateStr = data.configs.PRELAUNCH_TARGET_DATE || "2026-09-21T20:00";
+            let targetTime: number;
+            if (/[+-]\d{2}(:\d{2})?$|Z$/i.test(targetDateStr)) {
+              targetTime = new Date(targetDateStr).getTime();
+            } else {
+              targetTime = new Date(`${targetDateStr}:00+04:00`).getTime();
+            }
+
+            const evaluateMode = () => {
+              if (!isNaN(targetTime) && Date.now() >= targetTime) {
+                setIsPrelaunch(false);
+              } else {
+                setIsPrelaunch(true);
+              }
+            };
+
+            evaluateMode();
+            timer = setInterval(evaluateMode, 1000);
+          } else {
+            setIsPrelaunch(false);
+          }
+        }
+      })
+      .catch(() => {});
+
+    return () => {
+      if (timer) clearInterval(timer);
+    };
+  }, []);
   // Exact 12-Level Royalty Matrix from Dubai_Finance_Presentation_Dark.pdf Slide 16 & 17
   const levels = [
     { level: 1, percent: 5, rule: "1 Direct Referral", totalDirects: "1 Direct", color: "text-amber-500 dark:text-amber-300" },
@@ -84,12 +125,21 @@ export function Referrals() {
                 <span>Unlimited Direct Potential &bull; 100% withdrawable immediately</span>
               </div>
 
-              <Link
-                href="/register"
-                className="gold-btn w-full py-3 rounded-xl text-center text-sm font-bold flex items-center justify-center gap-2"
-              >
-                Share &amp; Earn 10% Instant <ArrowRight className="w-4 h-4" />
-              </Link>
+              {isPrelaunch ? (
+                <a
+                  href="#calculator"
+                  className="gold-btn w-full py-3 rounded-xl text-center text-sm font-bold flex items-center justify-center gap-2"
+                >
+                  Calculate 10% Direct Commission <ArrowRight className="w-4 h-4" />
+                </a>
+              ) : (
+                <Link
+                  href="/register"
+                  className="gold-btn w-full py-3 rounded-xl text-center text-sm font-bold flex items-center justify-center gap-2"
+                >
+                  Share &amp; Earn 10% Instant <ArrowRight className="w-4 h-4" />
+                </Link>
+              )}
             </div>
           </div>
 

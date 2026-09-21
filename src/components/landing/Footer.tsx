@@ -13,6 +13,7 @@ export function Footer() {
   const [systemMode, setSystemMode] = useState<"LIVE" | "PRELAUNCH" | "MAINTENANCE">("LIVE");
 
   useEffect(() => {
+    let timer: NodeJS.Timeout | undefined;
     fetch("/api/config")
       .then((res) => res.json())
       .then((data) => {
@@ -20,13 +21,34 @@ export function Footer() {
           if (data.configs.MAINTENANCE_MODE === "true") {
             setSystemMode("MAINTENANCE");
           } else if (data.configs.PRELAUNCH_MODE === "true") {
-            setSystemMode("PRELAUNCH");
+            const targetDateStr = data.configs.PRELAUNCH_TARGET_DATE || "2026-09-21T20:00";
+            let targetTime: number;
+            if (/[+-]\d{2}(:\d{2})?$|Z$/i.test(targetDateStr)) {
+              targetTime = new Date(targetDateStr).getTime();
+            } else {
+              targetTime = new Date(`${targetDateStr}:00+04:00`).getTime();
+            }
+
+            const evaluateMode = () => {
+              if (!isNaN(targetTime) && Date.now() >= targetTime) {
+                setSystemMode("LIVE");
+              } else {
+                setSystemMode("PRELAUNCH");
+              }
+            };
+
+            evaluateMode();
+            timer = setInterval(evaluateMode, 1000);
           } else {
             setSystemMode("LIVE");
           }
         }
       })
       .catch(() => {});
+
+    return () => {
+      if (timer) clearInterval(timer);
+    };
   }, []);
 
   const isLight = resolvedTheme === "light";

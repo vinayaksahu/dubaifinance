@@ -23,14 +23,6 @@ export async function GET() {
       );
       return NextResponse.json({ error: msg, isLocked: true, mode: "MAINTENANCE" }, { status: 503 });
     }
-    const isPrelaunch = (await getSystemConfigValue("PRELAUNCH_MODE")) === "true";
-    if (isPrelaunch) {
-      const msg = await getSystemConfigValue(
-        "PRELAUNCH_NOTICE_TEXT",
-        "Dubai Finance is currently in its official Pre-Launch phase."
-      );
-      return NextResponse.json({ error: msg, isLocked: true, mode: "PRE_LAUNCH" }, { status: 403 });
-    }
   }
 
   // Auto-distribute pending ROI on portal load (throttled to at most once every 60s, non-blocking in background)

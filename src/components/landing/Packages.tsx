@@ -1,12 +1,50 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { CheckCircle2, ArrowRight, ShieldCheck, Zap, Sparkles } from "lucide-react";
 
 export function Packages() {
   const [activePlanType, setActivePlanType] = useState<"basic" | "fd">("basic");
   const [fdActiveTenure, setFdActiveTenure] = useState<180 | 210>(180);
+  const [isPrelaunch, setIsPrelaunch] = useState(true);
+
+  useEffect(() => {
+    let timer: NodeJS.Timeout | undefined;
+    fetch("/api/config")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data?.configs) {
+          if (data.configs.PRELAUNCH_MODE === "true") {
+            const targetDateStr = data.configs.PRELAUNCH_TARGET_DATE || "2026-09-21T20:00";
+            let targetTime: number;
+            if (/[+-]\d{2}(:\d{2})?$|Z$/i.test(targetDateStr)) {
+              targetTime = new Date(targetDateStr).getTime();
+            } else {
+              targetTime = new Date(`${targetDateStr}:00+04:00`).getTime();
+            }
+
+            const evaluateMode = () => {
+              if (!isNaN(targetTime) && Date.now() >= targetTime) {
+                setIsPrelaunch(false);
+              } else {
+                setIsPrelaunch(true);
+              }
+            };
+
+            evaluateMode();
+            timer = setInterval(evaluateMode, 1000);
+          } else {
+            setIsPrelaunch(false);
+          }
+        }
+      })
+      .catch(() => {});
+
+    return () => {
+      if (timer) clearInterval(timer);
+    };
+  }, []);
 
   // Exact 10 Basic Packages from Dubai_Finance_Presentation_Dark.pdf Slides 05-09
   const basicPackages = [
@@ -143,12 +181,21 @@ export function Packages() {
                   <ShieldCheck className="w-4 h-4 text-emerald-500 shrink-0" />
                   Zero forced direct referrals required to withdraw &bull; Min withdrawal $2 USDT &bull; Flat 10% admin charge
                 </span>
-                <Link
-                  href="/register"
-                  className="w-full sm:w-auto gold-btn px-8 py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2"
-                >
-                  Join With $5 USDT <ArrowRight className="w-4 h-4" />
-                </Link>
+                {isPrelaunch ? (
+                  <a
+                    href="#calculator"
+                    className="w-full sm:w-auto gold-btn px-8 py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2"
+                  >
+                    Calculate ROI Returns <ArrowRight className="w-4 h-4" />
+                  </a>
+                ) : (
+                  <Link
+                    href="/register"
+                    className="w-full sm:w-auto gold-btn px-8 py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2"
+                  >
+                    Join With $5 USDT <ArrowRight className="w-4 h-4" />
+                  </Link>
+                )}
               </div>
             </div>
 
@@ -226,12 +273,21 @@ export function Packages() {
                       </div>
                     </div>
 
-                    <Link
-                      href="/register"
-                      className="w-full py-2.5 rounded-xl border border-amber-500/30 hover:border-amber-400 text-amber-600 dark:text-amber-300 hover:bg-amber-400/10 text-xs font-bold text-center transition block"
-                    >
-                      Activate ${pkg.amount} Package
-                    </Link>
+                    {isPrelaunch ? (
+                      <a
+                        href="#calculator"
+                        className="w-full py-2.5 rounded-xl border border-amber-500/30 hover:border-amber-400 text-amber-600 dark:text-amber-300 hover:bg-amber-400/10 text-xs font-bold text-center transition block"
+                      >
+                        Calculate ${pkg.amount} Returns
+                      </a>
+                    ) : (
+                      <Link
+                        href="/register"
+                        className="w-full py-2.5 rounded-xl border border-amber-500/30 hover:border-amber-400 text-amber-600 dark:text-amber-300 hover:bg-amber-400/10 text-xs font-bold text-center transition block"
+                      >
+                        Activate ${pkg.amount} Package
+                      </Link>
+                    )}
                   </div>
                 ))}
               </div>
@@ -320,12 +376,21 @@ export function Packages() {
                       </div>
                     </div>
 
-                    <Link
-                      href="/register"
-                      className="w-full py-2.5 rounded-xl border border-amber-500/30 text-amber-600 dark:text-amber-300 hover:bg-amber-400/10 text-xs font-bold text-center transition block"
-                    >
-                      Choose ${pkg.amount} Plan
-                    </Link>
+                    {isPrelaunch ? (
+                      <a
+                        href="#calculator"
+                        className="w-full py-2.5 rounded-xl border border-amber-500/30 text-amber-600 dark:text-amber-300 hover:bg-amber-400/10 text-xs font-bold text-center transition block"
+                      >
+                        Calculate ${pkg.amount} Plan
+                      </a>
+                    ) : (
+                      <Link
+                        href="/register"
+                        className="w-full py-2.5 rounded-xl border border-amber-500/30 text-amber-600 dark:text-amber-300 hover:bg-amber-400/10 text-xs font-bold text-center transition block"
+                      >
+                        Choose ${pkg.amount} Plan
+                      </Link>
+                    )}
                   </div>
                 ))}
               </div>
@@ -371,12 +436,21 @@ export function Packages() {
                       </div>
                     </div>
 
-                    <Link
-                      href="/register"
-                      className="w-full py-2.5 rounded-xl border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-400/10 text-xs font-bold text-center transition block"
-                    >
-                      Choose ${pkg.amount} VIP Plan
-                    </Link>
+                    {isPrelaunch ? (
+                      <a
+                        href="#calculator"
+                        className="w-full py-2.5 rounded-xl border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-400/10 text-xs font-bold text-center transition block"
+                      >
+                        Calculate ${pkg.amount} VIP Plan
+                      </a>
+                    ) : (
+                      <Link
+                        href="/register"
+                        className="w-full py-2.5 rounded-xl border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-400/10 text-xs font-bold text-center transition block"
+                      >
+                        Choose ${pkg.amount} VIP Plan
+                      </Link>
+                    )}
                   </div>
                 ))}
               </div>

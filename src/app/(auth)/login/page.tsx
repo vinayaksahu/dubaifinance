@@ -131,57 +131,6 @@ export default function LoginPage() {
     );
   }
 
-  if (systemMode === "PRELAUNCH") {
-    return (
-      <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-[var(--bg-main)] text-[var(--text-main)] transition-colors duration-200">
-        <div className="bg-glow-gold -top-32 -left-32" />
-        <div className="bg-glow-blue -bottom-32 -right-32" />
-
-        <div className="absolute top-6 left-6 right-6 flex items-center justify-between z-20">
-          <Link
-            href="/"
-            className="text-xs font-bold text-amber-500 hover:text-amber-400 flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-amber-500/20 bg-[var(--bg-card)] backdrop-blur-md"
-          >
-            &larr; Back to Home
-          </Link>
-          <ThemeToggle variant="compact" />
-        </div>
-
-        <div className="w-full max-w-lg glass-card-gold p-8 sm:p-10 rounded-3xl relative z-10 shadow-2xl text-center">
-          <div className="w-14 h-14 rounded-2xl overflow-hidden bg-gradient-to-br from-amber-400 via-amber-500 to-amber-700 p-0.5 shadow-lg shadow-amber-500/30 mx-auto mb-5">
-            <div className="w-full h-full rounded-[14px] bg-slate-950 flex items-center justify-center">
-              <img src="/dubaiLogo.png" alt="Dubai Finance Logo" className="w-10 h-10 object-contain" />
-            </div>
-          </div>
-
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-500 dark:text-amber-400 text-xs font-bold uppercase tracking-wider mb-4">
-            <Sparkles className="w-3.5 h-3.5 text-amber-400 animate-pulse" />
-            <span>Pre-Launching Phase</span>
-          </div>
-
-          <h2 className="font-display text-2xl sm:text-3xl font-black text-[var(--text-main)]">
-            Member Access Opening Shortly
-          </h2>
-          <p className="text-xs sm:text-sm text-[var(--text-muted)] mt-2 leading-relaxed">
-            {noticeText}
-          </p>
-
-          <div className="my-6 p-4 rounded-2xl bg-inner-panel border border-[var(--border-subtle)] text-xs text-[var(--text-muted)] leading-relaxed">
-            Dubai Finance is in its pre-launching phase. Institutional onboarding and smart staking protocol contracts are being finalized. Public member access will open upon launch.
-          </div>
-
-          <Link
-            href="/"
-            className="w-full py-3 rounded-xl gold-btn text-xs font-bold flex items-center justify-center gap-2 shadow-md"
-          >
-            <span>Explore Dubai Finance Platform</span>
-            <ArrowRight className="w-4 h-4" />
-          </Link>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-[var(--bg-main)] text-[var(--text-main)] transition-colors duration-200">
       <div className="bg-glow-gold -top-32 -left-32" />

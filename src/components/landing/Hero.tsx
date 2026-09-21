@@ -1,5 +1,6 @@
 "use client";
 
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight, Download, ShieldCheck, Sparkles, TrendingUp, Award, Building2 } from "lucide-react";
@@ -7,6 +8,45 @@ import { useTheme } from "@/components/theme/ThemeProvider";
 
 export function Hero() {
   const { resolvedTheme } = useTheme();
+  const [isPrelaunch, setIsPrelaunch] = useState(true);
+
+  useEffect(() => {
+    let timer: NodeJS.Timeout | undefined;
+    fetch("/api/config")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data?.configs) {
+          if (data.configs.PRELAUNCH_MODE === "true") {
+            const targetDateStr = data.configs.PRELAUNCH_TARGET_DATE || "2026-09-21T20:00";
+            let targetTime: number;
+            if (/[+-]\d{2}(:\d{2})?$|Z$/i.test(targetDateStr)) {
+              targetTime = new Date(targetDateStr).getTime();
+            } else {
+              targetTime = new Date(`${targetDateStr}:00+04:00`).getTime();
+            }
+
+            const evaluateMode = () => {
+              if (!isNaN(targetTime) && Date.now() >= targetTime) {
+                setIsPrelaunch(false);
+              } else {
+                setIsPrelaunch(true);
+              }
+            };
+
+            evaluateMode();
+            timer = setInterval(evaluateMode, 1000);
+          } else {
+            setIsPrelaunch(false);
+          }
+        }
+      })
+      .catch(() => {});
+
+    return () => {
+      if (timer) clearInterval(timer);
+    };
+  }, []);
+
   const isLight = resolvedTheme === "light";
   const pdfHref = `/api/download-presentation?theme=${isLight ? "light" : "dark"}&v=20260916`;
   const pdfFileName = isLight ? "Dubai_Finance_Presentation_Light.pdf" : "Dubai_Finance_Presentation_Dark.pdf";
@@ -52,12 +92,21 @@ export function Hero() {
 
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 mb-14">
-          <Link
-            href="/register"
-            className="w-full sm:w-auto gold-btn px-8 py-4 rounded-2xl text-base font-bold flex items-center justify-center gap-2.5 shadow-xl shadow-amber-500/20"
-          >
-            Start with $5 USDT <ArrowRight className="w-5 h-5" />
-          </Link>
+          {isPrelaunch ? (
+            <a
+              href="#packages"
+              className="w-full sm:w-auto gold-btn px-8 py-4 rounded-2xl text-base font-bold flex items-center justify-center gap-2.5 shadow-xl shadow-amber-500/20"
+            >
+              Explore Launch Packages ($5 - $5,000) <ArrowRight className="w-5 h-5" />
+            </a>
+          ) : (
+            <Link
+              href="/register"
+              className="w-full sm:w-auto gold-btn px-8 py-4 rounded-2xl text-base font-bold flex items-center justify-center gap-2.5 shadow-xl shadow-amber-500/20"
+            >
+              Start with $5 USDT <ArrowRight className="w-5 h-5" />
+            </Link>
+          )}
 
           {/* Theme-Aware Dynamic PDF Download Button */}
           <a
@@ -70,10 +119,10 @@ export function Hero() {
           </a>
 
           <a
-            href="#packages"
+            href="#calculator"
             className="w-full sm:w-auto px-6 py-4 rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-card)] hover:border-amber-500/40 text-[var(--text-muted)] text-base font-semibold transition flex items-center justify-center gap-2"
           >
-            View Packages ($5 - $5,000)
+            ROI Calculator
           </a>
         </div>
 

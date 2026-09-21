@@ -170,15 +170,6 @@ export async function POST(req: NextRequest) {
         );
         return NextResponse.json({ error: msg, mode: "MAINTENANCE" }, { status: 503 });
       }
-
-      const isPrelaunch = (await getSystemConfigValue("PRELAUNCH_MODE")) === "true";
-      if (isPrelaunch) {
-        const msg = await getSystemConfigValue(
-          "PRELAUNCH_NOTICE_TEXT",
-          "Dubai Finance is currently in its official Pre-Launch phase. Member login will open upon launch."
-        );
-        return NextResponse.json({ error: msg, mode: "PRE_LAUNCH" }, { status: 403 });
-      }
     }
 
     // Success login session logging (non-blocking in background)
