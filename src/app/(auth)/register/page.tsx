@@ -8,7 +8,7 @@ import { ThemeToggle } from "@/components/theme/ThemeToggle";
 
 export default function RegisterPage() {
   const router = useRouter();
-  const [sponsorCode, setSponsorCode] = useState("DF478752");
+  const [sponsorCode, setSponsorCode] = useState("");
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -231,7 +231,7 @@ export default function RegisterPage() {
                 required
                 value={sponsorCode}
                 onChange={(e) => setSponsorCode(e.target.value)}
-                placeholder="e.g. DF478752"
+                placeholder="DFXXXXX"
                 className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-black/50 border border-amber-500/40 focus:border-amber-400 text-amber-300 text-sm font-bold outline-none"
               />
             </div>
