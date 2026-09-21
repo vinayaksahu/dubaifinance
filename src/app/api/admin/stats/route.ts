@@ -11,7 +11,12 @@ export async function GET() {
 
   const adminId = session.userId;
   const userFilter = { adminId, role: "USER" as const };
-  const userRelationFilter = { user: { adminId } };
+  const userRelationFilter = {
+    OR: [
+      { user: { adminId } },
+      { userId: adminId },
+    ],
+  };
 
   const [totalUsers, activeUsers, pendingDeposits, pendingWithdrawals, activeContracts] = await Promise.all([
     db.user.count({ where: userFilter }),

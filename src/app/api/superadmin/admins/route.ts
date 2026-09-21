@@ -44,17 +44,53 @@ export async function GET() {
         ] = await Promise.all([
           db.user.count({ where: { adminId: adm.id, role: "USER" } }),
           db.user.count({ where: { adminId: adm.id, role: "USER", status: "ACTIVE" } }),
-          db.depositRequest.count({ where: { user: { adminId: adm.id }, status: "PENDING" } }),
-          db.withdrawalRequest.count({ where: { user: { adminId: adm.id }, status: "PENDING" } }),
+          db.depositRequest.count({
+            where: {
+              OR: [
+                { user: { adminId: adm.id } },
+                { userId: adm.id },
+              ],
+              status: "PENDING",
+            },
+          }),
+          db.withdrawalRequest.count({
+            where: {
+              OR: [
+                { user: { adminId: adm.id } },
+                { userId: adm.id },
+              ],
+              status: "PENDING",
+            },
+          }),
           db.depositRequest.aggregate({
-            where: { user: { adminId: adm.id }, status: "APPROVED" },
+            where: {
+              OR: [
+                { user: { adminId: adm.id } },
+                { userId: adm.id },
+              ],
+              status: "APPROVED",
+            },
             _sum: { amountInUsdt: true },
           }),
           db.withdrawalRequest.aggregate({
-            where: { user: { adminId: adm.id }, status: "PROCESSED" },
+            where: {
+              OR: [
+                { user: { adminId: adm.id } },
+                { userId: adm.id },
+              ],
+              status: "PROCESSED",
+            },
             _sum: { amountInUsdt: true, feeAmount: true },
           }),
-          db.investmentContract.count({ where: { user: { adminId: adm.id }, status: "ACTIVE" } }),
+          db.investmentContract.count({
+            where: {
+              OR: [
+                { user: { adminId: adm.id } },
+                { userId: adm.id },
+              ],
+              status: "ACTIVE",
+            },
+          }),
         ]);
 
         return {

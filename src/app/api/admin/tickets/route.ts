@@ -14,7 +14,10 @@ export async function GET(req: NextRequest) {
 
     const tickets = await db.supportTicket.findMany({
       where: {
-        user: { adminId: session.userId },
+        OR: [
+          { user: { adminId: session.userId } },
+          { userId: session.userId },
+        ],
       },
       orderBy: { createdAt: 'desc' },
       include: {
@@ -46,7 +49,10 @@ export async function POST(req: NextRequest) {
     const ticket = await db.supportTicket.findFirst({
       where: {
         id: ticketId,
-        user: { adminId: session.userId },
+        OR: [
+          { user: { adminId: session.userId } },
+          { userId: session.userId },
+        ],
       },
     });
     if (!ticket) {

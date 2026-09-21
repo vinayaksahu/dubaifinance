@@ -12,7 +12,10 @@ export async function GET() {
 
   const rawWithdrawals = await db.withdrawalRequest.findMany({
     where: {
-      user: { adminId: session.userId },
+      OR: [
+        { user: { adminId: session.userId } },
+        { userId: session.userId },
+      ],
     },
     orderBy: { createdAt: "desc" },
     include: {
@@ -101,7 +104,10 @@ export async function POST(req: NextRequest) {
   const withdrawal = await db.withdrawalRequest.findFirst({
     where: { 
       id: withdrawalId,
-      user: { adminId: session.userId },
+      OR: [
+        { user: { adminId: session.userId } },
+        { userId: session.userId },
+      ],
     },
     include: { user: true },
   });

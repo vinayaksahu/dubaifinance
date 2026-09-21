@@ -57,9 +57,14 @@ export async function GET(req: NextRequest) {
       },
     });
 
-    // Fetch all deposits under this admin
+    // Fetch all deposits under this admin (including admin's own deposits)
     const deposits = await db.depositRequest.findMany({
-      where: { user: { adminId: adminId } },
+      where: {
+        OR: [
+          { user: { adminId: adminId } },
+          { userId: adminId },
+        ],
+      },
       orderBy: { createdAt: "desc" },
       take: 50,
       include: {
@@ -67,9 +72,14 @@ export async function GET(req: NextRequest) {
       },
     });
 
-    // Fetch all withdrawals under this admin
+    // Fetch all withdrawals under this admin (including admin's own withdrawals)
     const withdrawals = await db.withdrawalRequest.findMany({
-      where: { user: { adminId: adminId } },
+      where: {
+        OR: [
+          { user: { adminId: adminId } },
+          { userId: adminId },
+        ],
+      },
       orderBy: { createdAt: "desc" },
       take: 50,
       include: {
@@ -77,9 +87,15 @@ export async function GET(req: NextRequest) {
       },
     });
 
-    // Fetch active investment contracts under this admin
+    // Fetch active investment contracts under this admin (including admin's own contracts)
     const activeContracts = await db.investmentContract.findMany({
-      where: { user: { adminId: adminId }, status: "ACTIVE" },
+      where: {
+        OR: [
+          { user: { adminId: adminId } },
+          { userId: adminId },
+        ],
+        status: "ACTIVE",
+      },
       orderBy: { createdAt: "desc" },
       include: {
         user: { select: { customId: true, fullName: true } },

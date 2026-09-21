@@ -12,7 +12,10 @@ export async function GET() {
 
   const rawDeposits = await db.depositRequest.findMany({
     where: {
-      user: { adminId: session.userId },
+      OR: [
+        { user: { adminId: session.userId } },
+        { userId: session.userId },
+      ],
     },
     orderBy: { createdAt: "desc" },
     include: {
@@ -52,7 +55,10 @@ export async function POST(req: NextRequest) {
   const deposit = await db.depositRequest.findFirst({
     where: { 
       id: depositId,
-      user: { adminId: session.userId },
+      OR: [
+        { user: { adminId: session.userId } },
+        { userId: session.userId },
+      ],
     },
     include: { user: true },
   });
