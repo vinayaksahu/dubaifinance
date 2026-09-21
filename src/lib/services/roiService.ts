@@ -107,12 +107,16 @@ export async function executeDailyRoiDistribution(adminId?: string) {
     }
 
     // Dubai calendar day calculation:
-    // A contract is active on its activation day (Day 0).
-    // Day 1 ROI is credited only AFTER the activation day closes at 12:00 AM GST (next day).
-    // Each calendar day in Dubai (at 12:01 AM GST or on demand), 1 daily ROI cycle is credited up to tenureDays.
+    // 1. Launch Date Contracts (<= 2026-09-21): Started Day 1 on launch day.
+    //    Their 28-day schedule continues uninterrupted (Day 2 on 22/09, Day 3 on 23/09, etc.).
+    // 2. New Contracts (>= 2026-09-22): Zero ROI on activation day.
+    //    Day 1 ROI is credited only AFTER activation day closes at 12:00 AM GST (next day).
     const createdInfo = getDubaiTimeInfo(new Date(contract.createdAt));
     const msDiff = Math.max(0, nowInfo.startOfDayMs - createdInfo.startOfDayMs);
-    const calendarDaysElapsed = Math.floor(msDiff / (1000 * 60 * 60 * 24));
+    const isLaunchDateContract = createdInfo.dateStr <= "2026-09-21";
+    const calendarDaysElapsed = isLaunchDateContract
+      ? Math.floor(msDiff / (1000 * 60 * 60 * 24)) + 1
+      : Math.floor(msDiff / (1000 * 60 * 60 * 24));
 
     // Eligible days strictly capped at tenureDays
     const eligibleDaysTotal = Math.min(calendarDaysElapsed, contract.tenureDays);
@@ -136,7 +140,9 @@ export async function executeDailyRoiDistribution(adminId?: string) {
     // Process each unpaid cycle
     for (let i = 0; i < daysToPay; i++) {
       const currentDayNumber = contractDaysPaid + 1;
-      const dayOffsetMs = currentDayNumber * 24 * 60 * 60 * 1000;
+      const dayOffsetMs = isLaunchDateContract
+        ? (currentDayNumber - 1) * 24 * 60 * 60 * 1000
+        : currentDayNumber * 24 * 60 * 60 * 1000;
       const targetDate = new Date(createdInfo.startOfDayMs + dayOffsetMs + 4 * 60 * 60 * 1000);
       const targetDateStr = `${targetDate.getUTCFullYear()}-${String(targetDate.getUTCMonth() + 1).padStart(2, "0")}-${String(targetDate.getUTCDate()).padStart(2, "0")}`;
       const referenceKey = `ROI_${contract.id}_${targetDateStr}`;
@@ -261,7 +267,10 @@ export async function getUpcomingCycleForecast(adminId?: string) {
 
     const createdInfo = getDubaiTimeInfo(new Date(contract.createdAt));
     const msDiff = Math.max(0, nowInfo.startOfDayMs - createdInfo.startOfDayMs);
-    const currentDaysElapsed = Math.floor(msDiff / (1000 * 60 * 60 * 24));
+    const isLaunchDateContract = createdInfo.dateStr <= "2026-09-21";
+    const currentDaysElapsed = isLaunchDateContract
+      ? Math.floor(msDiff / (1000 * 60 * 60 * 24)) + 1
+      : Math.floor(msDiff / (1000 * 60 * 60 * 24));
     const nextDaysElapsed = currentDaysElapsed + 1;
     const nextEligibleDays = Math.min(nextDaysElapsed, contract.tenureDays);
 
@@ -315,7 +324,10 @@ export async function getUpcomingCycleForecast(adminId?: string) {
     if (contract.daysPaid >= contract.tenureDays) continue;
     const createdInfo = getDubaiTimeInfo(new Date(contract.createdAt));
     const msDiff = Math.max(0, nowInfo.startOfDayMs - createdInfo.startOfDayMs);
-    const calendarDaysElapsed = Math.floor(msDiff / (1000 * 60 * 60 * 24));
+    const isLaunchDateContract = createdInfo.dateStr <= "2026-09-21";
+    const calendarDaysElapsed = isLaunchDateContract
+      ? Math.floor(msDiff / (1000 * 60 * 60 * 24)) + 1
+      : Math.floor(msDiff / (1000 * 60 * 60 * 24));
     const eligibleDaysTotal = Math.min(calendarDaysElapsed, contract.tenureDays);
     const daysToPay = Math.max(0, eligibleDaysTotal - contract.daysPaid);
     if (daysToPay > 0) {
