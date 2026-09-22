@@ -22,6 +22,7 @@ import {
   isAutomaticCreditingEnabled,
   getRequiredConfirmations,
   OFFICIAL_USDT_BEP20_CONTRACT,
+  getEffectiveDepositVault,
 } from "../src/lib/blockchain/config";
 import Decimal from "decimal.js";
 
@@ -354,6 +355,87 @@ async function runTests() {
   });
   const userAModeReverted = await getDepositProcessingModeForUser(userA.id);
   assert(userAModeReverted === "MANUAL", "Revert Check: User A is back to MANUAL mode");
+
+  // ========================================================
+  // 10. BRANCH DEPOSIT VAULT ISOLATION TESTS
+  // ========================================================
+  console.log("\n--- SECTION 10: BRANCH DEPOSIT VAULT ISOLATION ---");
+
+  const addressA = "0x1111111111111111111111111111111111111111";
+  const addressB = "0x2222222222222222222222222222222222222222";
+  const qrA = "https://example.com/qr-admin-a.png";
+  const qrB = "https://example.com/qr-admin-b.png";
+
+  // Configure Admin A's branch vault in SystemConfig and user record
+  await db.systemConfig.upsert({
+    where: { key: `ADMIN_DEPOSIT_ADDRESS_${adminA.id}` },
+    update: { value: addressA },
+    create: { key: `ADMIN_DEPOSIT_ADDRESS_${adminA.id}`, value: addressA, description: "Admin A vault" },
+  });
+  await db.systemConfig.upsert({
+    where: { key: `ADMIN_DEPOSIT_QR_${adminA.id}` },
+    update: { value: qrA },
+    create: { key: `ADMIN_DEPOSIT_QR_${adminA.id}`, value: qrA, description: "Admin A QR" },
+  });
+  await db.user.update({
+    where: { id: adminA.id },
+    data: { usdtAddress: addressA },
+  });
+
+  // Configure Admin B's branch vault in SystemConfig and user record
+  await db.systemConfig.upsert({
+    where: { key: `ADMIN_DEPOSIT_ADDRESS_${adminB.id}` },
+    update: { value: addressB },
+    create: { key: `ADMIN_DEPOSIT_ADDRESS_${adminB.id}`, value: addressB, description: "Admin B vault" },
+  });
+  await db.systemConfig.upsert({
+    where: { key: `ADMIN_DEPOSIT_QR_${adminB.id}` },
+    update: { value: qrB },
+    create: { key: `ADMIN_DEPOSIT_QR_${adminB.id}`, value: qrB, description: "Admin B QR" },
+  });
+  await db.user.update({
+    where: { id: adminB.id },
+    data: { usdtAddress: addressB },
+  });
+
+  // Verify Admin A vault resolution
+  const vaultAdminA = await getEffectiveDepositVault(adminA.id);
+  assert(vaultAdminA.address.toLowerCase() === addressA.toLowerCase(), "Admin A resolves their own dedicated deposit address", `Got: ${vaultAdminA.address}`);
+  assert(vaultAdminA.qr === qrA, "Admin A resolves their own dedicated QR code", `Got: ${vaultAdminA.qr}`);
+
+  // Verify Admin B vault resolution
+  const vaultAdminB = await getEffectiveDepositVault(adminB.id);
+  assert(vaultAdminB.address.toLowerCase() === addressB.toLowerCase(), "Admin B resolves their own dedicated deposit address", `Got: ${vaultAdminB.address}`);
+  assert(vaultAdminB.qr === qrB, "Admin B resolves their own dedicated QR code", `Got: ${vaultAdminB.qr}`);
+
+  // Crucial check: Address A and Address B must be DIFFERENT
+  assert(vaultAdminA.address !== vaultAdminB.address, "Admin A and Admin B have completely different deposit addresses");
+
+  // Verify Downline User A under Admin A receives Admin A's vault
+  const vaultUserA = await getEffectiveDepositVault(userA.id);
+  assert(vaultUserA.address.toLowerCase() === addressA.toLowerCase(), "User A receives Admin A's deposit address", `Got: ${vaultUserA.address}`);
+  assert(vaultUserA.qr === qrA, "User A receives Admin A's deposit QR", `Got: ${vaultUserA.qr}`);
+
+  // Verify Downline User B under Admin B receives Admin B's vault
+  const vaultUserB = await getEffectiveDepositVault(userB.id);
+  assert(vaultUserB.address.toLowerCase() === addressB.toLowerCase(), "User B receives Admin B's deposit address", `Got: ${vaultUserB.address}`);
+  assert(vaultUserB.qr === qrB, "User B receives Admin B's deposit QR", `Got: ${vaultUserB.qr}`);
+
+  // Isolation check: modifying Admin A's address must NOT affect Admin B or User B
+  const updatedAddressA = "0x9999999999999999999999999999999999999999";
+  await db.systemConfig.upsert({
+    where: { key: `ADMIN_DEPOSIT_ADDRESS_${adminA.id}` },
+    update: { value: updatedAddressA },
+    create: { key: `ADMIN_DEPOSIT_ADDRESS_${adminA.id}`, value: updatedAddressA, description: "Admin A vault" },
+  });
+
+  const vaultAdminBAfterAUpdate = await getEffectiveDepositVault(adminB.id);
+  const vaultUserBAfterAUpdate = await getEffectiveDepositVault(userB.id);
+  assert(vaultAdminBAfterAUpdate.address.toLowerCase() === addressB.toLowerCase(), "Admin B's deposit address remains unchanged after Admin A modifies theirs");
+  assert(vaultUserBAfterAUpdate.address.toLowerCase() === addressB.toLowerCase(), "User B's deposit address remains unchanged after Admin A modifies theirs");
+
+  const vaultUserAAfterUpdate = await getEffectiveDepositVault(userA.id);
+  assert(vaultUserAAfterUpdate.address.toLowerCase() === updatedAddressA.toLowerCase(), "User A receives newly updated deposit address of Admin A");
 
   console.log("\n==========================================================");
   console.log(`  TEST RESULTS: ${passed} PASSED | ${failed} FAILED`);

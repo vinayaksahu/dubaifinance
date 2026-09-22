@@ -6,6 +6,7 @@ import {
   getDepositProcessingModeForUser,
   getRequiredConfirmations,
   getUsdtContractAddress,
+  getEffectiveDepositVault,
 } from "@/lib/blockchain/config";
 import { verifyOnChainTransaction, creditUserFundWalletAtomic } from "@/lib/blockchain/depositProcessor";
 import { sanitizeIdentifier } from "@/lib/sanitize";
@@ -20,18 +21,17 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
     }
 
-    const [userAddress, mode, requiredConfirmations, usdtContract, companyAddress, companyQr] = await Promise.all([
+    const [userAddress, mode, requiredConfirmations, usdtContract, branchVault] = await Promise.all([
       getOrCreateUserDepositAddress(session.userId),
       getDepositProcessingModeForUser(session.userId),
       getRequiredConfirmations(),
       getUsdtContractAddress(),
-      getSystemConfigValue("COMPANY_USDT_ADDRESS", APP_CONFIG.depositAddress),
-      getSystemConfigValue("COMPANY_USDT_QR", ""),
+      getEffectiveDepositVault(session.userId),
     ]);
 
-    const activeAddress = (mode === "MANUAL" && companyAddress) ? companyAddress : userAddress.address;
-    const qrUrl = (mode === "MANUAL" && companyQr)
-      ? companyQr
+    const activeAddress = (mode === "MANUAL" && branchVault.address) ? branchVault.address : userAddress.address;
+    const qrUrl = (mode === "MANUAL" && branchVault.qr)
+      ? branchVault.qr
       : `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${activeAddress}`;
 
     // Fetch user's recent deposits
@@ -99,14 +99,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Invalid transaction hash." }, { status: 400 });
     }
 
-    // 1. Get user's assigned deposit address & system configured company address
-    const [userAddress, mode, companyAddress] = await Promise.all([
+    // 1. Get user's assigned deposit address & branch/company deposit vault
+    const [userAddress, mode, branchVault] = await Promise.all([
       getOrCreateUserDepositAddress(session.userId),
       getDepositProcessingModeForUser(session.userId),
-      getSystemConfigValue("COMPANY_USDT_ADDRESS", APP_CONFIG.depositAddress),
+      getEffectiveDepositVault(session.userId),
     ]);
 
-    const targetAddress = (mode === "MANUAL" && companyAddress) ? companyAddress : userAddress.address;
+    const targetAddress = (mode === "MANUAL" && branchVault.address) ? branchVault.address : userAddress.address;
 
     // 2. Check if txHash already exists in database
     const existing = await db.depositRequest.findUnique({

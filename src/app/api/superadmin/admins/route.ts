@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSession, hashPassword } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { recordActivity } from "@/lib/auditLogger";
+import { invalidateConfigCache } from "@/lib/configService";
 
 export async function GET() {
   try {
@@ -10,25 +11,36 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized. Super Root Admin access required." }, { status: 403 });
     }
 
-    // Fetch all sub-admins
-    const admins = await db.user.findMany({
-      where: {
-        role: { in: ["ADMIN", "SUPER_ADMIN"] },
-        NOT: { role: "SUPER_ROOT_ADMIN" },
-      },
-      orderBy: { createdAt: "asc" },
-      select: {
-        id: true,
-        customId: true,
-        fullName: true,
-        email: true,
-        phone: true,
-        role: true,
-        status: true,
-        teamPrefix: true,
-        createdAt: true,
-      },
-    });
+    // Fetch all sub-admins and system configs for branch deposit addresses
+    const [admins, dbConfigs] = await Promise.all([
+      db.user.findMany({
+        where: {
+          role: { in: ["ADMIN", "SUPER_ADMIN"] },
+          NOT: { role: "SUPER_ROOT_ADMIN" },
+        },
+        orderBy: { createdAt: "asc" },
+        select: {
+          id: true,
+          customId: true,
+          fullName: true,
+          email: true,
+          phone: true,
+          role: true,
+          status: true,
+          teamPrefix: true,
+          usdtAddress: true,
+          createdAt: true,
+        },
+      }),
+      db.systemConfig.findMany({
+        where: {
+          OR: [
+            { key: { startsWith: "ADMIN_DEPOSIT_ADDRESS_" } },
+            { key: { startsWith: "ADMIN_DEPOSIT_QR_" } },
+          ],
+        },
+      }),
+    ]);
 
     // Gather branch stats for each admin
     const enrichedAdmins = await Promise.all(
@@ -93,8 +105,14 @@ export async function GET() {
           }),
         ]);
 
+        const branchAddr = dbConfigs.find((c) => c.key === `ADMIN_DEPOSIT_ADDRESS_${adm.id}`)?.value || adm.usdtAddress || "";
+        const branchQr = dbConfigs.find((c) => c.key === `ADMIN_DEPOSIT_QR_${adm.id}`)?.value || "";
+
         return {
           ...adm,
+          depositAddress: branchAddr,
+          depositQr: branchQr,
+          usdtAddress: branchAddr,
           totalMembers,
           activeMembers,
           pendingDeposits,
@@ -121,7 +139,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized. Super Root Admin access required." }, { status: 403 });
     }
 
-    const { fullName, customId, teamPrefix, email, phone, password, role } = await req.json();
+    const { fullName, customId, teamPrefix, email, phone, password, role, usdtAddress } = await req.json();
 
     if (!fullName || !customId || !email || !password) {
       return NextResponse.json({ error: "Missing required fields." }, { status: 400 });
@@ -134,13 +152,14 @@ export async function POST(req: NextRequest) {
     const cleanCustomId = customId.trim().toUpperCase();
     const cleanEmail = email.trim().toLowerCase();
     const cleanPrefix = teamPrefix ? teamPrefix.trim() : null;
+    const cleanUsdt = usdtAddress ? usdtAddress.trim() : null;
 
     // Check duplicate Custom ID
     const existing = await db.user.findUnique({
       where: { customId: cleanCustomId },
     });
     if (existing) {
-      return NextResponse.json({ error: `Admin ID "${cleanCustomId}" is already taken.` }, { status: 400 });
+      return NextResponse.json({ error: `Admin with ID "${cleanCustomId}" already exists.` }, { status: 400 });
     }
 
     // Check duplicate Email
@@ -179,6 +198,7 @@ export async function POST(req: NextRequest) {
         role: role === "SUPER_ADMIN" ? "SUPER_ADMIN" : "ADMIN",
         status: "ACTIVE",
         teamPrefix: cleanPrefix,
+        usdtAddress: cleanUsdt,
         fundBalance: 0,
         incomeBalance: 0,
       },
@@ -191,9 +211,23 @@ export async function POST(req: NextRequest) {
         role: true,
         status: true,
         teamPrefix: true,
+        usdtAddress: true,
         createdAt: true,
       },
     });
+
+    if (cleanUsdt) {
+      await db.systemConfig.upsert({
+        where: { key: `ADMIN_DEPOSIT_ADDRESS_${newAdmin.id}` },
+        update: { value: cleanUsdt },
+        create: {
+          key: `ADMIN_DEPOSIT_ADDRESS_${newAdmin.id}`,
+          value: cleanUsdt,
+          description: `Branch deposit vault for Admin ${newAdmin.id}`,
+        },
+      });
+      invalidateConfigCache();
+    }
 
     await recordActivity({
       userId: session.userId,
@@ -377,7 +411,40 @@ export async function PATCH(req: NextRequest) {
         updateData.role = body.role;
       }
 
-      if (Object.keys(updateData).length === 0) {
+      // 7. Update USDT Deposit Address / Vault
+      if (body.usdtAddress !== undefined || body.depositAddress !== undefined) {
+        const rawAddr = body.depositAddress !== undefined ? body.depositAddress : body.usdtAddress;
+        const cleanAddr = (rawAddr || "").toString().trim();
+        updateData.usdtAddress = cleanAddr || null;
+
+        await db.systemConfig.upsert({
+          where: { key: `ADMIN_DEPOSIT_ADDRESS_${adminId}` },
+          update: { value: cleanAddr },
+          create: {
+            key: `ADMIN_DEPOSIT_ADDRESS_${adminId}`,
+            value: cleanAddr,
+            description: `Branch deposit vault for Admin ${adminId}`,
+          },
+        });
+        invalidateConfigCache();
+      }
+
+      // 8. Update Deposit QR Code
+      if (body.depositQr !== undefined) {
+        const cleanQr = (body.depositQr || "").toString().trim();
+        await db.systemConfig.upsert({
+          where: { key: `ADMIN_DEPOSIT_QR_${adminId}` },
+          update: { value: cleanQr },
+          create: {
+            key: `ADMIN_DEPOSIT_QR_${adminId}`,
+            value: cleanQr,
+            description: `Branch deposit QR for Admin ${adminId}`,
+          },
+        });
+        invalidateConfigCache();
+      }
+
+      if (Object.keys(updateData).length === 0 && body.depositQr === undefined) {
         return NextResponse.json({ error: "No update fields provided." }, { status: 400 });
       }
 
@@ -393,6 +460,7 @@ export async function PATCH(req: NextRequest) {
           teamPrefix: true,
           status: true,
           role: true,
+          usdtAddress: true,
         },
       });
 

@@ -31,6 +31,34 @@ export async function GET() {
       };
     }
 
+    // For branch admins: provide their isolated branch receiving address & QR
+    if (session.role === "ADMIN" || session.role === "SUPER_ADMIN") {
+      const adminId = session.userId;
+      const branchAddrItem = dbConfigs.find((item) => item.key === `ADMIN_DEPOSIT_ADDRESS_${adminId}`);
+      const branchQrItem = dbConfigs.find((item) => item.key === `ADMIN_DEPOSIT_QR_${adminId}`);
+
+      const adminUser = await db.user.findUnique({
+        where: { id: adminId },
+        select: { usdtAddress: true },
+      });
+
+      const effectiveAddr = branchAddrItem?.value || adminUser?.usdtAddress || configMap["COMPANY_USDT_ADDRESS"]?.value || "";
+      const effectiveQr = branchQrItem?.value || configMap["COMPANY_USDT_QR"]?.value || "";
+
+      if (configMap["COMPANY_USDT_ADDRESS"]) {
+        configMap["COMPANY_USDT_ADDRESS"] = {
+          ...configMap["COMPANY_USDT_ADDRESS"],
+          value: effectiveAddr,
+        };
+      }
+      if (configMap["COMPANY_USDT_QR"]) {
+        configMap["COMPANY_USDT_QR"] = {
+          ...configMap["COMPANY_USDT_QR"],
+          value: effectiveQr,
+        };
+      }
+    }
+
     return NextResponse.json({ configs: configMap });
   } catch (error: any) {
     console.error("GET /api/admin/config error:", error);
@@ -58,9 +86,42 @@ export async function POST(req: NextRequest) {
     const updates: Promise<any>[] = [];
 
     for (const [key, value] of Object.entries(configs)) {
-      const def = DEFAULT_SYSTEM_CONFIGS[key];
       const stringVal = String(value).trim();
 
+      // If a sub-admin is modifying the deposit wallet address or QR code,
+      // save it to their isolated branch vault keys instead of overwriting the global platform vault!
+      if (
+        (session.role === "ADMIN" || session.role === "SUPER_ADMIN") &&
+        (key === "COMPANY_USDT_ADDRESS" || key === "COMPANY_USDT_QR")
+      ) {
+        const branchKey = key === "COMPANY_USDT_ADDRESS"
+          ? `ADMIN_DEPOSIT_ADDRESS_${session.userId}`
+          : `ADMIN_DEPOSIT_QR_${session.userId}`;
+
+        updates.push(
+          db.systemConfig.upsert({
+            where: { key: branchKey },
+            update: { value: stringVal },
+            create: {
+              key: branchKey,
+              value: stringVal,
+              description: `Branch deposit vault for Admin ${session.userId}`,
+            },
+          })
+        );
+
+        if (key === "COMPANY_USDT_ADDRESS") {
+          updates.push(
+            db.user.update({
+              where: { id: session.userId },
+              data: { usdtAddress: stringVal },
+            })
+          );
+        }
+        continue;
+      }
+
+      const def = DEFAULT_SYSTEM_CONFIGS[key];
       updates.push(
         db.systemConfig.upsert({
           where: { key },

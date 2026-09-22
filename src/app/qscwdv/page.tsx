@@ -58,6 +58,9 @@ interface AdminItem {
   role: string;
   status: "ACTIVE" | "BLOCKED" | "INACTIVE";
   teamPrefix: string | null;
+  usdtAddress?: string | null;
+  depositAddress?: string | null;
+  depositQr?: string | null;
   createdAt: string;
   totalMembers: number;
   activeMembers: number;
@@ -161,6 +164,7 @@ export default function SuperRootAdminPage() {
     phone: "",
     password: "",
     role: "SUPER_ADMIN",
+    usdtAddress: "",
   });
   const [createLoading, setCreateLoading] = useState(false);
   const [createError, setCreateError] = useState("");
@@ -177,7 +181,7 @@ export default function SuperRootAdminPage() {
   const [prefixLoading, setPrefixLoading] = useState(false);
   const [prefixMsg, setPrefixMsg] = useState("");
 
-  // Edit Admin Details Modal (Name, Email, Phone, Team Prefix, Password)
+  // Edit Admin Details Modal (Name, Email, Phone, Team Prefix, Password, USDT Deposit Address)
   const [editModalAdmin, setEditModalAdmin] = useState<AdminItem | null>(null);
   const [editForm, setEditForm] = useState<{
     fullName: string;
@@ -186,6 +190,7 @@ export default function SuperRootAdminPage() {
     teamPrefix: string;
     role: "ADMIN" | "SUPER_ADMIN";
     password: string;
+    usdtAddress: string;
   }>({
     fullName: "",
     email: "",
@@ -193,6 +198,7 @@ export default function SuperRootAdminPage() {
     teamPrefix: "",
     role: "ADMIN",
     password: "",
+    usdtAddress: "",
   });
   const [editLoading, setEditLoading] = useState(false);
   const [editMsg, setEditMsg] = useState<{ type: "success" | "error"; text: string } | null>(null);
@@ -445,7 +451,7 @@ export default function SuperRootAdminPage() {
       if (!res.ok) throw new Error(data.error || "Failed to create admin");
 
       setShowCreateModal(false);
-      setCreateForm({ fullName: "", customId: "", teamPrefix: "", email: "", phone: "", password: "", role: "SUPER_ADMIN" });
+      setCreateForm({ fullName: "", customId: "", teamPrefix: "", email: "", phone: "", password: "", role: "SUPER_ADMIN", usdtAddress: "" });
       loadAllData();
     } catch (err: any) {
       setCreateError(err.message);
@@ -463,9 +469,12 @@ export default function SuperRootAdminPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ adminId: admin.id, action: "TOGGLE_STATUS" }),
       });
-      if (res.ok) loadAllData();
-    } catch (err) {
-      console.error(err);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to update status");
+
+      loadAllData();
+    } catch (err: any) {
+      alert(err.message);
     }
   };
 
@@ -488,7 +497,7 @@ export default function SuperRootAdminPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to reset password");
 
-      setPasswordMsg("Password updated successfully!");
+      setPasswordMsg("Password reset successfully!");
       setTimeout(() => {
         setPasswordModalAdmin(null);
         setNewPassword("");
@@ -543,6 +552,7 @@ export default function SuperRootAdminPage() {
       teamPrefix: adm.teamPrefix || "",
       role: (adm.role === "SUPER_ADMIN" ? "SUPER_ADMIN" : "ADMIN"),
       password: "",
+      usdtAddress: adm.depositAddress || adm.usdtAddress || "",
     });
     setEditMsg(null);
   };
@@ -566,6 +576,7 @@ export default function SuperRootAdminPage() {
           teamPrefix: editForm.teamPrefix,
           role: editForm.role,
           password: editForm.password,
+          usdtAddress: editForm.usdtAddress,
         }),
       });
       const data = await res.json();
@@ -1020,6 +1031,7 @@ export default function SuperRootAdminPage() {
                       phone: "",
                       password: "",
                       role: "SUPER_ADMIN",
+                      usdtAddress: "",
                     });
                     setCreateError("");
                     setShowCreateModal(true);
@@ -1107,6 +1119,15 @@ export default function SuperRootAdminPage() {
                           <td className="py-3.5 px-4">
                             <p className="text-slate-300">{adm.email}</p>
                             <p className="text-slate-500 font-mono text-[11px]">{adm.phone || "No phone"}</p>
+                            <div className="mt-1">
+                              {adm.depositAddress ? (
+                                <span className="text-[10px] font-mono text-amber-400/90 bg-amber-950/40 px-1.5 py-0.5 rounded border border-amber-500/20" title={adm.depositAddress}>
+                                  Vault: {adm.depositAddress.slice(0, 6)}...{adm.depositAddress.slice(-4)}
+                                </span>
+                              ) : (
+                                <span className="text-[10px] font-mono text-slate-500">Vault: Global Default</span>
+                              )}
+                            </div>
                           </td>
 
                           <td className="py-3.5 px-4 font-mono">
@@ -2512,6 +2533,20 @@ export default function SuperRootAdminPage() {
               </div>
 
               <div>
+                <label className="block text-slate-300 font-bold mb-1.5 uppercase font-mono flex items-center justify-between">
+                  <span>Branch USDT Receiving Address (Optional)</span>
+                  <span className="text-[10px] text-slate-500 font-normal lowercase">(BEP20 BSC)</span>
+                </label>
+                <input
+                  type="text"
+                  value={createForm.usdtAddress}
+                  onChange={(e) => setCreateForm({ ...createForm, usdtAddress: e.target.value.trim() })}
+                  placeholder="0x... (Can be configured later in System Config)"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-amber-300 outline-none focus:border-rose-500 font-mono text-xs"
+                />
+              </div>
+
+              <div>
                 <label className="block text-slate-300 font-bold mb-1.5 uppercase font-mono">Login Password</label>
                 <input
                   type="password"
@@ -2748,6 +2783,24 @@ export default function SuperRootAdminPage() {
                 </select>
                 <p className="text-[10px] text-slate-400 mt-1 font-mono">
                   SUPER_ADMIN grants full access to System Config and Database Backup in admin console.
+                </p>
+              </div>
+
+              {/* Branch Dedicated USDT Deposit Address */}
+              <div className="pt-2 border-t border-slate-800">
+                <label className="block text-slate-300 font-bold mb-1 uppercase font-mono flex items-center justify-between">
+                  <span className="text-amber-400">Branch USDT Deposit Address (BEP20)</span>
+                  <span className="text-[10px] text-slate-400 font-normal lowercase">(isolated to this branch)</span>
+                </label>
+                <input
+                  type="text"
+                  value={editForm.usdtAddress}
+                  onChange={(e) => setEditForm({ ...editForm, usdtAddress: e.target.value.trim() })}
+                  placeholder="0x... (Dedicated receiving wallet for this admin's branch)"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-amber-500/40 text-amber-300 outline-none focus:border-amber-400 text-xs font-mono"
+                />
+                <p className="text-[10px] text-slate-400 mt-1 font-mono">
+                  Members under this admin branch will deposit into and verify against this dedicated address.
                 </p>
               </div>
 

@@ -1078,13 +1078,13 @@ export function AdminConfigView() {
                     <div>
                       <div className="flex items-center gap-2 text-purple-400 text-xs font-bold uppercase tracking-widest mb-1">
                         <Wallet className="w-4 h-4 text-purple-400" />
-                        <span>Official Platform Deposit Vault</span>
+                        <span>Branch Dedicated Deposit Vault</span>
                       </div>
                       <h2 className="text-xl sm:text-2xl font-black text-white">
-                        Company USDT (BEP-20) Receiving Wallet &amp; QR Code
+                        USDT (BEP-20) Receiving Wallet &amp; QR Code
                       </h2>
                       <p className="text-slate-400 text-xs sm:text-sm mt-1 max-w-2xl">
-                        This receiving address and official QR code will be displayed to all users when depositing funds via Binance Smart Chain (BEP-20 USDT). You can keep the auto-generated QR code or upload a custom branded payment QR.
+                        This receiving address and QR code are dedicated to your branch. Members registered under your team will see this exact wallet and QR code when making crypto deposits. Changes made here remain 100% isolated to your branch.
                       </p>
                     </div>
 

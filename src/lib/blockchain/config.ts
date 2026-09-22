@@ -107,3 +107,80 @@ export async function isBlockchainMonitorEnabled(): Promise<boolean> {
   const val = await getSystemConfigValue("DEPOSIT_MONITOR_ENABLED", "true");
   return val.toLowerCase() === "true" || val === "1";
 }
+
+/**
+ * Resolves the effective deposit vault (receiving address & QR code) for a given user or admin branch.
+ * If userId belongs to an admin branch, returns that specific admin's configured vault.
+ */
+export async function getEffectiveDepositVault(userId?: string | null): Promise<{ address: string; qr: string }> {
+  const defaultAddress = await getSystemConfigValue("COMPANY_USDT_ADDRESS", "0x39a0B29A5c66e927598Fa4eCE9bFf84a44bA8812");
+  const defaultQr = await getSystemConfigValue("COMPANY_USDT_QR", "");
+
+  if (!userId) {
+    return {
+      address: defaultAddress,
+      qr: defaultQr || `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${defaultAddress}`,
+    };
+  }
+
+  try {
+    const user = await db.user.findUnique({
+      where: { id: userId },
+      select: { id: true, role: true, adminId: true, usdtAddress: true },
+    });
+
+    if (!user) {
+      return {
+        address: defaultAddress,
+        qr: defaultQr || `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${defaultAddress}`,
+      };
+    }
+
+    // Determine target admin ID:
+    // If the user is an admin themselves, target admin is user.id
+    // If the user is a member under an admin, target admin is user.adminId
+    const targetAdminId = (user.role === "ADMIN" || user.role === "SUPER_ADMIN")
+      ? user.id
+      : user.adminId;
+
+    if (targetAdminId) {
+      // 1. Check branch-specific keys directly in db for real-time consistency
+      const [branchAddrRow, branchQrRow] = await Promise.all([
+        db.systemConfig.findUnique({ where: { key: `ADMIN_DEPOSIT_ADDRESS_${targetAdminId}` } }),
+        db.systemConfig.findUnique({ where: { key: `ADMIN_DEPOSIT_QR_${targetAdminId}` } }),
+      ]);
+
+      const branchAddr = branchAddrRow?.value;
+      const branchQr = branchQrRow?.value;
+
+      if (branchAddr && branchAddr.trim().startsWith("0x")) {
+        const clean = branchAddr.trim();
+        return {
+          address: clean,
+          qr: branchQr || `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${clean}`,
+        };
+      }
+
+      // 2. Check admin user's usdtAddress field
+      const admin = await db.user.findUnique({
+        where: { id: targetAdminId },
+        select: { usdtAddress: true },
+      });
+
+      if (admin?.usdtAddress && admin.usdtAddress.trim().startsWith("0x")) {
+        const clean = admin.usdtAddress.trim();
+        return {
+          address: clean,
+          qr: branchQr || `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${clean}`,
+        };
+      }
+    }
+  } catch (err) {
+    console.warn("[getEffectiveDepositVault] Error resolving branch deposit vault:", err);
+  }
+
+  return {
+    address: defaultAddress,
+    qr: defaultQr || `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${defaultAddress}`,
+  };
+}
