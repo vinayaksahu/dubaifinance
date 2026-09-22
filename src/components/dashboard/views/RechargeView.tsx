@@ -16,6 +16,7 @@ export function RechargeView({ user, onRefresh }: RechargeViewProps) {
   const [rechargeAmount, setRechargeAmount] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState<{ text: string; error?: boolean } | null>(null);
+  const [showOptionalTxHash, setShowOptionalTxHash] = useState(false);
 
   // Crypto deposit dynamic state
   const [cryptoData, setCryptoData] = useState<{
@@ -63,6 +64,11 @@ export function RechargeView({ user, onRefresh }: RechargeViewProps) {
   const handleSubmitDeposit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!txHash.trim()) {
+      if (isAutomatic) {
+        // In automatic mode, TxHash is optional — don't block submission
+        setMessage({ text: "Please enter a TxHash to submit for instant verification.", error: true });
+        return;
+      }
       setMessage({ text: "Please enter your USDT BEP-20 transaction hash (TxHash).", error: true });
       return;
     }
@@ -403,7 +409,28 @@ export function RechargeView({ user, onRefresh }: RechargeViewProps) {
               </button>
             </div>
 
-            {/* Manual TXID Submission Form */}
+            {/* Auto-Detect Info Banner — AUTOMATIC mode only */}
+            {isAutomatic && (
+              <div className="bg-emerald-950/50 border border-emerald-500/30 rounded-2xl p-4 mb-4">
+                <div className="flex items-start gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-emerald-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-emerald-300">Auto-Credit Enabled</p>
+                    <p className="text-[11px] text-emerald-400/80 mt-1 leading-relaxed">
+                      Simply send USDT to the address above. Your deposit will be <span className="font-bold text-emerald-300">automatically detected and credited</span> within 1-3 minutes. No further action needed.
+                    </p>
+                    <div className="flex items-center gap-1.5 mt-2 text-[10px] text-emerald-400/70">
+                      <Clock className="w-3 h-3" />
+                      <span>{cryptoData?.requiredConfirmations || 3} block confirmations required (~{(cryptoData?.requiredConfirmations || 3) * 3}s on BSC)</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* TxHash Submission Form */}
             <form onSubmit={handleSubmitDeposit} className="space-y-4">
               {/* Recharge Amount - Manual Mode Only */}
               {!isAutomatic && (
@@ -451,40 +478,97 @@ export function RechargeView({ user, onRefresh }: RechargeViewProps) {
                 </div>
               )}
 
-              <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">
-                  {!isAutomatic ? "Enter BSC Transaction Hash (TxHash)" : "Already Sent? Enter BSC Transaction Hash (TxHash)"}
-                </label>
-                <input
-                  type="text"
-                  value={txHash}
-                  onChange={(e) => setTxHash(e.target.value)}
-                  placeholder="Paste 0x... BSC TxHash"
-                  className="w-full bg-[#070e20] border border-[#1a2d52] rounded-xl px-3.5 py-2 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-blue-500 font-mono"
-                  required
-                />
-                <span className="text-[10px] text-slate-500 block mt-1">
-                  Our backend independently verifies the transaction on the BSC blockchain.
-                </span>
-              </div>
+              {/* AUTOMATIC mode: optional collapsible TxHash section */}
+              {isAutomatic ? (
+                <div className="border border-[#1a2d52] rounded-xl overflow-hidden">
+                  <button
+                    type="button"
+                    onClick={() => setShowOptionalTxHash((prev) => !prev)}
+                    className="w-full flex items-center justify-between px-3.5 py-2.5 bg-[#070e20] hover:bg-[#0c1530] transition-colors"
+                  >
+                    <span className="text-xs text-slate-400">
+                      <span className="text-slate-500">⚡</span> Already sent? Submit TxHash for instant credit{" "}
+                      <span className="text-[10px] text-slate-600 font-semibold ml-1 bg-slate-800/60 px-1.5 py-0.5 rounded">OPTIONAL</span>
+                    </span>
+                    <span className={`text-slate-500 text-xs transition-transform ${showOptionalTxHash ? "rotate-180" : ""}`}>▼</span>
+                  </button>
+                  {showOptionalTxHash && (
+                    <div className="p-3.5 pt-2 space-y-3 border-t border-[#1a2d52]">
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-400 mb-1">
+                          BSC Transaction Hash (TxHash)
+                        </label>
+                        <input
+                          type="text"
+                          value={txHash}
+                          onChange={(e) => setTxHash(e.target.value)}
+                          placeholder="Paste 0x... BSC TxHash"
+                          className="w-full bg-[#070e20] border border-[#1a2d52] rounded-xl px-3.5 py-2 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-blue-500 font-mono"
+                        />
+                        <span className="text-[10px] text-slate-500 block mt-1">
+                          Skip this — your deposit will still be auto-credited. Use only for instant verification.
+                        </span>
+                      </div>
 
-              {message && (
-                <div className={`p-3 rounded-xl text-xs font-semibold ${
-                  message.error
-                    ? "bg-rose-950/60 text-rose-300 border border-rose-500/40"
-                    : "bg-emerald-950/60 text-emerald-300 border border-emerald-500/40"
-                }`}>
-                  {message.text}
+                      {message && (
+                        <div className={`p-3 rounded-xl text-xs font-semibold ${
+                          message.error
+                            ? "bg-rose-950/60 text-rose-300 border border-rose-500/40"
+                            : "bg-emerald-950/60 text-emerald-300 border border-emerald-500/40"
+                        }`}>
+                          {message.text}
+                        </div>
+                      )}
+
+                      <button
+                        type="submit"
+                        disabled={submitting || !txHash.trim()}
+                        className="w-full py-2 rounded-xl bg-blue-600/80 hover:bg-blue-500 text-white font-bold text-xs shadow-lg shadow-blue-600/20 transition-all disabled:opacity-40"
+                      >
+                        {submitting ? "Verifying on Blockchain..." : "Submit TxHash for Instant Credit"}
+                      </button>
+                    </div>
+                  )}
                 </div>
-              )}
+              ) : (
+                /* MANUAL mode: TxHash is required */
+                <>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-300 mb-1">
+                      Enter BSC Transaction Hash (TxHash)
+                    </label>
+                    <input
+                      type="text"
+                      value={txHash}
+                      onChange={(e) => setTxHash(e.target.value)}
+                      placeholder="Paste 0x... BSC TxHash"
+                      className="w-full bg-[#070e20] border border-[#1a2d52] rounded-xl px-3.5 py-2 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-blue-500 font-mono"
+                      required
+                    />
+                    <span className="text-[10px] text-slate-500 block mt-1">
+                      Our backend independently verifies the transaction on the BSC blockchain.
+                    </span>
+                  </div>
 
-              <button
-                type="submit"
-                disabled={submitting}
-                className="w-full py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm shadow-lg shadow-blue-600/30 transition-all disabled:opacity-50"
-              >
-                {submitting ? "Verifying on Blockchain..." : "Submit Transaction for Verification"}
-              </button>
+                  {message && (
+                    <div className={`p-3 rounded-xl text-xs font-semibold ${
+                      message.error
+                        ? "bg-rose-950/60 text-rose-300 border border-rose-500/40"
+                        : "bg-emerald-950/60 text-emerald-300 border border-emerald-500/40"
+                    }`}>
+                      {message.text}
+                    </div>
+                  )}
+
+                  <button
+                    type="submit"
+                    disabled={submitting}
+                    className="w-full py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm shadow-lg shadow-blue-600/30 transition-all disabled:opacity-50"
+                  >
+                    {submitting ? "Verifying on Blockchain..." : "Submit Transaction for Verification"}
+                  </button>
+                </>
+              )}
             </form>
           </div>
         </div>
