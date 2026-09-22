@@ -89,7 +89,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
     }
 
-    const { txHash } = await req.json();
+    const body = await req.json();
+    const { txHash, declaredAmount } = body;
     if (!txHash) {
       return NextResponse.json({ error: "Transaction hash is required." }, { status: 400 });
     }
@@ -105,6 +106,19 @@ export async function POST(req: NextRequest) {
       getDepositProcessingModeForUser(session.userId),
       getEffectiveDepositVault(session.userId),
     ]);
+
+    // Validation for MANUAL mode recharge amount (minimum 5 USDT)
+    let parsedDeclaredAmount: number | null = null;
+    if (mode === "MANUAL") {
+      const amt = Number(declaredAmount);
+      if (declaredAmount === undefined || declaredAmount === null || isNaN(amt) || amt < 5) {
+        return NextResponse.json(
+          { error: "Please enter a valid recharge amount (minimum 5 USDT)." },
+          { status: 400 }
+        );
+      }
+      parsedDeclaredAmount = amt;
+    }
 
     const targetAddress = (mode === "MANUAL" && branchVault.address) ? branchVault.address : userAddress.address;
 
@@ -141,6 +155,16 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    const onChainAmount = verification.amountInUsdt.toNumber();
+    if (onChainAmount < 5) {
+      return NextResponse.json(
+        {
+          error: `Minimum recharge amount is 5 USDT. The verified transaction is for $${onChainAmount.toFixed(2)} USDT.`,
+        },
+        { status: 400 }
+      );
+    }
+
     const requiredConfirmations = await getRequiredConfirmations();
     const isConfirmed = (verification.confirmations || 0) >= requiredConfirmations;
 
@@ -161,6 +185,7 @@ export async function POST(req: NextRequest) {
         logIndex: verification.logIndex,
         confirmations: verification.confirmations || 0,
         processingMode: mode,
+        adminNote: parsedDeclaredAmount ? `Declared Amount: $${parsedDeclaredAmount.toFixed(2)} USDT` : null,
         status: isConfirmed
           ? (mode === "AUTOMATIC" ? "CONFIRMED" : "PENDING_REVIEW")
           : "CONFIRMING",

@@ -112,6 +112,7 @@ export default function SuperRootAdminPage() {
   const [selectedAdminId, setSelectedAdminId] = useState<string | null>(null);
   const [inspectData, setInspectData] = useState<InspectData | null>(null);
   const [inspectLoading, setInspectLoading] = useState(false);
+  const [inspectError, setInspectError] = useState<string | null>(null);
   const [inspectSubTab, setInspectSubTab] = useState<"members" | "deposits" | "withdrawals" | "contracts" | "sessions" | "logs">("members");
 
   // Audit Intelligence Hub states
@@ -262,15 +263,19 @@ export default function SuperRootAdminPage() {
   const loadInspectData = async (adminId: string) => {
     setSelectedAdminId(adminId);
     setInspectLoading(true);
+    setInspectError(null);
     setActiveTab("inspect");
     try {
       const res = await fetch(`/api/superadmin/team-inspect?adminId=${adminId}`);
       const data = await res.json();
-      if (res.ok) {
+      if (res.ok && data.admin) {
         setInspectData(data);
+      } else {
+        setInspectError(data.error || "Failed to load branch records.");
       }
-    } catch (e) {
+    } catch (e: any) {
       console.error(e);
+      setInspectError(e.message || "Network error loading branch records.");
     } finally {
       setInspectLoading(false);
     }
@@ -1224,8 +1229,15 @@ export default function SuperRootAdminPage() {
                   <ArrowLeft className="w-3.5 h-3.5" /> Back to All Admins
                 </button>
                 <h2 className="text-xl font-black text-white flex items-center gap-2">
-                  Branch Team Inspector: <span className="text-amber-400 font-mono">{inspectData?.admin.customId}</span>
-                  <span className="text-xs font-normal text-slate-400">({inspectData?.admin.fullName})</span>
+                  Branch Team Inspector:{" "}
+                  <span className="text-amber-400 font-mono">
+                    {inspectData?.admin?.customId || admins.find((a) => a.id === selectedAdminId)?.customId || ""}
+                  </span>
+                  {(inspectData?.admin?.fullName || admins.find((a) => a.id === selectedAdminId)?.fullName) && (
+                    <span className="text-xs font-normal text-slate-400">
+                      ({inspectData?.admin?.fullName || admins.find((a) => a.id === selectedAdminId)?.fullName})
+                    </span>
+                  )}
                 </h2>
               </div>
 
@@ -1247,8 +1259,20 @@ export default function SuperRootAdminPage() {
             </div>
 
             {inspectLoading ? (
-              <div className="text-center py-16 text-cyan-400 font-mono text-xs">
-                Loading branch records...
+              <div className="text-center py-16 text-cyan-400 font-mono text-xs flex flex-col items-center justify-center gap-2">
+                <Loader2 className="w-5 h-5 animate-spin text-cyan-400" />
+                <span>Loading branch records...</span>
+              </div>
+            ) : inspectError ? (
+              <div className="p-6 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-center space-y-3">
+                <AlertTriangle className="w-8 h-8 text-rose-400 mx-auto" />
+                <p className="font-bold text-sm">{inspectError}</p>
+                <button
+                  onClick={() => selectedAdminId && loadInspectData(selectedAdminId)}
+                  className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs transition"
+                >
+                  Retry Inspection
+                </button>
               </div>
             ) : inspectData ? (
               <div className="space-y-6">
@@ -1804,7 +1828,11 @@ export default function SuperRootAdminPage() {
                   </div>
                 )}
               </div>
-            ) : null}
+            ) : (
+              <div className="text-center py-16 text-slate-500 font-mono text-xs">
+                Select an admin branch above to inspect team members, transactions, and logs.
+              </div>
+            )}
           </section>
         )}
 

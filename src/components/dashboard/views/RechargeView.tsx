@@ -13,6 +13,7 @@ export function RechargeView({ user, onRefresh }: RechargeViewProps) {
   const [showQrModal, setShowQrModal] = useState(false);
   const [copied, setCopied] = useState(false);
   const [txHash, setTxHash] = useState("");
+  const [rechargeAmount, setRechargeAmount] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState<{ text: string; error?: boolean } | null>(null);
 
@@ -66,6 +67,15 @@ export function RechargeView({ user, onRefresh }: RechargeViewProps) {
       return;
     }
 
+    // Manual mode: validate recharge amount
+    if (!isAutomatic) {
+      const amt = parseFloat(rechargeAmount);
+      if (!rechargeAmount || isNaN(amt) || amt < 5) {
+        setMessage({ text: "Please enter a valid recharge amount (minimum 5 USDT).", error: true });
+        return;
+      }
+    }
+
     setSubmitting(true);
     setMessage(null);
 
@@ -75,6 +85,7 @@ export function RechargeView({ user, onRefresh }: RechargeViewProps) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           txHash: txHash.trim(),
+          ...((!isAutomatic && rechargeAmount) ? { declaredAmount: parseFloat(rechargeAmount) } : {}),
         }),
       });
       const data = await res.json();
@@ -83,6 +94,7 @@ export function RechargeView({ user, onRefresh }: RechargeViewProps) {
       }
       setMessage({ text: data.message || "Deposit submitted and verified on blockchain!" });
       setTxHash("");
+      setRechargeAmount("");
       fetchCryptoDetails();
       onRefresh();
       setTimeout(() => {
@@ -393,9 +405,55 @@ export function RechargeView({ user, onRefresh }: RechargeViewProps) {
 
             {/* Manual TXID Submission Form */}
             <form onSubmit={handleSubmitDeposit} className="space-y-4">
+              {/* Recharge Amount - Manual Mode Only */}
+              {!isAutomatic && (
+                <div>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="block text-xs font-semibold text-slate-300">
+                      Recharge Amount (USDT)
+                    </label>
+                    <span className="text-[10px] text-amber-400 font-bold bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-full">
+                      Min. 5 USDT
+                    </span>
+                  </div>
+                  <div className="relative">
+                    <input
+                      type="number"
+                      value={rechargeAmount}
+                      onChange={(e) => setRechargeAmount(e.target.value)}
+                      placeholder="Enter amount (min. 5 USDT)"
+                      min="5"
+                      step="0.01"
+                      className="w-full bg-[#070e20] border border-[#1a2d52] rounded-xl px-3.5 py-2.5 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-blue-500 pr-16"
+                      required
+                    />
+                    <span className="absolute right-3.5 top-2.5 text-xs font-bold text-slate-400 select-none">
+                      USDT
+                    </span>
+                  </div>
+                  {/* Quick preset amount buttons */}
+                  <div className="flex flex-wrap gap-1.5 mt-2">
+                    {[5, 10, 25, 50, 100, 500].map((amt) => (
+                      <button
+                        key={amt}
+                        type="button"
+                        onClick={() => setRechargeAmount(String(amt))}
+                        className={`px-2.5 py-1 rounded-lg text-xs font-semibold border transition-all ${
+                          rechargeAmount === String(amt)
+                            ? "bg-blue-600 border-blue-500 text-white shadow-sm shadow-blue-600/30"
+                            : "bg-[#070e20] border-[#1a2d52] text-slate-400 hover:text-slate-200 hover:border-slate-600"
+                        }`}
+                      >
+                        ${amt}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               <div>
                 <label className="block text-xs font-semibold text-slate-300 mb-1">
-                  Already Sent? Enter BSC Transaction Hash (TxHash)
+                  {!isAutomatic ? "Enter BSC Transaction Hash (TxHash)" : "Already Sent? Enter BSC Transaction Hash (TxHash)"}
                 </label>
                 <input
                   type="text"
