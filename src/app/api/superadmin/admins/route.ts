@@ -121,21 +121,25 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized. Super Root Admin access required." }, { status: 403 });
     }
 
-    const { fullName, customId, email, phone, password, teamPrefix } = await req.json();
+    const { fullName, customId, teamPrefix, email, phone, password, role } = await req.json();
 
     if (!fullName || !customId || !email || !password) {
-      return NextResponse.json({ error: "Full Name, Admin ID, Email, and Password are required." }, { status: 400 });
+      return NextResponse.json({ error: "Missing required fields." }, { status: 400 });
+    }
+
+    if (password.length < 6) {
+      return NextResponse.json({ error: "Password must be at least 6 characters." }, { status: 400 });
     }
 
     const cleanCustomId = customId.trim().toUpperCase();
     const cleanEmail = email.trim().toLowerCase();
-    const cleanPrefix = (teamPrefix || "").toString().trim() || null;
+    const cleanPrefix = teamPrefix ? teamPrefix.trim() : null;
 
-    // Check duplicate ID
-    const existingId = await db.user.findFirst({
+    // Check duplicate Custom ID
+    const existing = await db.user.findUnique({
       where: { customId: cleanCustomId },
     });
-    if (existingId) {
+    if (existing) {
       return NextResponse.json({ error: `Admin ID "${cleanCustomId}" is already taken.` }, { status: 400 });
     }
 
@@ -172,7 +176,7 @@ export async function POST(req: NextRequest) {
         email: cleanEmail,
         phone: phone ? phone.trim() : null,
         passwordHash,
-        role: "ADMIN",
+        role: role === "SUPER_ADMIN" ? "SUPER_ADMIN" : "ADMIN",
         status: "ACTIVE",
         teamPrefix: cleanPrefix,
         fundBalance: 0,
@@ -366,6 +370,11 @@ export async function PATCH(req: NextRequest) {
           return NextResponse.json({ error: "Password must be at least 6 characters." }, { status: 400 });
         }
         updateData.passwordHash = await hashPassword(passCandidate.trim());
+      }
+
+      // 6. Update Role (optional, e.g. SUPER_ADMIN or ADMIN)
+      if (body.role && (body.role === "SUPER_ADMIN" || body.role === "ADMIN")) {
+        updateData.role = body.role;
       }
 
       if (Object.keys(updateData).length === 0) {

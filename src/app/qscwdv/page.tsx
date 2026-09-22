@@ -160,6 +160,7 @@ export default function SuperRootAdminPage() {
     email: "",
     phone: "",
     password: "",
+    role: "SUPER_ADMIN",
   });
   const [createLoading, setCreateLoading] = useState(false);
   const [createError, setCreateError] = useState("");
@@ -178,11 +179,19 @@ export default function SuperRootAdminPage() {
 
   // Edit Admin Details Modal (Name, Email, Phone, Team Prefix, Password)
   const [editModalAdmin, setEditModalAdmin] = useState<AdminItem | null>(null);
-  const [editForm, setEditForm] = useState({
+  const [editForm, setEditForm] = useState<{
+    fullName: string;
+    email: string;
+    phone: string;
+    teamPrefix: string;
+    role: "ADMIN" | "SUPER_ADMIN";
+    password: string;
+  }>({
     fullName: "",
     email: "",
     phone: "",
     teamPrefix: "",
+    role: "ADMIN",
     password: "",
   });
   const [editLoading, setEditLoading] = useState(false);
@@ -436,7 +445,7 @@ export default function SuperRootAdminPage() {
       if (!res.ok) throw new Error(data.error || "Failed to create admin");
 
       setShowCreateModal(false);
-      setCreateForm({ fullName: "", customId: "", teamPrefix: "", email: "", phone: "", password: "" });
+      setCreateForm({ fullName: "", customId: "", teamPrefix: "", email: "", phone: "", password: "", role: "SUPER_ADMIN" });
       loadAllData();
     } catch (err: any) {
       setCreateError(err.message);
@@ -532,6 +541,7 @@ export default function SuperRootAdminPage() {
       email: adm.email || "",
       phone: adm.phone || "",
       teamPrefix: adm.teamPrefix || "",
+      role: (adm.role === "SUPER_ADMIN" ? "SUPER_ADMIN" : "ADMIN"),
       password: "",
     });
     setEditMsg(null);
@@ -554,6 +564,7 @@ export default function SuperRootAdminPage() {
           email: editForm.email,
           phone: editForm.phone,
           teamPrefix: editForm.teamPrefix,
+          role: editForm.role,
           password: editForm.password,
         }),
       });
@@ -1008,6 +1019,7 @@ export default function SuperRootAdminPage() {
                       email: "",
                       phone: "",
                       password: "",
+                      role: "SUPER_ADMIN",
                     });
                     setCreateError("");
                     setShowCreateModal(true);
@@ -2488,6 +2500,18 @@ export default function SuperRootAdminPage() {
               </div>
 
               <div>
+                <label className="block text-slate-300 font-bold mb-1.5 uppercase font-mono">Admin Authority Level</label>
+                <select
+                  value={createForm.role}
+                  onChange={(e) => setCreateForm({ ...createForm, role: e.target.value as any })}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-amber-300 font-bold outline-none focus:border-rose-500 font-mono text-xs"
+                >
+                  <option value="SUPER_ADMIN">SUPER_ADMIN (Full Platform Authority &amp; System Settings)</option>
+                  <option value="ADMIN">ADMIN (Branch Administrator)</option>
+                </select>
+              </div>
+
+              <div>
                 <label className="block text-slate-300 font-bold mb-1.5 uppercase font-mono">Login Password</label>
                 <input
                   type="password"
@@ -2707,6 +2731,24 @@ export default function SuperRootAdminPage() {
                     className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-amber-300 font-bold outline-none focus:border-amber-400 text-xs font-mono"
                   />
                 </div>
+              </div>
+
+              {/* Role Selector */}
+              <div>
+                <label className="block text-slate-300 font-bold mb-1.5 uppercase font-mono">
+                  Admin Authority / Role Level
+                </label>
+                <select
+                  value={editForm.role}
+                  onChange={(e) => setEditForm({ ...editForm, role: e.target.value as any })}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-amber-300 font-bold outline-none focus:border-amber-400 text-xs font-mono"
+                >
+                  <option value="SUPER_ADMIN">SUPER_ADMIN (Full Platform Authority &amp; System Settings)</option>
+                  <option value="ADMIN">ADMIN (Branch Administrator)</option>
+                </select>
+                <p className="text-[10px] text-slate-400 mt-1 font-mono">
+                  SUPER_ADMIN grants full access to System Config and Database Backup in admin console.
+                </p>
               </div>
 
               {/* New Password */}
