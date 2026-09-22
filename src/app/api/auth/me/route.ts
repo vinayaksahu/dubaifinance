@@ -275,6 +275,97 @@ export async function GET() {
 
   const systemConfig = await getAllSystemConfigs();
 
+  // Serialize deposits — convert BigInt blockNumber to string and Decimal fields to Number
+  const serializedDeposits = user.deposits.map((d) => {
+    const usdtVal = d.amountInUsdt != null ? Number(d.amountInUsdt.toString()) : (Number(d.amountInInr || 0) > 5000 ? Number(d.amountInInr) / 110 : Number(d.amountInInr || 0));
+    return {
+      id: d.id,
+      userId: d.userId,
+      amountInUsdt: usdtVal,
+      amountInInr: Number(d.amountInInr?.toString() ?? 0),
+      amountUsdt: usdtVal,
+      txHash: d.txHash,
+      network: d.network,
+      screenshotUrl: d.screenshotUrl,
+      adminNote: d.adminNote,
+      status: d.status,
+      reviewedAt: d.reviewedAt,
+      createdAt: d.createdAt,
+      depositAddressId: d.depositAddressId,
+      tokenContract: d.tokenContract,
+      fromAddress: d.fromAddress,
+      toAddress: d.toAddress,
+      blockNumber: d.blockNumber != null ? d.blockNumber.toString() : null, // BigInt → string
+      transactionIndex: d.transactionIndex,
+      logIndex: d.logIndex,
+      confirmations: d.confirmations,
+      processingMode: d.processingMode,
+      verifiedTxHash: d.verifiedTxHash,
+      detectedAt: d.detectedAt,
+      confirmedAt: d.confirmedAt,
+      creditedAt: d.creditedAt,
+      reviewedBy: d.reviewedBy,
+      rejectionReason: d.rejectionReason,
+      approvalNotes: d.approvalNotes,
+      failureReason: d.failureReason,
+    };
+  });
+
+  // Serialize withdrawals — convert Decimal fields to Number
+  const serializedWithdrawals = user.withdrawals.map((w) => {
+    const usdtVal = w.amountInUsdt != null ? Number(w.amountInUsdt.toString()) : (Number(w.amountInInr || 0) > 5000 ? Number(w.amountInInr) / 110 : Number(w.amountInInr || 0));
+    return {
+      id: w.id,
+      userId: w.userId,
+      amountInInr: Number(w.amountInInr?.toString() ?? 0),
+      amountInUsdt: usdtVal,
+      amountUsdt: usdtVal,
+      feePercent: w.feePercent != null ? Number(w.feePercent.toString()) : null,
+      feeAmount: w.feeAmount != null ? Number(w.feeAmount.toString()) : null,
+      netAmount: w.netAmount != null ? Number(w.netAmount.toString()) : null,
+      toAddress: w.toAddress,
+      network: w.network,
+      txHash: w.txHash,
+      adminNote: w.adminNote,
+      status: w.status,
+      processedAt: w.processedAt,
+      createdAt: w.createdAt,
+    };
+  });
+
+  // Serialize contracts — convert Decimal fields to Number
+  const serializedContracts = user.contracts.map((c) => ({
+    id: c.id,
+    userId: c.userId,
+    packageType: c.packageType,
+    amountInInr: Number(c.amountInInr?.toString() ?? 0),
+    amountInUsdt: Number(c.amountInUsdt?.toString() ?? 0),
+    dailyRoiRate: Number(c.dailyRoiRate?.toString() ?? 0),
+    tenureDays: c.tenureDays,
+    daysPaid: c.daysPaid,
+    totalEarned: Number(c.totalEarned?.toString() ?? 0),
+    status: c.status,
+    startDate: c.startDate,
+    maturityDate: c.maturityDate,
+    lastRoiAt: c.lastRoiAt,
+    createdAt: c.createdAt,
+  }));
+
+  // Serialize ledger entries — convert Decimal fields to Number
+  const serializedLedgers = user.ledgers.map((l) => ({
+    id: l.id,
+    userId: l.userId,
+    type: l.type,
+    wallet: l.wallet,
+    amount: Number(l.amount?.toString() ?? 0),
+    balanceAfter: Number(l.balanceAfter?.toString() ?? 0),
+    referenceKey: l.referenceKey,
+    description: l.description,
+    sourceUserId: l.sourceUserId,
+    levelNumber: l.levelNumber,
+    createdAt: l.createdAt,
+  }));
+
   return NextResponse.json({
     systemConfig,
     user: {
@@ -286,10 +377,10 @@ export async function GET() {
       role: user.role,
       status: user.status,
       usdtAddress: user.usdtAddress,
-      fundBalance: user.fundBalance,
-      incomeBalance: user.incomeBalance,
-      fdLockedBalance: user.fdLockedBalance,
-      totalWithdrawn: user.totalWithdrawn,
+      fundBalance: Number(user.fundBalance?.toString() ?? 0),
+      incomeBalance: Number(user.incomeBalance?.toString() ?? 0),
+      fdLockedBalance: Number(user.fdLockedBalance?.toString() ?? 0),
+      totalWithdrawn: Number(user.totalWithdrawn?.toString() ?? 0),
       directBusiness: directBusiness,
       sponsor: user.sponsor,
       createdAt: user.createdAt,
@@ -300,24 +391,10 @@ export async function GET() {
       totalTeamCount: teamList.length,
       directs: formattedDirects,
       teamList: teamList,
-      contracts: user.contracts,
-      deposits: user.deposits.map((d) => {
-        const usdtVal = d.amountInUsdt != null ? Number(d.amountInUsdt.toString()) : (Number(d.amountInInr || 0) > 5000 ? Number(d.amountInInr) / 110 : Number(d.amountInInr || 0));
-        return {
-          ...d,
-          amountUsdt: usdtVal,
-          amountInUsdt: usdtVal,
-        };
-      }),
-      withdrawals: user.withdrawals.map((w) => {
-        const usdtVal = w.amountInUsdt != null ? Number(w.amountInUsdt.toString()) : (Number(w.amountInInr || 0) > 5000 ? Number(w.amountInInr) / 110 : Number(w.amountInInr || 0));
-        return {
-          ...w,
-          amountUsdt: usdtVal,
-          amountInUsdt: usdtVal,
-        };
-      }),
-      ledgerEntries: user.ledgers,
+      contracts: serializedContracts,
+      deposits: serializedDeposits,
+      withdrawals: serializedWithdrawals,
+      ledgerEntries: serializedLedgers,
       incomeBreakdown: {
         joiningBonus,
         basicReferralIncome,
