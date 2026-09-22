@@ -55,10 +55,8 @@ export default function AdminSidebar({
     { id: "roi-engine", label: "ROI Engine", icon: Zap },
     { id: "tickets", label: "Support Tickets", icon: Headphones },
     { id: "profile", label: "Admin Profile", icon: UserCog },
-    ...(isSuper ? [
-      { id: "config", label: "System Config", icon: Settings },
-      { id: "backup", label: "Database Backup", icon: Database },
-    ] : []),
+    { id: "config", label: "System Config", icon: Settings },
+    { id: "backup", label: "Database Backup", icon: Database },
   ];
 
   const handleLogout = async () => {

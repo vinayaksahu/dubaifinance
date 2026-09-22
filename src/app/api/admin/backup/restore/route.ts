@@ -7,9 +7,9 @@ export const dynamic = "force-dynamic";
 export async function POST(req: NextRequest) {
   try {
     const session = await getSession();
-    if (!session || (session.role !== "SUPER_ADMIN" && session.role !== "SUPER_ROOT_ADMIN")) {
+    if (!session || (session.role !== "ADMIN" && session.role !== "SUPER_ADMIN" && session.role !== "SUPER_ROOT_ADMIN")) {
       return NextResponse.json(
-        { error: "Access denied. Only Super Admin can restore database backups." },
+        { error: "Access denied. Admin authorization required to restore database backups." },
         { status: 403 }
       );
     }
