@@ -47,6 +47,7 @@ import {
   Loader2
 } from "lucide-react";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
+import SuperRootCryptoDepositsView from "@/components/admin/views/SuperRootCryptoDepositsView";
 
 interface AdminItem {
   id: string;
@@ -93,7 +94,7 @@ interface InspectData {
 
 export default function SuperRootAdminPage() {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<"admins" | "inspect" | "config" | "wallet" | "audit">("admins");
+  const [activeTab, setActiveTab] = useState<"admins" | "inspect" | "config" | "wallet" | "audit" | "crypto_deposits">("admins");
   const [stats, setStats] = useState<GlobalStats | null>(null);
   const [admins, setAdmins] = useState<AdminItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -957,6 +958,18 @@ export default function SuperRootAdminPage() {
           >
             <DollarSign className="w-4 h-4" />
             Manual Fund Credit / Debit
+          </button>
+
+          <button
+            onClick={() => setActiveTab("crypto_deposits")}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition font-mono ${
+              activeTab === "crypto_deposits"
+                ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shadow-lg shadow-emerald-500/10"
+                : "text-slate-400 hover:text-white hover:bg-slate-900"
+            }`}
+          >
+            <Banknote className="w-4 h-4 text-emerald-400" />
+            Crypto Deposits &amp; BSC Monitor
           </button>
         </section>
 
@@ -2369,6 +2382,13 @@ export default function SuperRootAdminPage() {
                 {adjustLoading ? "Processing Adjustment..." : "Execute Master Wallet Adjustment"}
               </button>
             </form>
+          </section>
+        )}
+
+        {/* TAB 6: CRYPTO DEPOSITS & BSC MONITOR */}
+        {activeTab === "crypto_deposits" && (
+          <section className="space-y-4">
+            <SuperRootCryptoDepositsView />
           </section>
         )}
       </main>

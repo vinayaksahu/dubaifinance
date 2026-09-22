@@ -70,6 +70,7 @@ model User {
   assignedAdmin   User?          @relation("AdminTeamMembers", fields: [adminId], references: [id])
   teamMembers     User[]         @relation("AdminTeamMembers")
   teamPrefix      String?        // Admin branch team prefix (e.g. "1" for DF1xxxxx, "2" for DF2xxxxx)
+  depositMode     String?        @default("GLOBAL") // Admin branch deposit mode: "GLOBAL", "AUTOMATIC", "MANUAL"
   
   usdtAddress     String?        // BEP-20 address
   
@@ -93,6 +94,8 @@ model User {
   ledgers         LedgerEntry[]
   deposits        DepositRequest[]
   withdrawals     WithdrawalRequest[]
+  depositAddresses DepositAddress[]
+  adminDepositPermissions AdminDepositPermission[]
   tickets         SupportTicket[]
   queuePositions  QueuePosition[]
   loginSessions   LoginSession[]
@@ -133,18 +136,41 @@ model LedgerEntry {
 }
 
 model DepositRequest {
-  id             String          @id @default(cuid())
-  userId         String
-  user           User            @relation(fields: [userId], references: [id])
-  amountInUsdt   Decimal         @db.Decimal(20, 8)
-  amountInInr    Decimal         @db.Decimal(20, 2)
-  txHash         String          @unique
-  network        String          @default("USDT_BEP20")
-  screenshotUrl  String?
-  adminNote      String?
-  status         String          @default("PENDING") // PENDING, APPROVED, REJECTED
-  reviewedAt     DateTime?
-  createdAt      DateTime        @default(now())
+  id               String          @id @default(cuid())
+  userId           String
+  user             User            @relation(fields: [userId], references: [id])
+  amountInUsdt     Decimal         @db.Decimal(20, 8)
+  amountInInr      Decimal         @db.Decimal(20, 2)
+  txHash           String          @unique
+  network          String          @default("USDT_BEP20")
+  screenshotUrl    String?
+  adminNote        String?
+  status           String          @default("PENDING") // PENDING, CONFIRMING, CONFIRMED, PENDING_REVIEW, MANUAL_REVIEW, APPROVED, REJECTED, CREDITED, FAILED
+  reviewedAt       DateTime?
+  createdAt        DateTime        @default(now())
+
+  depositAddressId String?
+  depositAddress   DepositAddress? @relation(fields: [depositAddressId], references: [id])
+  tokenContract    String?
+  fromAddress      String?
+  toAddress        String?
+  blockNumber      BigInt?
+  transactionIndex Int?
+  logIndex         Int?
+  confirmations    Int             @default(0)
+  processingMode   String          @default("MANUAL") // AUTOMATIC, MANUAL
+  verifiedTxHash   String?
+  detectedAt       DateTime?
+  confirmedAt      DateTime?
+  creditedAt       DateTime?
+  reviewedBy       String?
+  rejectionReason  String?
+  approvalNotes    String?
+  failureReason    String?
+
+  @@index([toAddress, tokenContract])
+  @@index([processingMode, status])
+  @@index([blockNumber])
 }
 
 model WithdrawalRequest {
@@ -273,5 +299,45 @@ model ActivityLog {
   @@index([category])
   @@index([ipAddress])
   @@index([createdAt])
+}
+
+model DepositAddress {
+  id              String           @id @default(cuid())
+  userId          String
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  network         String           @default("BSC")
+  asset           String           @default("USDT")
+  address         String           @unique
+  derivationIndex Int              @default(0)
+  status          String           @default("ACTIVE") // ACTIVE, INACTIVE
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  deposits        DepositRequest[]
+
+  @@index([userId, status])
+  @@index([address])
+}
+
+model BlockchainCheckpoint {
+  id                 String    @id // e.g. "bsc_usdt_mainnet"
+  network            String    @default("BSC")
+  lastProcessedBlock BigInt    @default(0)
+  latestKnownBlock   BigInt    @default(0)
+  status             String    @default("STOPPED") // RUNNING, IDLE, ERROR, STOPPED
+  lastSuccessfulScan DateTime?
+  lastError          String?
+  updatedAt          DateTime  @updatedAt
+}
+
+model AdminDepositPermission {
+  id          String   @id @default(cuid())
+  adminId     String
+  admin       User     @relation(fields: [adminId], references: [id], onDelete: Cascade)
+  permission  String   // e.g. "deposit.view", "deposit.approve", "deposit.reject", "deposit.reconcile", "deposit.mode.change", "deposit.system.pause", "deposit.settings.update"
+  grantedById String
+  createdAt   DateTime @default(now())
+
+  @@unique([adminId, permission])
+  @@index([adminId])
 }
 

@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
-import { Copy, Check, QrCode, X, Search, ChevronLeft, ChevronRight } from "lucide-react";
+import React, { useState, useEffect, useCallback } from "react";
+import { Copy, Check, QrCode, X, RefreshCw, ExternalLink, ShieldAlert, CheckCircle2, Clock, AlertCircle } from "lucide-react";
 import { APP_CONFIG } from "@/lib/constants";
 
 interface RechargeViewProps {
@@ -12,29 +12,55 @@ interface RechargeViewProps {
 export function RechargeView({ user, onRefresh }: RechargeViewProps) {
   const [showQrModal, setShowQrModal] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [usdtAmount, setUsdtAmount] = useState("");
   const [txHash, setTxHash] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState<{ text: string; error?: boolean } | null>(null);
 
-  const cfg = user?.systemConfig || {};
-  const companyAddress = cfg.COMPANY_USDT_ADDRESS || APP_CONFIG.depositAddress;
-  const qrImage = cfg.COMPANY_USDT_QR && cfg.COMPANY_USDT_QR.trim() !== ""
-    ? cfg.COMPANY_USDT_QR
-    : `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${companyAddress}`;
+  // Crypto deposit dynamic state
+  const [cryptoData, setCryptoData] = useState<{
+    address: string;
+    network: string;
+    asset: string;
+    qrUrl: string;
+    mode: "AUTOMATIC" | "MANUAL";
+    requiredConfirmations: number;
+    deposits: any[];
+  } | null>(null);
+  const [loadingCrypto, setLoadingCrypto] = useState(true);
+
+  const fetchCryptoDetails = useCallback(async () => {
+    try {
+      const res = await fetch("/api/member/crypto-deposit");
+      if (res.ok) {
+        const data = await res.json();
+        setCryptoData(data);
+      }
+    } catch (err) {
+      console.error("Error fetching deposit details:", err);
+    } finally {
+      setLoadingCrypto(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchCryptoDetails();
+    // Poll for live confirmation updates every 12 seconds
+    const interval = setInterval(fetchCryptoDetails, 12000);
+    return () => clearInterval(interval);
+  }, [fetchCryptoDetails]);
+
+  const depositAddress = cryptoData?.address || user?.usdtAddress || APP_CONFIG.depositAddress;
+  const qrImage = cryptoData?.qrUrl || `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${depositAddress}`;
+  const isAutomatic = cryptoData?.mode === "AUTOMATIC";
 
   const copyAddress = () => {
-    navigator.clipboard.writeText(companyAddress);
+    navigator.clipboard.writeText(depositAddress);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
 
   const handleSubmitDeposit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!usdtAmount || Number(usdtAmount) <= 0) {
-      setMessage({ text: "Please enter a valid USDT amount.", error: true });
-      return;
-    }
     if (!txHash.trim()) {
       setMessage({ text: "Please enter your USDT BEP-20 transaction hash (TxHash).", error: true });
       return;
@@ -44,26 +70,25 @@ export function RechargeView({ user, onRefresh }: RechargeViewProps) {
     setMessage(null);
 
     try {
-      const res = await fetch("/api/wallet/deposit", {
+      const res = await fetch("/api/member/crypto-deposit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          amountInUsdt: Number(usdtAmount),
           txHash: txHash.trim(),
         }),
       });
       const data = await res.json();
       if (!res.ok) {
-        throw new Error(data.error || "Deposit submission failed");
+        throw new Error(data.error || "Deposit verification failed");
       }
-      setMessage({ text: data.message || "Deposit submitted successfully! Awaiting verification." });
-      setUsdtAmount("");
+      setMessage({ text: data.message || "Deposit submitted and verified on blockchain!" });
       setTxHash("");
+      fetchCryptoDetails();
       onRefresh();
       setTimeout(() => {
         setShowQrModal(false);
         setMessage(null);
-      }, 2500);
+      }, 3500);
     } catch (err: any) {
       setMessage({ text: err.message, error: true });
     } finally {
@@ -71,15 +96,33 @@ export function RechargeView({ user, onRefresh }: RechargeViewProps) {
     }
   };
 
-  const deposits = user.deposits || [];
+  const deposits = cryptoData?.deposits && cryptoData.deposits.length > 0
+    ? cryptoData.deposits
+    : (user.deposits || []);
+
+  const latestPending = deposits.find(
+    (d: any) => d.status === "PENDING" || d.status === "CONFIRMING" || d.status === "PENDING_REVIEW"
+  );
 
   return (
     <div className="space-y-6">
       {/* Top Header & Breadcrumb */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-        <h1 className="text-2xl sm:text-3xl font-bold text-slate-100 tracking-tight">
-          Recharge
-        </h1>
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-bold text-slate-100 tracking-tight flex items-center gap-2.5">
+            <span>Recharge USDT</span>
+            <span className={`text-xs px-2.5 py-0.5 rounded-full font-bold uppercase tracking-wider border ${
+              isAutomatic
+                ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30"
+                : "bg-amber-500/10 text-amber-400 border-amber-500/30"
+            }`}>
+              {isAutomatic ? "Instant Automatic Mode" : "Manual Approval Mode"}
+            </span>
+          </h1>
+          <p className="text-xs text-slate-400 mt-1">
+            Deposit USDT on BNB Smart Chain (BEP-20) directly to your personal deposit address.
+          </p>
+        </div>
         <div className="text-xs text-slate-400 font-medium flex items-center gap-1.5">
           <span>🏠 Package</span>
           <span>/</span>
@@ -87,48 +130,156 @@ export function RechargeView({ user, onRefresh }: RechargeViewProps) {
         </div>
       </div>
 
-      {/* View QR Button */}
-      <div>
-        <button
-          onClick={() => setShowQrModal(true)}
-          className="px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-sm font-bold flex items-center gap-2 shadow-lg shadow-blue-600/30 transition-all"
-        >
-          <QrCode className="w-4 h-4" />
-          <span>View QR</span>
-        </button>
+      {/* Safety Warning Banner */}
+      <div className="bg-amber-500/10 border border-amber-500/30 rounded-2xl p-4 flex items-start gap-3">
+        <ShieldAlert className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
+        <div className="text-xs text-amber-200/90 leading-relaxed">
+          <strong className="text-amber-300 font-bold block mb-0.5">Network Safety Notice:</strong>
+          Send only <span className="font-semibold text-white">USDT</span> on the <span className="font-semibold text-white">BNB Smart Chain (BEP-20)</span> network to this address. Sending assets through another network or sending any other token may result in permanent loss.
+        </div>
+      </div>
+
+      {/* Main Address Card & Quick Actions */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2 bg-[#091124] border border-[#17274a] rounded-3xl p-6 shadow-xl flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between gap-2 mb-4">
+              <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                Your Dedicated Deposit Address
+              </span>
+              <button
+                onClick={fetchCryptoDetails}
+                className="p-1 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-slate-200 transition-colors"
+                title="Refresh Status"
+              >
+                <RefreshCw className="w-3.5 h-3.5" />
+              </button>
+            </div>
+
+            <div className="bg-[#050b18] border border-[#1a2d52] rounded-2xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="flex-1 min-w-0 text-center sm:text-left">
+                <span className="text-[11px] text-slate-500 block font-semibold mb-1">BEP-20 (BNB Smart Chain)</span>
+                <p className="font-mono text-sm sm:text-base font-bold text-slate-100 break-all select-all">
+                  {depositAddress}
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2 shrink-0">
+                <button
+                  onClick={copyAddress}
+                  className="px-4 py-2 rounded-xl bg-blue-600/20 border border-blue-500/50 text-blue-400 hover:bg-blue-600 hover:text-white text-xs font-bold flex items-center gap-1.5 transition-all"
+                >
+                  {copied ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
+                  <span>{copied ? "Copied" : "Copy"}</span>
+                </button>
+                <button
+                  onClick={() => setShowQrModal(true)}
+                  className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold flex items-center gap-1.5 shadow-lg shadow-blue-600/30 transition-all"
+                >
+                  <QrCode className="w-4 h-4" />
+                  <span>QR Code</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Mode Explainer Footer */}
+          <div className="mt-6 pt-4 border-t border-[#152342] flex items-center justify-between text-xs text-slate-400">
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+              <span>
+                {isAutomatic
+                  ? "Automatic Monitoring Active: 3 Block Confirmations Required"
+                  : "Manual Review Mode: Admin Review Required"}
+              </span>
+            </div>
+            <button
+              onClick={() => setShowQrModal(true)}
+              className="text-blue-400 hover:text-blue-300 font-semibold flex items-center gap-1"
+            >
+              <span>Submit TxHash</span>
+              <span>→</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Live Deposit Status Tracker Card */}
+        <div className="bg-[#091124] border border-[#17274a] rounded-3xl p-6 shadow-xl flex flex-col justify-between">
+          <div>
+            <h3 className="text-sm font-bold text-slate-100 mb-3 flex items-center gap-2">
+              <Clock className="w-4 h-4 text-blue-400" />
+              <span>Live Deposit Tracker</span>
+            </h3>
+
+            {latestPending ? (
+              <div className="bg-[#050b18] border border-[#1b315b] rounded-2xl p-4 space-y-3">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-slate-400 font-medium">Status:</span>
+                  <span className="font-bold text-amber-400 uppercase tracking-wider text-[11px]">
+                    {latestPending.status}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-slate-400 font-medium">Amount:</span>
+                  <span className="font-bold text-emerald-400">
+                    ${Number(latestPending.amountInUsdt).toFixed(2)} USDT
+                  </span>
+                </div>
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-slate-400 font-medium">Confirmations:</span>
+                  <span className="font-mono text-slate-200">
+                    {latestPending.confirmations || 0} / {cryptoData?.requiredConfirmations || 3}
+                  </span>
+                </div>
+                {latestPending.txHash && (
+                  <div className="pt-2 border-t border-slate-800 flex items-center justify-between text-[11px]">
+                    <span className="text-slate-500">TxHash:</span>
+                    <a
+                      href={`https://bscscan.com/tx/${latestPending.txHash}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-400 hover:underline flex items-center gap-1 font-mono"
+                    >
+                      <span>{latestPending.txHash.slice(0, 6)}...{latestPending.txHash.slice(-4)}</span>
+                      <ExternalLink className="w-3 h-3" />
+                    </a>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="text-center py-6 text-xs text-slate-400">
+                <p className="mb-2">No pending deposits detected.</p>
+                <p className="text-[11px] text-slate-500">
+                  Send USDT BEP-20 to your address above. Incoming transfers will automatically appear here.
+                </p>
+              </div>
+            )}
+          </div>
+
+          <div className="mt-4 pt-3 border-t border-[#152342] text-center">
+            <span className="text-[10px] text-slate-500">
+              Blockchain: BNB Smart Chain (Chain ID: 56)
+            </span>
+          </div>
+        </div>
       </div>
 
       {/* Payment History Card */}
       <div className="bg-[#091124] border border-[#17274a] rounded-3xl p-5 sm:p-6 shadow-xl">
-        <div className="flex items-center gap-2 mb-5">
-          <div className="w-2 h-5 bg-blue-500 rounded-sm" />
-          <h2 className="text-lg font-bold text-slate-100">
-            Payment History
-          </h2>
-        </div>
-
-        {/* Action Controls: 25 entries per page & Export Buttons */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
-          <div className="flex items-center gap-2 text-xs text-slate-400">
-            <select className="bg-[#070e20] border border-[#1a2d52] rounded-lg px-2.5 py-1 text-slate-200 text-xs focus:outline-none">
-              <option>25</option>
-              <option>50</option>
-              <option>100</option>
-            </select>
-            <span>entries per page</span>
+        <div className="flex items-center justify-between mb-5">
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-5 bg-blue-500 rounded-sm" />
+            <h2 className="text-lg font-bold text-slate-100">
+              Deposit History
+            </h2>
           </div>
-
-          <div className="flex items-center gap-1.5 flex-wrap">
-            {["Copy", "Excel", "PDF", "Print"].map((btn) => (
-              <button
-                key={btn}
-                onClick={() => alert(`${btn} export feature triggered.`)}
-                className="px-3 py-1 rounded-lg bg-[#0d1a36] border border-[#1d335e] text-slate-300 text-xs font-medium hover:bg-[#13244a] hover:text-white transition-colors"
-              >
-                {btn}
-              </button>
-            ))}
-          </div>
+          <button
+            onClick={fetchCryptoDetails}
+            className="text-xs text-blue-400 hover:text-blue-300 font-semibold flex items-center gap-1.5"
+          >
+            <RefreshCw className="w-3.5 h-3.5" />
+            <span>Refresh</span>
+          </button>
         </div>
 
         {/* Data Table */}
@@ -138,36 +289,58 @@ export function RechargeView({ user, onRefresh }: RechargeViewProps) {
               <tr>
                 <th className="py-3 px-4">SR</th>
                 <th className="py-3 px-4">DATE</th>
-                <th className="py-3 px-4">ADDRESS</th>
-                <th className="py-3 px-4">HASH</th>
                 <th className="py-3 px-4">AMOUNT</th>
+                <th className="py-3 px-4">TX HASH</th>
+                <th className="py-3 px-4">CONFIRMATIONS</th>
+                <th className="py-3 px-4">MODE</th>
                 <th className="py-3 px-4">STATUS</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#132042]">
               {deposits.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="py-8 text-center text-slate-400 font-medium">
-                    No data available in table
+                  <td colSpan={7} className="py-8 text-center text-slate-400 font-medium">
+                    No deposits recorded yet.
                   </td>
                 </tr>
               ) : (
                 deposits.map((dep: any, index: number) => (
                   <tr key={dep.id || index} className="hover:bg-[#0c1630] transition-colors">
                     <td className="py-3 px-4 font-mono">{index + 1}</td>
-                    <td className="py-3 px-4">{new Date(dep.createdAt).toISOString().split("T")[0]}</td>
-                    <td className="py-3 px-4 font-mono truncate max-w-[120px]">{dep.depositAddress || APP_CONFIG.depositAddress}</td>
-                    <td className="py-3 px-4 font-mono text-blue-400 truncate max-w-[140px]">{dep.txHash}</td>
-                    <td className="py-3 px-4 font-bold text-slate-100">
-                      ${Number(dep.amountInUsdt ?? dep.amountUsdt ?? (dep.amountInInr ? Number(dep.amountInInr) / 110 : 0)).toFixed(2)} USDT
+                    <td className="py-3 px-4">{new Date(dep.createdAt).toLocaleDateString()}</td>
+                    <td className="py-3 px-4 font-bold text-slate-100 text-emerald-400">
+                      ${Number(dep.amountInUsdt ?? dep.amountUsdt ?? 0).toFixed(2)} USDT
+                    </td>
+                    <td className="py-3 px-4 font-mono">
+                      {dep.txHash ? (
+                        <a
+                          href={`https://bscscan.com/tx/${dep.txHash}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-400 hover:underline flex items-center gap-1"
+                        >
+                          <span>{dep.txHash.slice(0, 6)}...{dep.txHash.slice(-4)}</span>
+                          <ExternalLink className="w-3 h-3" />
+                        </a>
+                      ) : (
+                        <span className="text-slate-500">Direct</span>
+                      )}
+                    </td>
+                    <td className="py-3 px-4 font-mono text-slate-300">
+                      {dep.confirmations || 0} / {cryptoData?.requiredConfirmations || 3}
                     </td>
                     <td className="py-3 px-4">
-                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                        dep.status === "CONFIRMED"
-                          ? "bg-emerald-950/60 text-emerald-400 border border-emerald-500/40"
-                          : dep.status === "PENDING"
-                          ? "bg-amber-950/60 text-amber-400 border border-amber-500/40"
-                          : "bg-rose-950/60 text-rose-400 border border-rose-500/40"
+                      <span className="text-[10px] uppercase font-bold text-slate-400">
+                        {dep.processingMode || "MANUAL"}
+                      </span>
+                    </td>
+                    <td className="py-3 px-4">
+                      <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${
+                        dep.status === "CONFIRMED" || dep.status === "CREDITED" || dep.status === "APPROVED"
+                          ? "bg-emerald-950/60 text-emerald-400 border-emerald-500/40"
+                          : dep.status === "PENDING" || dep.status === "CONFIRMING" || dep.status === "PENDING_REVIEW"
+                          ? "bg-amber-950/60 text-amber-400 border-amber-500/40"
+                          : "bg-rose-950/60 text-rose-400 border-rose-500/40"
                       }`}>
                         {dep.status}
                       </span>
@@ -178,29 +351,9 @@ export function RechargeView({ user, onRefresh }: RechargeViewProps) {
             </tbody>
           </table>
         </div>
-
-        {/* Pagination footer */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mt-4 text-xs text-slate-400">
-          <p>Showing {deposits.length > 0 ? 1 : 0} to {deposits.length} of {deposits.length} entries</p>
-          <div className="flex items-center gap-1">
-            <button className="p-1 rounded bg-[#0b1429] border border-[#17274a] text-slate-400 hover:text-white disabled:opacity-40" disabled>
-              «
-            </button>
-            <button className="p-1 rounded bg-[#0b1429] border border-[#17274a] text-slate-400 hover:text-white disabled:opacity-40" disabled>
-              ‹
-            </button>
-            <span className="px-2.5 py-1 rounded bg-blue-600 text-white font-bold">1</span>
-            <button className="p-1 rounded bg-[#0b1429] border border-[#17274a] text-slate-400 hover:text-white disabled:opacity-40" disabled>
-              ›
-            </button>
-            <button className="p-1 rounded bg-[#0b1429] border border-[#17274a] text-slate-400 hover:text-white disabled:opacity-40" disabled>
-              »
-            </button>
-          </div>
-        </div>
       </div>
 
-      {/* View QR Deposit Modal */}
+      {/* QR & TxHash Submission Modal */}
       {showQrModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
           <div className="bg-[#091124] border border-[#1f3563] rounded-3xl p-6 sm:p-8 max-w-md w-full relative shadow-2xl animate-in fade-in zoom-in-95">
@@ -214,24 +367,24 @@ export function RechargeView({ user, onRefresh }: RechargeViewProps) {
             <h3 className="text-xl font-bold text-slate-100 mb-1">
               Deposit USDT (BEP-20)
             </h3>
-            <p className="text-xs text-slate-400 mb-5">
-              Send USDT BEP-20 only. Funds credited directly to Fund Wallet upon confirmation.
+            <p className="text-xs text-slate-400 mb-4">
+              Send USDT BEP-20 directly to your assigned deposit address.
             </p>
 
-              {/* QR Code Container */}
-              <div className="flex flex-col items-center bg-[#070e20] border border-[#182a50] rounded-2xl p-4 mb-5">
-                <div className="w-48 h-48 bg-white p-2.5 rounded-2xl flex items-center justify-center shadow-lg overflow-hidden border border-slate-700">
-                  <img
-                    src={qrImage}
-                    alt="USDT Deposit QR"
-                    className="w-full h-full object-contain"
-                  />
-                </div>
-                <div className="flex items-center gap-1.5 mt-3 text-[10px] text-amber-400 font-bold uppercase tracking-wider bg-amber-500/10 px-2.5 py-0.5 rounded-full border border-amber-500/20">
-                  <span>BEP-20 Network Only</span>
-                </div>
-              <p className="text-[11px] font-mono text-slate-300 mt-3 break-all text-center px-2">
-                {companyAddress}
+            {/* QR Code Container */}
+            <div className="flex flex-col items-center bg-[#070e20] border border-[#182a50] rounded-2xl p-4 mb-5">
+              <div className="w-48 h-48 bg-white p-2.5 rounded-2xl flex items-center justify-center shadow-lg overflow-hidden border border-slate-700">
+                <img
+                  src={qrImage}
+                  alt="USDT Deposit QR"
+                  className="w-full h-full object-contain"
+                />
+              </div>
+              <div className="flex items-center gap-1.5 mt-3 text-[10px] text-amber-400 font-bold uppercase tracking-wider bg-amber-500/10 px-2.5 py-0.5 rounded-full border border-amber-500/20">
+                <span>BEP-20 Network Only</span>
+              </div>
+              <p className="text-[11px] font-mono text-slate-300 mt-3 break-all text-center px-2 select-all">
+                {depositAddress}
               </p>
               <button
                 onClick={copyAddress}
@@ -242,31 +395,11 @@ export function RechargeView({ user, onRefresh }: RechargeViewProps) {
               </button>
             </div>
 
-            {/* Deposit Form */}
+            {/* Manual TXID Submission Form */}
             <form onSubmit={handleSubmitDeposit} className="space-y-4">
               <div>
                 <label className="block text-xs font-semibold text-slate-300 mb-1">
-                  USDT Amount
-                </label>
-                <input
-                  type="number"
-                  step="0.01"
-                  value={usdtAmount}
-                  onChange={(e) => setUsdtAmount(e.target.value)}
-                  placeholder="e.g. 50"
-                  className="w-full bg-[#070e20] border border-[#1a2d52] rounded-xl px-3.5 py-2 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-blue-500"
-                  required
-                />
-                {Number(usdtAmount) > 0 && (
-                  <p className="text-xs text-emerald-400 font-semibold mt-1">
-                    $ {Number(usdtAmount).toFixed(2)} USDT will be credited
-                  </p>
-                )}
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">
-                  Transaction Hash (TxHash)
+                  Already Sent? Enter BSC Transaction Hash (TxHash)
                 </label>
                 <input
                   type="text"
@@ -276,11 +409,16 @@ export function RechargeView({ user, onRefresh }: RechargeViewProps) {
                   className="w-full bg-[#070e20] border border-[#1a2d52] rounded-xl px-3.5 py-2 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-blue-500 font-mono"
                   required
                 />
+                <span className="text-[10px] text-slate-500 block mt-1">
+                  Our backend independently verifies the transaction on the BSC blockchain.
+                </span>
               </div>
 
               {message && (
                 <div className={`p-3 rounded-xl text-xs font-semibold ${
-                  message.error ? "bg-rose-950/60 text-rose-300 border border-rose-500/40" : "bg-emerald-950/60 text-emerald-300 border border-emerald-500/40"
+                  message.error
+                    ? "bg-rose-950/60 text-rose-300 border border-rose-500/40"
+                    : "bg-emerald-950/60 text-emerald-300 border border-emerald-500/40"
                 }`}>
                   {message.text}
                 </div>
@@ -291,7 +429,7 @@ export function RechargeView({ user, onRefresh }: RechargeViewProps) {
                 disabled={submitting}
                 className="w-full py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm shadow-lg shadow-blue-600/30 transition-all disabled:opacity-50"
               >
-                {submitting ? "Submitting..." : "Submit Deposit Request"}
+                {submitting ? "Verifying on Blockchain..." : "Submit Transaction for Verification"}
               </button>
             </form>
           </div>
