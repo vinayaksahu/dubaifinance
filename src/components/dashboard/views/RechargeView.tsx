@@ -290,14 +290,13 @@ export function RechargeView({ user, onRefresh }: RechargeViewProps) {
                 <th className="py-3 px-4">AMOUNT</th>
                 <th className="py-3 px-4">TX HASH</th>
                 <th className="py-3 px-4">CONFIRMATIONS</th>
-                <th className="py-3 px-4">MODE</th>
                 <th className="py-3 px-4">STATUS</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#132042]">
               {deposits.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="py-8 text-center text-slate-400 font-medium">
+                  <td colSpan={6} className="py-8 text-center text-slate-400 font-medium">
                     No deposits recorded yet.
                   </td>
                 </tr>
@@ -326,11 +325,6 @@ export function RechargeView({ user, onRefresh }: RechargeViewProps) {
                     </td>
                     <td className="py-3 px-4 font-mono text-slate-300">
                       {dep.confirmations || 0} / {cryptoData?.requiredConfirmations || 3}
-                    </td>
-                    <td className="py-3 px-4">
-                      <span className="text-[10px] uppercase font-bold text-slate-400">
-                        {dep.processingMode || "MANUAL"}
-                      </span>
                     </td>
                     <td className="py-3 px-4">
                       <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${
