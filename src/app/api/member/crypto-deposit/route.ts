@@ -10,6 +10,8 @@ import {
 import { verifyOnChainTransaction, creditUserFundWalletAtomic } from "@/lib/blockchain/depositProcessor";
 import { sanitizeIdentifier } from "@/lib/sanitize";
 import { recordActivity } from "@/lib/auditLogger";
+import { getSystemConfigValue } from "@/lib/configService";
+import { APP_CONFIG } from "@/lib/constants";
 
 export async function GET() {
   try {
@@ -18,14 +20,19 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
     }
 
-    const [userAddress, mode, requiredConfirmations, usdtContract] = await Promise.all([
+    const [userAddress, mode, requiredConfirmations, usdtContract, companyAddress, companyQr] = await Promise.all([
       getOrCreateUserDepositAddress(session.userId),
       getDepositProcessingModeForUser(session.userId),
       getRequiredConfirmations(),
       getUsdtContractAddress(),
+      getSystemConfigValue("COMPANY_USDT_ADDRESS", APP_CONFIG.depositAddress),
+      getSystemConfigValue("COMPANY_USDT_QR", ""),
     ]);
 
-    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${userAddress.address}`;
+    const activeAddress = (mode === "MANUAL" && companyAddress) ? companyAddress : userAddress.address;
+    const qrUrl = (mode === "MANUAL" && companyQr)
+      ? companyQr
+      : `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${activeAddress}`;
 
     // Fetch user's recent deposits
     const deposits = await db.depositRequest.findMany({
@@ -60,7 +67,7 @@ export async function GET() {
     }));
 
     return NextResponse.json({
-      address: userAddress.address,
+      address: activeAddress,
       asset: "USDT",
       network: "BEP20 (BNB Smart Chain)",
       tokenContract: usdtContract,
@@ -92,8 +99,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Invalid transaction hash." }, { status: 400 });
     }
 
-    // 1. Get user's assigned deposit address
-    const userAddress = await getOrCreateUserDepositAddress(session.userId);
+    // 1. Get user's assigned deposit address & system configured company address
+    const [userAddress, mode, companyAddress] = await Promise.all([
+      getOrCreateUserDepositAddress(session.userId),
+      getDepositProcessingModeForUser(session.userId),
+      getSystemConfigValue("COMPANY_USDT_ADDRESS", APP_CONFIG.depositAddress),
+    ]);
+
+    const targetAddress = (mode === "MANUAL" && companyAddress) ? companyAddress : userAddress.address;
 
     // 2. Check if txHash already exists in database
     const existing = await db.depositRequest.findUnique({
@@ -110,7 +123,15 @@ export async function POST(req: NextRequest) {
     }
 
     // 3. Independent on-chain blockchain verification
-    const verification = await verifyOnChainTransaction(cleanHash, userAddress.address);
+    let verification = await verifyOnChainTransaction(cleanHash, targetAddress);
+    if (!verification.verified && mode === "MANUAL" && userAddress?.address) {
+      // Fallback: check if the user sent to their personal address instead
+      const fallbackVerification = await verifyOnChainTransaction(cleanHash, userAddress.address);
+      if (fallbackVerification.verified) {
+        verification = fallbackVerification;
+      }
+    }
+
     if (!verification.verified || !verification.amountInUsdt) {
       return NextResponse.json(
         {
@@ -120,7 +141,6 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const mode = await getDepositProcessingModeForUser(session.userId);
     const requiredConfirmations = await getRequiredConfirmations();
     const isConfirmed = (verification.confirmations || 0) >= requiredConfirmations;
 
@@ -136,7 +156,7 @@ export async function POST(req: NextRequest) {
         network: "USDT_BEP20",
         tokenContract: verification.tokenContract,
         fromAddress: verification.fromAddress,
-        toAddress: verification.toAddress || userAddress.address,
+        toAddress: verification.toAddress || targetAddress,
         blockNumber: verification.blockNumber,
         logIndex: verification.logIndex,
         confirmations: verification.confirmations || 0,

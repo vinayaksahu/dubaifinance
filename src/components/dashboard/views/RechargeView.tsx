@@ -111,16 +111,14 @@ export function RechargeView({ user, onRefresh }: RechargeViewProps) {
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold text-slate-100 tracking-tight flex items-center gap-2.5">
             <span>Recharge USDT</span>
-            <span className={`text-xs px-2.5 py-0.5 rounded-full font-bold uppercase tracking-wider border ${
-              isAutomatic
-                ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30"
-                : "bg-amber-500/10 text-amber-400 border-amber-500/30"
-            }`}>
-              {isAutomatic ? "Instant Automatic Mode" : "Manual Approval Mode"}
-            </span>
+            {isAutomatic && (
+              <span className="text-xs px-2.5 py-0.5 rounded-full font-bold uppercase tracking-wider border bg-emerald-500/10 text-emerald-400 border-emerald-500/30">
+                Instant Automatic Mode
+              </span>
+            )}
           </h1>
           <p className="text-xs text-slate-400 mt-1">
-            Deposit USDT on BNB Smart Chain (BEP-20) directly to your personal deposit address.
+            Deposit USDT on BNB Smart Chain (BEP-20) to credit your wallet.
           </p>
         </div>
         <div className="text-xs text-slate-400 font-medium flex items-center gap-1.5">
@@ -145,7 +143,7 @@ export function RechargeView({ user, onRefresh }: RechargeViewProps) {
           <div>
             <div className="flex items-center justify-between gap-2 mb-4">
               <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
-                Your Dedicated Deposit Address
+                {isAutomatic ? "Your Dedicated Deposit Address" : "Official Deposit Address"}
               </span>
               <button
                 onClick={fetchCryptoDetails}
@@ -190,7 +188,7 @@ export function RechargeView({ user, onRefresh }: RechargeViewProps) {
               <span>
                 {isAutomatic
                   ? "Automatic Monitoring Active: 3 Block Confirmations Required"
-                  : "Manual Review Mode: Admin Review Required"}
+                  : "USDT BEP-20 Network: 3 Block Confirmations Required"}
               </span>
             </div>
             <button
@@ -368,7 +366,7 @@ export function RechargeView({ user, onRefresh }: RechargeViewProps) {
               Deposit USDT (BEP-20)
             </h3>
             <p className="text-xs text-slate-400 mb-4">
-              Send USDT BEP-20 directly to your assigned deposit address.
+              Send USDT BEP-20 directly to the deposit address shown below.
             </p>
 
             {/* QR Code Container */}
