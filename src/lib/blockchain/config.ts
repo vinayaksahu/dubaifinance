@@ -49,8 +49,21 @@ export async function getDepositProcessingMode(adminId?: string | null): Promise
       console.warn("[getDepositProcessingMode] Failed to fetch admin override:", err);
     }
   }
-  const mode = await getSystemConfigValue("DEPOSIT_PROCESSING_MODE", "AUTOMATIC");
-  return mode.toUpperCase() === "MANUAL" ? "MANUAL" : "AUTOMATIC";
+
+  // Check database directly to bypass any stale in-memory cache
+  try {
+    const row = await db.systemConfig.findUnique({
+      where: { key: "DEPOSIT_PROCESSING_MODE" },
+    });
+    if (row?.value) {
+      return row.value.trim().toUpperCase() === "AUTOMATIC" ? "AUTOMATIC" : "MANUAL";
+    }
+  } catch (err) {
+    console.warn("[getDepositProcessingMode] Failed direct DB read:", err);
+  }
+
+  const mode = await getSystemConfigValue("DEPOSIT_PROCESSING_MODE", "MANUAL");
+  return mode.toUpperCase() === "AUTOMATIC" ? "AUTOMATIC" : "MANUAL";
 }
 
 /**

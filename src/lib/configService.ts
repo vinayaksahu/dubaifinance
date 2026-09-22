@@ -264,6 +264,38 @@ export const DEFAULT_SYSTEM_CONFIGS: Record<string, { value: string; description
     description: "Notice message displayed to visitors when Maintenance mode is active",
     category: "system_mode",
   },
+
+  // 10. Crypto & Blockchain Deposit Processing
+  DEPOSIT_PROCESSING_MODE: {
+    value: "MANUAL",
+    description: "Global USDT BEP-20 deposit processing mode (AUTOMATIC or MANUAL)",
+    category: "crypto_deposit",
+  },
+  DEPOSIT_AUTOMATIC_CREDIT_ENABLED: {
+    value: "true",
+    description: "Automatic crediting pause/resume switch (true or false)",
+    category: "crypto_deposit",
+  },
+  DEPOSIT_MONITOR_ENABLED: {
+    value: "true",
+    description: "BSC blockchain monitor active status (true or false)",
+    category: "crypto_deposit",
+  },
+  REQUIRED_CONFIRMATIONS: {
+    value: "3",
+    description: "Required BSC block confirmations before crediting USDT deposit",
+    category: "crypto_deposit",
+  },
+  USDT_BEP20_CONTRACT: {
+    value: "0x55d398326f99059ff775485246999027b3197955",
+    description: "Configured official USDT BEP-20 token contract address on BSC",
+    category: "crypto_deposit",
+  },
+  BSC_RPC_URL: {
+    value: "",
+    description: "Custom BSC JSON-RPC URL",
+    category: "crypto_deposit",
+  },
 };
 
 // In-memory cache with 60-second TTL (invalidated instantly on admin update)
@@ -289,11 +321,11 @@ export async function getAllSystemConfigs(): Promise<Record<string, string>> {
     result[key] = item.value;
   }
 
-  // 2. Fetch from database
+  // 2. Fetch from database (all valid database overrides)
   try {
     const dbRows = await db.systemConfig.findMany();
     for (const row of dbRows) {
-      if (DEFAULT_SYSTEM_CONFIGS[row.key] && row.value != null && row.value !== "") {
+      if (row.value != null && row.value !== "") {
         result[row.key] = row.value;
       }
     }
