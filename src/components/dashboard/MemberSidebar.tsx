@@ -323,6 +323,17 @@ export function MemberSidebar({
               <div className={`${isCollapsed ? "lg:hidden" : "block"} pl-11 pr-2 py-1 space-y-1`}>
                 <button
                   type="button"
+                  onClick={() => handleSelectTab("income-bonus")}
+                  className={`w-full text-left py-2 px-3 rounded-lg text-xs font-medium transition-all ${
+                    activeTab === "income-bonus"
+                      ? "text-amber-300 bg-amber-500/15 font-bold border-l-2 border-amber-400"
+                      : "text-slate-600 dark:text-slate-400 hover:text-amber-600 dark:hover:text-amber-200 hover:bg-amber-500/10"
+                  }`}
+                >
+                  • Joining Bonus Report
+                </button>
+                <button
+                  type="button"
                   onClick={() => handleSelectTab("income-roi")}
                   className={`w-full text-left py-2 px-3 rounded-lg text-xs font-medium transition-all ${
                     activeTab === "income-roi"

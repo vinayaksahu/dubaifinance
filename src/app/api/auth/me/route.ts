@@ -130,6 +130,9 @@ export async function GET() {
     };
   });
 
+  // Calculate Active Direct Member count
+  const activeDirectCount = formattedDirects.filter((d) => d.activation === "Active" || d.amount > 0).length;
+
   // Fetch Downline Team (Level 1 to 12)
   let currentLevelUserIds = user.directs.map((d) => d.id);
   const teamList: any[] = [...formattedDirects];
@@ -176,6 +179,9 @@ export async function GET() {
     currentLevelUserIds = nextLevelUsers.map((u) => u.id);
   }
 
+  // Calculate Total Active Team count
+  const activeTeamCount = teamList.filter((t) => t.activation === "Active" || t.amount > 0).length;
+
   // Calculate direct business from direct referrals' active investments
   const calculatedDirectBusiness = formattedDirects.reduce(
     (acc, d) => acc + Number(d.amount || 0),
@@ -183,9 +189,26 @@ export async function GET() {
   );
   const directBusiness = Math.max(Number(user.directBusiness || 0), calculatedDirectBusiness);
 
+  // Compute actual total processed withdrawals (ensures accuracy even if DB column wasn't updated)
+  const actualProcessedWithdrawn = user.withdrawals
+    .filter((w) => w.status === "PROCESSED")
+    .reduce(
+      (acc, w) => acc.plus(new Decimal(w.amountInUsdt?.toString() ?? w.amountInInr?.toString() ?? "0")),
+      new Decimal(0)
+    );
+  const totalWithdrawnAmount = Decimal.max(new Decimal(user.totalWithdrawn?.toString() ?? "0"), actualProcessedWithdrawn);
+
+  // Sync DB user.totalWithdrawn in background if out of sync
+  if (new Decimal(user.totalWithdrawn?.toString() ?? "0").lessThan(actualProcessedWithdrawn)) {
+    db.user.update({
+      where: { id: user.id },
+      data: { totalWithdrawn: totalWithdrawnAmount },
+    }).catch(() => {});
+  }
+
   // Total Income = Income Balance + Total Withdrawn
   let totalIncomeNum = new Decimal(user.incomeBalance.toString())
-    .plus(user.totalWithdrawn.toString())
+    .plus(totalWithdrawnAmount)
     .toNumber();
 
   // Calculate detailed income breakdown stats from ledgers using Dubai Time (GST = UTC+4)
@@ -366,6 +389,14 @@ export async function GET() {
     createdAt: l.createdAt,
   }));
 
+  // Calculate bonus lock and withdrawable balance ($20+ Active ID criteria)
+  const totalActiveInvestment = basicPackageTotal.plus(fdPackageTotal);
+  const minActiveBonusRequired = 20.0;
+  const isBonusLocked = totalActiveInvestment.lessThan(minActiveBonusRequired);
+  const currentIncomeNum = Number(user.incomeBalance?.toString() ?? 0);
+  const lockedBonusAmount = isBonusLocked ? Math.min(joiningBonus, currentIncomeNum) : 0;
+  const withdrawableBalance = Math.max(0, Number((new Decimal(currentIncomeNum).minus(lockedBonusAmount)).toFixed(2)));
+
   return NextResponse.json({
     systemConfig,
     user: {
@@ -378,9 +409,13 @@ export async function GET() {
       status: user.status,
       usdtAddress: user.usdtAddress,
       fundBalance: Number(user.fundBalance?.toString() ?? 0),
-      incomeBalance: Number(user.incomeBalance?.toString() ?? 0),
+      incomeBalance: currentIncomeNum,
       fdLockedBalance: Number(user.fdLockedBalance?.toString() ?? 0),
-      totalWithdrawn: Number(user.totalWithdrawn?.toString() ?? 0),
+      totalWithdrawn: totalWithdrawnAmount.toNumber(),
+      withdrawableBalance,
+      lockedBonus: lockedBonusAmount,
+      isBonusLocked,
+      minActiveBonusRequired,
       directBusiness: directBusiness,
       sponsor: user.sponsor,
       createdAt: user.createdAt,
@@ -388,7 +423,9 @@ export async function GET() {
       fdPackageTotal: fdPackageTotal.toNumber(),
       totalIncome: totalIncomeNum,
       directTeamCount: formattedDirects.length,
+      activeDirectCount,
       totalTeamCount: teamList.length,
+      activeTeamCount,
       directs: formattedDirects,
       teamList: teamList,
       contracts: serializedContracts,

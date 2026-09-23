@@ -12,6 +12,7 @@ import { DownlineView } from "@/components/dashboard/views/DownlineView";
 import { GenealogyTreeView } from "@/components/dashboard/views/GenealogyTreeView";
 import { TransactionalView } from "@/components/dashboard/views/TransactionalView";
 import { IncomeView } from "@/components/dashboard/views/IncomeView";
+import { JoiningBonusView } from "@/components/dashboard/views/JoiningBonusView";
 import { MilestoneRewardsView } from "@/components/dashboard/views/MilestoneRewardsView";
 import { ReportsView } from "@/components/dashboard/views/ReportsView";
 import { SupportTicketView } from "@/components/dashboard/views/SupportTicketView";
@@ -123,6 +124,10 @@ export default function MemberDashboardPage() {
 
           {activeTab === "downline-tree" && (
             <GenealogyTreeView user={user} onNavigateTab={setActiveTab} />
+          )}
+
+          {activeTab === "income-bonus" && (
+            <JoiningBonusView user={user} onRefresh={fetchUser} />
           )}
 
           {activeTab === "income-roi" && (

@@ -57,6 +57,17 @@ export function TransactionalView({ user, mode, onRefresh }: TransactionalViewPr
 
   const fundBal = Number(user.fundBalance || 0);
   const incomeBal = Number(user.incomeBalance || 0);
+
+  // Calculate Withdrawable Balance (Respecting $20 Active ID criteria for Joining Bonus)
+  const basicPkg = Number(user.basicPackageTotal || 0);
+  const fdPkg = Number(user.fdPackageTotal || 0);
+  const totalActivePkg = basicPkg + fdPkg;
+  const minActiveBonusReq = Number(user.minActiveBonusRequired || 20.0);
+  const isBonusLocked = user.isBonusLocked !== undefined ? Boolean(user.isBonusLocked) : totalActivePkg < minActiveBonusReq;
+  const joiningBonusAmt = Number(user.incomeBreakdown?.joiningBonus || user.lockedBonus || 0);
+  const lockedBonus = isBonusLocked ? Math.min(joiningBonusAmt, incomeBal) : 0;
+  const withdrawableBal = user.withdrawableBalance !== undefined ? Number(user.withdrawableBalance) : Math.max(0, Number((incomeBal - lockedBonus).toFixed(2)));
+
   const cfg = user?.systemConfig || {};
 
   const [windowStatus, setWindowStatus] = useState(() => getWithdrawalWindowStatus(cfg));
@@ -131,6 +142,17 @@ export function TransactionalView({ user, mode, onRefresh }: TransactionalViewPr
 
   const handleWithdrawal = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (Number(withdrawAmount) > withdrawableBal) {
+      setMessage({
+        text: `Requested amount ($${Number(withdrawAmount).toFixed(2)} USDT) exceeds your Available Withdrawable Balance ($${withdrawableBal.toFixed(2)} USDT).${
+          isBonusLocked && lockedBonus > 0
+            ? ` Note: $${lockedBonus.toFixed(2)} USDT Joining Bonus is locked until you activate a $20+ package.`
+            : ""
+        }`,
+        error: true,
+      });
+      return;
+    }
     setSubmitting(true);
     setMessage(null);
     try {
@@ -458,11 +480,19 @@ export function TransactionalView({ user, mode, onRefresh }: TransactionalViewPr
             </div>
           </div>
 
-          <div className="p-3.5 rounded-2xl bg-[#070e20] border border-[#162544] text-xs space-y-1 mb-5">
-            <div className="flex justify-between">
-              <span className="text-slate-400">Available Income Balance:</span>
-              <span className="text-cyan-400 font-bold">${incomeBal.toFixed(2)} USDT</span>
+          <div className="p-3.5 rounded-2xl bg-[#070e20] border border-[#162544] text-xs space-y-2 mb-5">
+            <div className="flex justify-between items-center">
+              <span className="text-slate-400">Available Withdrawable Balance:</span>
+              <span className="text-cyan-400 font-bold text-sm font-mono">${withdrawableBal.toFixed(2)} USDT</span>
             </div>
+            {isBonusLocked && lockedBonus > 0 && (
+              <div className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-[11px] text-amber-300 flex items-start gap-2">
+                <span className="shrink-0 text-xs mt-0.5">⚠️</span>
+                <span>
+                  <strong>${lockedBonus.toFixed(2)} USDT Joining Bonus</strong> is locked. It will become withdrawable once your active package reaches $20.00 USDT (Current Active: ${totalActivePkg.toFixed(2)} USDT).
+                </span>
+              </div>
+            )}
             <div className="flex justify-between">
               <span className="text-slate-400">Deduction / Admin Charge:</span>
               <span className="text-amber-400 font-bold">{adminFeePercent}% Admin Charge</span>

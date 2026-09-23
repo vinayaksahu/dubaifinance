@@ -125,10 +125,20 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Transaction hash is required." }, { status: 400 });
     }
 
-    await db.withdrawalRequest.update({
-      where: { id: withdrawalId },
-      data: { status: "PROCESSED", txHash: cleanedTxHash, adminNote: cleanedAdminNote, processedAt: new Date() },
-    });
+    await db.$transaction([
+      db.withdrawalRequest.update({
+        where: { id: withdrawalId },
+        data: { status: "PROCESSED", txHash: cleanedTxHash, adminNote: cleanedAdminNote, processedAt: new Date() },
+      }),
+      db.user.update({
+        where: { id: withdrawal.userId },
+        data: {
+          totalWithdrawn: {
+            increment: withdrawal.amountInUsdt,
+          },
+        },
+      }),
+    ]);
 
     return NextResponse.json({ success: true, message: "Withdrawal marked as processed." });
   } else if (action === "REJECT") {

@@ -65,15 +65,20 @@ export function DashboardView({ user, setActiveTab }: DashboardViewProps) {
   const fundBal = Number(user?.fundBalance ?? 0);
 
   // Available Balance (Income Balance) & Total Withdrawn
-  const incomeBal = Number(user?.incomeBalance ?? 14.25);
-  const totalWithdrawn = Number(user?.totalWithdrawn ?? 810.25);
+  const incomeBal = Number(user?.incomeBalance ?? 0);
+  const processedWithdrawnFromList = (user?.withdrawals || [])
+    .filter((w: any) => w.status === "PROCESSED")
+    .reduce((acc: number, w: any) => acc + Number(w.amountInUsdt ?? w.amountInInr ?? 0), 0);
+  const totalWithdrawn = Math.max(Number(user?.totalWithdrawn ?? 0), processedWithdrawnFromList);
 
   // Mathematical Consistency: Total Income = Available Balance + Total Withdrawn
   const totalInc = Number(user?.totalIncome ?? (incomeBal + totalWithdrawn));
 
-  // Team counts
-  const directTeamCount = user?.directTeamCount ?? (user?.directs?.length ?? 1);
-  const totalTeamCount = user?.totalTeamCount ?? (user?.teamList?.length ?? 15);
+  // Team counts (Direct, Active Direct, Total Team, Active Team)
+  const directTeamCount = user?.directTeamCount ?? (user?.directs?.length ?? 0);
+  const activeDirectCount = user?.activeDirectCount ?? (user?.directs || []).filter((d: any) => d.activation === "Active" || Number(d.amount || 0) > 0).length;
+  const totalTeamCount = user?.totalTeamCount ?? (user?.teamList?.length ?? 0);
+  const activeTeamCount = user?.activeTeamCount ?? (user?.teamList || []).filter((t: any) => t.activation === "Active" || Number(t.amount || 0) > 0).length;
 
   // Direct Business (Sum of directs' active investments)
   const calculatedDirectBiz = (user?.directs || []).reduce(
@@ -340,16 +345,29 @@ export function DashboardView({ user, setActiveTab }: DashboardViewProps) {
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          {/* DIRECT TEAM */}
+          {/* TOTAL DIRECT TEAM */}
           <div
             onClick={() => setActiveTab("downline-direct")}
             className="bg-[#091124] border border-[#17274a] rounded-2xl p-3 sm:p-3.5 text-center shadow-lg hover:border-emerald-500/40 transition-all cursor-pointer flex flex-col justify-center items-center"
           >
             <p className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">
-              DIRECT TEAM
+              TOTAL DIRECT TEAM
             </p>
             <p className="text-lg sm:text-xl font-extrabold text-emerald-400 font-mono">
               {directTeamCount}
+            </p>
+          </div>
+
+          {/* ACTIVE DIRECT MEMBER */}
+          <div
+            onClick={() => setActiveTab("downline-direct")}
+            className="bg-[#091124] border border-[#17274a] rounded-2xl p-3 sm:p-3.5 text-center shadow-lg hover:border-emerald-500/40 transition-all cursor-pointer flex flex-col justify-center items-center"
+          >
+            <p className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">
+              ACTIVE DIRECT MEMBER
+            </p>
+            <p className="text-lg sm:text-xl font-extrabold text-emerald-400 font-mono">
+              {activeDirectCount}
             </p>
           </div>
 
@@ -363,6 +381,19 @@ export function DashboardView({ user, setActiveTab }: DashboardViewProps) {
             </p>
             <p className="text-lg sm:text-xl font-extrabold text-cyan-400 font-mono">
               {totalTeamCount}
+            </p>
+          </div>
+
+          {/* TOTAL ACTIVE TEAM */}
+          <div
+            onClick={() => setActiveTab("downline-team")}
+            className="bg-[#091124] border border-[#17274a] rounded-2xl p-3 sm:p-3.5 text-center shadow-lg hover:border-cyan-500/40 transition-all cursor-pointer flex flex-col justify-center items-center"
+          >
+            <p className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">
+              TOTAL ACTIVE TEAM
+            </p>
+            <p className="text-lg sm:text-xl font-extrabold text-cyan-400 font-mono">
+              {activeTeamCount}
             </p>
           </div>
         </div>
@@ -381,7 +412,7 @@ export function DashboardView({ user, setActiveTab }: DashboardViewProps) {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {/* JOINING BONUS */}
           <div
-            onClick={() => setActiveTab("income-roi")}
+            onClick={() => setActiveTab("income-bonus")}
             className="bg-[#091124] border border-[#17274a] rounded-2xl p-3 sm:p-3.5 text-center shadow-lg hover:border-amber-400/40 transition-all cursor-pointer flex flex-col justify-center items-center"
           >
             <p className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">
